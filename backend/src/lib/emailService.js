@@ -134,6 +134,38 @@ export function buildAbsenceEmailHTML({ studentName, totalAbsences, courses, wee
 </html>`;
 }
 
+export function buildEarlyLossRiskEmailHTML({ studentName, courseName, percentage, absences, threshold }) {
+    return `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px;">
+  <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <div style="background: #6b2d8b; padding: 28px 24px; text-align: center;">
+      <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 700;">Alerta temprana de asistencia</h1>
+    </div>
+    <div style="padding: 32px 24px;">
+      <p style="color: #374151; font-size: 16px; margin: 0 0 16px;">Estimado/a <strong>${studentName}</strong>,</p>
+      <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px;">Durante las primeras dos semanas de <strong>${courseName}</strong>, el sistema identificó inasistencias que podrían indicar riesgo de pérdida de la materia.</p>
+      <div style="background: #fff7ed; border: 1px solid #fdba74; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+        <p style="color: #9a3412; font-size: 16px; margin: 0 0 10px;"><strong>Resumen actual</strong></p>
+        <p style="color: #4b5563; font-size: 14px; margin: 0 0 8px;">Asistencia registrada: <strong>${percentage}%</strong></p>
+        <p style="color: #4b5563; font-size: 14px; margin: 0 0 8px;">Unidades de ausencia acumuladas: <strong>${absences}</strong></p>
+        <p style="color: #4b5563; font-size: 14px; margin: 0;">Umbral estimado de pérdida por inasistencias: <strong>${threshold}</strong></p>
+      </div>
+      <p style="color: #4b5563; font-size: 14px; line-height: 1.6; margin: 0;">Esta es una alerta preventiva, no una declaración de pérdida. Le recomendamos verificar su asistencia y comunicarse con el docente si considera que existe un error.</p>
+    </div>
+    <div style="background: #f9fafb; border-top: 1px solid #e5e7eb; padding: 20px 24px; text-align: center;">
+      <p style="color: #9ca3af; font-size: 12px; margin: 0;">Este es un correo automático del sistema de control de asistencia. Por favor no responda a este mensaje.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
 export function buildWeeklyReportEmailHTML({ weekStart, weekEnd, courseCount, totalRecords }) {
     return `
 <!DOCTYPE html>

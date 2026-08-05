@@ -178,6 +178,15 @@ export async function POST(request) {
             );
         }
 
+        const { runEarlyLossRiskNotification } = await import('@/jobs/earlyLossRiskNotification');
+        setImmediate(() =>
+            runEarlyLossRiskNotification({
+                courseId,
+                studentIds: records.map((record) => record.studentId),
+                date,
+            }).catch(err => console.error('[attendance-route] Error en alerta de posible pérdida:', err))
+        );
+
         return Response.json({ success: true, count: operaciones.length })
     } catch (error) {
         console.error(error)

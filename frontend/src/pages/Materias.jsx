@@ -18,15 +18,26 @@ export default function Materias() {
     const [mostrarSegundoDia, setMostrarSegundoDia] = useState(false);
     const [guardandoCurso, setGuardandoCurso] = useState(false);
     const [cursoEnEdicion, setCursoEnEdicion] = useState(null);
-    const [horariosOpciones] = useState(() => { 
-        const opts = []; 
-        for (let h = 0; h < 24; h++) { 
-            for (let m = 0; m < 60; m += 15) { 
-                opts.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`); 
-            } 
-        } 
-        return opts; 
-    });
+    const horariosDiurnos = (() => {
+        const opciones = [];
+        const incluirHora = (hora, minuto) => {
+            opciones.push(`${hora.toString().padStart(2, '0')}:${minuto.toString().padStart(2, '0')}`);
+        };
+
+        for (let hora = 6; hora <= 18; hora++) {
+            for (let minuto = 0; minuto < 60; minuto += 15) {
+                if (hora < 18 || minuto === 0) incluirHora(hora, minuto);
+            }
+        }
+
+        return opciones;
+    })();
+    const horariosInicioOpciones = formularioCurso.franja === 'Nocturna'
+        ? ['06:00', '18:30', '20:15']
+        : horariosDiurnos.filter((hora) => !['16:45', '17:00', '17:15', '17:30', '17:45', '18:00'].includes(hora));
+    const horariosFinOpciones = formularioCurso.franja === 'Nocturna'
+        ? ['07:30', '20:00', '21:30', '21:45']
+        : horariosDiurnos.filter((hora) => !['06:00', '06:15', '06:30', '06:45', '07:00', '07:15'].includes(hora));
     const [eliminandoId, setEliminandoId] = useState(null);
     const [importandoCursos, setImportandoCursos] = useState(false);
     const [filasImportCurso, setFilasImportCurso] = useState([]);
@@ -90,7 +101,12 @@ export default function Materias() {
             setCursoEnEdicion(null);
             setModalFormularioVisible(false);
         } catch (err) {
-            toast.error(err.response?.data?.error || 'Error al procesar la materia');
+            const mensajeError = err.response?.data?.error
+                || err.response?.data?.message
+                || (err.response?.status === 409
+                    ? 'Ya tienes una materia con el mismo programa, franja y horario.'
+                    : 'No fue posible guardar la materia. Inténtalo nuevamente.');
+            toast.error(mensajeError);
         } finally {
             setGuardandoCurso(false);
         }
@@ -512,7 +528,14 @@ export default function Materias() {
                                 required
                                 className="campo pr-8 py-1.5 w-full appearance-none bg-white"
                                 value={formularioCurso.franja}
-                                onChange={(e) => setFormularioCurso({ ...formularioCurso, franja: e.target.value })}
+                                onChange={(e) => setFormularioCurso({
+                                    ...formularioCurso,
+                                    franja: e.target.value,
+                                    horaInicio: '',
+                                    horaFin: '',
+                                    horaInicio2: '',
+                                    horaFin2: '',
+                                })}
                             >
                                 <option value="">Seleccionar</option>
                                 <option value="Diurna">Diurna</option>
@@ -568,7 +591,7 @@ export default function Materias() {
                                 onChange={(e) => setFormularioCurso({ ...formularioCurso, horaInicio: e.target.value })}
                             >
                                 <option value="">Seleccionar</option>
-                                {horariosOpciones.map(h => <option key={`ini-${h}`} value={h}>{h}</option>)}
+                                {horariosInicioOpciones.map(h => <option key={`ini-${h}`} value={h}>{h}</option>)}
                             </select>
                             <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-texto-secundario" />
                         </div>
@@ -583,7 +606,7 @@ export default function Materias() {
                                 onChange={(e) => setFormularioCurso({ ...formularioCurso, horaFin: e.target.value })}
                             >
                                 <option value="">Seleccionar</option>
-                                {horariosOpciones.map(h => <option key={`fin-${h}`} value={h}>{h}</option>)}
+                                {horariosFinOpciones.map(h => <option key={`fin-${h}`} value={h}>{h}</option>)}
                             </select>
                             <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-texto-secundario" />
                         </div>
@@ -630,7 +653,7 @@ export default function Materias() {
                                         onChange={(e) => setFormularioCurso({ ...formularioCurso, horaInicio2: e.target.value })}
                                     >
                                         <option value="">Seleccionar</option>
-                                        {horariosOpciones.map(h => <option key={`ini2-${h}`} value={h}>{h}</option>)}
+                                        {horariosInicioOpciones.map(h => <option key={`ini2-${h}`} value={h}>{h}</option>)}
                                     </select>
                                     <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-texto-secundario" />
                                 </div>
@@ -644,7 +667,7 @@ export default function Materias() {
                                         onChange={(e) => setFormularioCurso({ ...formularioCurso, horaFin2: e.target.value })}
                                     >
                                         <option value="">Seleccionar</option>
-                                        {horariosOpciones.map(h => <option key={`fin2-${h}`} value={h}>{h}</option>)}
+                                        {horariosFinOpciones.map(h => <option key={`fin2-${h}`} value={h}>{h}</option>)}
                                     </select>
                                     <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-texto-secundario" />
                                 </div>

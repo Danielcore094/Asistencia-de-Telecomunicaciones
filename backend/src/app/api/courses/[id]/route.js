@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { obtenerUsuarioDePeticion } from '@/lib/auth'
+import { encontrarConflictoHorario } from '@/lib/courseSchedule'
 
 export async function PUT(request, { params }) {
     try {
@@ -31,23 +32,51 @@ export async function PUT(request, { params }) {
             return Response.json({ error: 'No autorizado para editar esta materia' }, { status: 403 })
         }
 
+        const datosCurso = {
+            name: name.trim(),
+            code: code.trim(),
+            groupCode: groupCode?.trim() || 'A',
+            academicPeriod: academicPeriod || '1',
+            academicYear: academicYear || '2024',
+            dia: dia?.trim() || null,
+            horaInicio: horaInicio?.trim() || null,
+            horaFin: horaFin?.trim() || null,
+            dia2: dia2?.trim() || null,
+            horaInicio2: horaInicio2?.trim() || null,
+            horaFin2: horaFin2?.trim() || null,
+            franja: franja?.trim() || null,
+            programa: programa?.trim() || null,
+        }
+
+        const cursosMismaAsignacion = await prisma.curso.findMany({
+            where: {
+                teacherId: usuario.id,
+                programa: datosCurso.programa,
+                franja: datosCurso.franja,
+                id: { not: id },
+            },
+            select: {
+                id: true,
+                name: true,
+                dia: true,
+                horaInicio: true,
+                horaFin: true,
+                dia2: true,
+                horaInicio2: true,
+                horaFin2: true,
+            },
+        })
+
+        const conflicto = encontrarConflictoHorario(datosCurso, cursosMismaAsignacion)
+        if (conflicto) {
+            return Response.json({
+                error: `Ya tienes la materia ${conflicto.curso.name} programada el ${conflicto.dia} de ${conflicto.horaInicio} a ${conflicto.horaFin} para este programa y franja`,
+            }, { status: 409 })
+        }
+
         const cursoActualizado = await prisma.curso.update({
             where: { id },
-            data: {
-                name: name.trim(),
-                code: code.trim(),
-                groupCode: groupCode?.trim() || 'A',
-                academicPeriod: academicPeriod || '1',
-                academicYear: academicYear || '2024',
-                dia: dia?.trim() || null,
-                horaInicio: horaInicio?.trim() || null,
-                horaFin: horaFin?.trim() || null,
-                dia2: dia2?.trim() || null,
-                horaInicio2: horaInicio2?.trim() || null,
-                horaFin2: horaFin2?.trim() || null,
-                franja: franja?.trim() || null,
-                programa: programa?.trim() || null,
-            }
+            data: datosCurso,
         })
 
         return Response.json(cursoActualizado)

@@ -13,6 +13,9 @@ out/
 # Production
 build/
 dist/
+backups/
+*.dump
+*.dump.gpg
 
 # Misc
 .DS_Store
