@@ -5,7 +5,6 @@ import { createWeeklyReportForTeacher } from '@/lib/attendanceService'
 import { obtenerUsuarioDePeticion } from '@/lib/auth'
 
 export async function GET(request) {
-    await headers();
     try {
         const usuario = obtenerUsuarioDePeticion(request)
         if (!usuario) {

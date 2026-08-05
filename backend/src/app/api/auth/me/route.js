@@ -7,7 +7,6 @@ const SECRETO = process.env.JWT_SECRET || 'telecom_secret_key_2024'
 
 // GET /api/auth/me — devuelve los datos del docente autenticado
 export async function GET(request) {
-    await headers();
     try {
         const encabezadoAuth = request.headers.get('authorization')
         if (!encabezadoAuth || !encabezadoAuth.startsWith('Bearer ')) {

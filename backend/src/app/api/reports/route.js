@@ -73,7 +73,6 @@ const unidadesRegistro = (curso, fecha) => {
 
 // GET — reporte de asistencia por porcentaje de presencia con filtros opcionales
 export async function GET(request) {
-    await headers();
     try {
         // Verificar autenticación
         const usuario = obtenerUsuarioDePeticion(request)

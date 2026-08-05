@@ -7,7 +7,6 @@ import bcrypt from 'bcryptjs'
 
 // PUT — actualizar un profesor (solo ADMIN)
 export async function PUT(request, { params }) {
-    await headers();
     try {
         const usuarioAutenticado = obtenerUsuarioDePeticion(request)
         if (!usuarioAutenticado || usuarioAutenticado.role !== 'ADMIN') {
@@ -60,7 +59,6 @@ export async function PUT(request, { params }) {
 
 // DELETE — eliminar un profesor (solo ADMIN)
 export async function DELETE(request, { params }) {
-    await headers();
     try {
         const usuario = obtenerUsuarioDePeticion(request)
         if (!usuario || usuario.role !== 'ADMIN') {

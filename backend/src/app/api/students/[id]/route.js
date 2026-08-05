@@ -6,7 +6,6 @@ import { obtenerUsuarioDePeticion } from '@/lib/auth'
 
 // PUT — actualizar datos de un estudiante
 export async function PUT(request, { params }) {
-    await headers();
     try {
         const usuario = obtenerUsuarioDePeticion(request)
         if (!usuario) return Response.json({ error: 'No autorizado' }, { status: 401 })
@@ -54,7 +53,6 @@ export async function PUT(request, { params }) {
 
 // DELETE — eliminar o desconectar un estudiante de un curso
 export async function DELETE(request, { params }) {
-    await headers();
     try {
         const usuario = obtenerUsuarioDePeticion(request)
         if (!usuario) return Response.json({ error: 'No autorizado' }, { status: 401 })

@@ -30,7 +30,6 @@ function construirFiltro({ nombreMateria, codigo, grupo, docenteId, anio, period
 // GET - listar u obtener asistencia según parámetros
 
 export async function GET(request) {
-    await headers();
     try {
         // Verificar autenticación
         const usuario = obtenerUsuarioDePeticion(request)
@@ -114,7 +113,6 @@ export async function GET(request) {
 // POST - guardar asistencia de una clase
 
 export async function POST(request) {
-    await headers();
     try {
         // Verificar autenticación
         const usuario = obtenerUsuarioDePeticion(request)

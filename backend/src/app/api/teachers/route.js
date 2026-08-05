@@ -7,7 +7,6 @@ import { obtenerUsuarioDePeticion } from '@/lib/auth'
 
 // GET — listar profesores (ADMIN: todos, TEACHER: solo él mismo)
 export async function GET(request) {
-    await headers();
     try {
         const usuario = obtenerUsuarioDePeticion(request)
         if (!usuario) {
@@ -30,7 +29,6 @@ export async function GET(request) {
 
 // POST — crear un profesor (solo ADMIN)
 export async function POST(request) {
-    await headers();
     try {
         const usuario = obtenerUsuarioDePeticion(request)
         if (!usuario || usuario.role !== 'ADMIN') {

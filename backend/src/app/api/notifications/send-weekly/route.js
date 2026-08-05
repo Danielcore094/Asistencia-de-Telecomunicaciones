@@ -10,7 +10,6 @@ import prisma from '@/lib/prisma';
  * Solo accesible por usuarios con rol ADMIN.
  */
 export async function POST(request) {
-    await headers();
     const usuario = obtenerUsuarioDePeticion(request);
     if (!usuario) {
         return Response.json({ error: 'No autorizado' }, { status: 401 });
@@ -47,7 +46,6 @@ export async function POST(request) {
  * Devuelve el estado del servicio y el historial reciente de notificaciones.
  */
 export async function GET(request) {
-    await headers();
     const usuario = obtenerUsuarioDePeticion(request);
     if (!usuario) {
         return Response.json({ error: 'No autorizado' }, { status: 401 });

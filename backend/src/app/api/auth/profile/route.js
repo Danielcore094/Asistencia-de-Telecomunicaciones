@@ -8,7 +8,6 @@ import prisma from '@/lib/prisma';
 const SECRETO = process.env.JWT_SECRET || 'telecom_secret_key_2024';
 
 export async function PUT(request) {
-    await headers();
     try {
         const encabezadoAuth = request.headers.get('authorization');
         if (!encabezadoAuth || !encabezadoAuth.startsWith('Bearer ')) {

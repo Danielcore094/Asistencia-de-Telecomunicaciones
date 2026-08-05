@@ -8,7 +8,6 @@ import { getLunesSemana } from '@/lib/dateUtils'
 //             startDate?, endDate?
 // Requiere al menos: courseId | docenteId | modalidad
 export async function GET(request) {
-    await headers();
     try {
         const sp          = new URL(request.url).searchParams
         const courseId    = sp.get('courseId')   || null

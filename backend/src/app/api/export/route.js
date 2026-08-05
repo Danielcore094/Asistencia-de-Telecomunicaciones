@@ -4,7 +4,6 @@ import prisma from '@/lib/prisma'
 
 // GET — exportar asistencia completa en formato CSV
 export async function GET(request) {
-    await headers();
     try {
         const asistencias = await prisma.asistencia.findMany({
             include: { student: true },

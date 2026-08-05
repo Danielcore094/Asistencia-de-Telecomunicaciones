@@ -5,7 +5,6 @@ import prisma from '@/lib/prisma'
 import { obtenerUsuarioDePeticion } from '@/lib/auth'
 
 export async function PUT(request, { params }) {
-    await headers();
     try {
         const usuario = obtenerUsuarioDePeticion(request)
         if (!usuario) return Response.json({ error: 'No autorizado' }, { status: 401 })
@@ -59,7 +58,6 @@ export async function PUT(request, { params }) {
 }
 
 export async function DELETE(request, { params }) {
-    await headers();
     try {
         const usuario = obtenerUsuarioDePeticion(request)
         if (!usuario) return Response.json({ error: 'No autorizado' }, { status: 401 })

@@ -41,7 +41,6 @@ const hayCruce = (c1, c2) => {
 // GET - obtener lista de estudiantes de un curso con filtros opcionales
 
 export async function GET(request) {
-    await headers();
     try {
         // Verificar autenticación
         const usuario = obtenerUsuarioDePeticion(request)
@@ -94,7 +93,6 @@ export async function GET(request) {
 // POST - crear uno o múltiples estudiantes (importación CSV)
 
 export async function POST(request) {
-    await headers();
     try {
         // Verificar autenticación
         const usuario = obtenerUsuarioDePeticion(request)

@@ -9,7 +9,6 @@ import prisma from '@/lib/prisma';
  * Solo accesible por ADMIN.
  */
 export async function GET(request) {
-    await headers();
     const usuario = obtenerUsuarioDePeticion(request);
     if (!usuario) {
         return Response.json({ error: 'No autorizado' }, { status: 401 });
