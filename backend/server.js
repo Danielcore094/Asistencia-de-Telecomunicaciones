@@ -19,6 +19,12 @@ let runWeeklyNotification;
 
 const dev = process.env.NODE_ENV !== 'production';
 const PORT = parseInt(process.env.PORT || '4000', 10);
+const ejecutarCron = process.env.EJECUTAR_CRON === 'true';
+
+if (!dev && (!process.env.JWT_SECRET || !process.env.CORS_ALLOWED_ORIGINS || !process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN)) {
+    console.error('[server] JWT_SECRET, CORS_ALLOWED_ORIGINS y las credenciales Redis son obligatorios en producción');
+    process.exit(1);
+}
 
 const app = next({ dev, dir: '.' });
 const handle = app.getRequestHandler();
@@ -28,22 +34,23 @@ app.prepare().then(async () => {
     const jobModule = await import('./src/jobs/weeklyAbsenceNotification.js');
     runWeeklyNotification = jobModule.runWeeklyNotification;
 
-    // ─── Configurar node-cron ────────────────────────────────────────────
-    // TEST: dispara a las 18:30 de hoy (miércoles) — luego volver a '0 9 * * 0'
-    cron.schedule('58 18 * * 3', async () => {
-        console.log('\n[cron] ⏰ Tarea de prueba ejecutada - Miércoles 18:58');
-        try {
-            await runWeeklyNotification();
-        } catch (err) {
-            console.error('[cron] Error en tarea programada:', err.message);
-        }
-    }, {
-        scheduled: true,
-        timezone: 'America/Bogota', // Zona horaria Colombia (UTC-5)
-    });
+    if (ejecutarCron) {
+        cron.schedule('0 9 * * 0', async () => {
+            console.log('\n[cron] Tarea semanal ejecutada - Domingo 09:00');
+            try {
+                await runWeeklyNotification();
+            } catch (err) {
+                console.error('[cron] Error en tarea programada:', err.message);
+            }
+        }, {
+            scheduled: true,
+            timezone: 'America/Bogota',
+        });
 
-    console.log('[server] ✅ Cron configurado: Domingos a las 09:00 AM (America/Bogota)');
-    // ─────────────────────────────────────────────────────────────────────
+        console.log('[server] Cron configurado: Domingos a las 09:00 AM (America/Bogota)');
+    } else {
+        console.log('[server] Cron deshabilitado en esta instancia');
+    }
 
     // Crear servidor HTTP
     createServer((req, res) => {
@@ -54,7 +61,7 @@ app.prepare().then(async () => {
             console.error('[server] Error al iniciar:', err);
             process.exit(1);
         }
-        console.log(`[server] ✅ Servidor corriendo en http://localhost:${PORT}`);
+        console.log(`[server] Servidor corriendo en http://localhost:${PORT}`);
         console.log(`[server] Modo: ${dev ? 'desarrollo' : 'producción'}`);
     });
 });

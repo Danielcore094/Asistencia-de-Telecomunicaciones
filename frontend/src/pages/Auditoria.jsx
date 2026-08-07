@@ -27,7 +27,7 @@ const Auditoria = () => {
     const obtenerLogs = async () => {
         try {
             setCargando(true);
-            const res = await api.get(`/audit?limit=${limite}&offset=${pagina * limite}`);
+            const res = await api.get(`/auditoria?limit=${limite}&offset=${pagina * limite}`);
             setRegistros(res.data.logs);
             setTotal(res.data.total);
         } catch (error) {

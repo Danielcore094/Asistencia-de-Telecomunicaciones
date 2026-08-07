@@ -41,7 +41,7 @@ export default function Perfil() {
                 newPassword: nuevaPassword || undefined
             };
 
-            const respuesta = await api.put('/auth/profile', payload);
+            const respuesta = await api.put('/autenticacion/perfil', payload);
 
             if (respuesta.data.success) {
                 setMensaje({ tipo: 'exito', texto: 'Perfil actualizado correctamente.' });

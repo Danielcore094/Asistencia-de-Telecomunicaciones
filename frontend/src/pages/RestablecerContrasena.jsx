@@ -35,7 +35,7 @@ export default function RestablecerContrasena() {
 
         setCargando(true);
         try {
-            await api.post('/auth/reset-password', { token, newPassword: nuevaContrasena });
+            await api.post('/autenticacion/restablecer-contrasena', { token, newPassword: nuevaContrasena });
             setExito(true);
             setTimeout(() => {
                 navegar('/login');

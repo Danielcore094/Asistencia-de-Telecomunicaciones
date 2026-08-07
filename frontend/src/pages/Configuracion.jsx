@@ -44,7 +44,7 @@ export default function Configuracion() {
     useEffect(() => {
         const cargarDocentes = async () => {
             try {
-                const respuesta = await api.get('/teachers').then((r) => r.data);
+                const respuesta = await api.get('/docentes').then((r) => r.data);
                 const listaDocentes = Array.isArray(respuesta)
                     ? respuesta
                     : Array.isArray(respuesta?.teachers)
@@ -67,7 +67,7 @@ export default function Configuracion() {
                 const estado = await obtenerEstadoNotificaciones();
                 setEstadoCron(estado);
             } catch (_) {
-                // silencioso — el cron puede no estar disponible en dev
+                // Silencioso: el cron puede no estar disponible en desarrollo.
             }
         };
 
@@ -81,13 +81,13 @@ export default function Configuracion() {
         try {
             if (editandoId) {
                 const payload = modoCambioContrasena ? { password: formulario.password } : formulario;
-                const res = await api.put(`/teachers/${editandoId}`, payload);
+                const res = await api.put(`/docentes/${editandoId}`, payload);
                 setDocentes(prev => prev.map(p => p.id === editandoId ? res.data : p));
                 toast.success(modoCambioContrasena ? 'Contraseña actualizada exitosamente' : 'Usuario actualizado exitosamente');
                 cancelarEdicion();
             } else {
                 // Crear nuevo usuario
-                const nuevoProfesor = await api.post('/teachers', formulario).then(r => r.data);
+                const nuevoProfesor = await api.post('/docentes', formulario).then(r => r.data);
                 setDocentes(prev => [...prev, nuevoProfesor]);
                 setFormulario({ documento: '', name: '', email: '', password: '', role: 'TEACHER' });
                 setModalFormularioVisible(false);
@@ -106,7 +106,7 @@ export default function Configuracion() {
             documento: docente.id,
             name: docente.name,
             email: docente.email,
-            password: '', // Password opcional en edición
+            password: '', // La contraseña es opcional durante la edición.
             role: docente.role === 'DOCENTE' || docente.role === 'TEACHER' ? 'TEACHER' : docente.role
         });
         setModoCambioContrasena(false);
@@ -141,7 +141,7 @@ export default function Configuracion() {
         if (!confirm(`¿Eliminar al usuario "${nombre}"? Esta acción no se puede deshacer.`)) return;
         setEliminandoId(id);
         try {
-            await api.delete(`/teachers/${id}`);
+            await api.delete(`/docentes/${id}`);
             setDocentes(prev => prev.filter(p => p.id !== id));
             toast.success('Usuario eliminado');
         } catch {
@@ -244,7 +244,7 @@ export default function Configuracion() {
                                 Envía correos automáticos a estudiantes con inasistencias registradas durante la semana actual (lunes a sábado).
                                 El sistema evita duplicados: si ya fue notificado esta semana, no se reenvía.
                             </p>
-                            {/* Info del cron automático */}
+                            {/* Información del cron automático */}
                             <div className="mt-3 flex flex-wrap gap-4 text-xs">
                                 <span className="flex items-center gap-1.5" style={{ color: 'var(--color-accent)' }}>
                                     <span className="inline-block w-2 h-2 rounded-full" style={{ background: 'var(--color-accent)' }} />

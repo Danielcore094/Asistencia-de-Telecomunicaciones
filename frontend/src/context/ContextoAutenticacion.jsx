@@ -12,7 +12,7 @@ export function ProveedorAutenticacion({ children }) {
         // Verificar sesión activa al montar
         const token = localStorage.getItem('token');
         if (token) {
-            api.get('/auth/me')
+            api.get('/autenticacion/yo')
                 .then(res => setUsuario(res.data))
                 .catch(() => { localStorage.removeItem('token'); })
                 .finally(() => setCargando(false));

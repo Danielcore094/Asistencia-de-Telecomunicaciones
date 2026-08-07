@@ -17,7 +17,7 @@ export default function RecuperarContrasena() {
         setCargando(true);
         try {
             // El endpoint que hemos creado en backend
-            await api.post('/auth/forgot-password', { email: correo });
+            await api.post('/autenticacion/recuperar-contrasena', { email: correo });
             setExito(true);
         } catch (err) {
             setError(err.response?.data?.error || 'Error al enviar el correo. Intenta de nuevo.');

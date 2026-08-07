@@ -298,10 +298,10 @@ Cada vista debe seguir esta estructura de encabezado:
 | Ruta              | Vista                              |
 |-------------------|------------------------------------|
 | `/`               | Dashboard — resumen y estadísticas |
-| `/attendance`     | Registro de asistencia del día     |
-| `/students`       | Listado de estudiantes             |
-| `/courses`        | Materias y horarios                |
-| `/reports`        | Reportes y exportación             |
+| `/asistencia`     | Registro de asistencia del día     |
+| `/estudiantes`    | Listado de estudiantes             |
+| `/materias`       | Materias y horarios                |
+| `/reportes`       | Reportes y exportación             |
 | `/settings`       | Configuración general              |
 
 ---

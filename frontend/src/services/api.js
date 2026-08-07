@@ -1,41 +1,41 @@
 import axios from 'axios';
 
 // Cliente HTTP base con la URL del backend
-const api = axios.create({
+const clienteApi = axios.create({
     baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4000/api',
 });
 
 // Interceptor de petición: agrega el token JWT si existe
-api.interceptors.request.use(config => {
+clienteApi.interceptors.request.use(configuracion => {
     const token = localStorage.getItem('token');
     if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+        configuracion.headers.Authorization = `Bearer ${token}`;
     }
-    return config;
+    return configuracion;
 });
 
 // Interceptor de respuesta: manejo centralizado de errores
-api.interceptors.response.use(
-    res => res,
-    err => {
-        const status = err.response?.status;
+clienteApi.interceptors.response.use(
+    respuesta => respuesta,
+    error => {
+        const estado = error.response?.status;
         
-        // 401: Token expirado o inválido -> Login
-        if (status === 401 && err.config?.url !== '/auth/login') {
+        // 401: token expirado o inválido; redirigir al inicio de sesión.
+        if (estado === 401 && error.config?.url !== '/autenticacion/iniciar-sesion') {
             localStorage.clear(); // Limpiar todo el estado
             window.location.href = '/login';
         }
         
-        // 403: Prohibido (acceso a materia ajena) -> Log para debugging pero dejar que el componente lo maneje
-        if (status === 403) {
-            console.error('[API] Acceso denegado:', err.config.url);
+        // 403: registrar acceso denegado y permitir que el componente lo gestione.
+        if (estado === 403) {
+            console.error('[API] Acceso denegado:', error.config.url);
         }
 
-        return Promise.reject(err);
+        return Promise.reject(error);
     }
 );
 
-// Helpers
+// Funciones auxiliares
 
 /**
  * Construye el objeto de query params para filtros opcionales.
@@ -45,27 +45,27 @@ api.interceptors.response.use(
  * Filtros locales (Historial): anio, periodo, modalidad, docenteIdLocal
  */
 function filtrosGlobales({ cursoId, codigo, grupo, docenteId, anio, periodo, modalidad, docenteIdLocal } = {}) {
-    const params = {};
-    if (cursoId)       params.cursoId       = cursoId;
-    if (codigo)        params.codigo        = codigo;
-    if (grupo)         params.grupo         = grupo;
-    if (docenteId)     params.docenteId     = docenteId;
-    if (anio)          params.anio          = anio;
-    if (periodo)       params.periodo       = periodo;
-    if (modalidad)     params.modalidad     = modalidad;
-    // docenteIdLocal overrides docenteId when set (used in Historial local filter)
-    if (docenteIdLocal) params.docenteId   = docenteIdLocal;
-    return params;
+    const parametros = {};
+    if (cursoId)       parametros.cursoId       = cursoId;
+    if (codigo)        parametros.codigo        = codigo;
+    if (grupo)         parametros.grupo         = grupo;
+    if (docenteId)     parametros.docenteId     = docenteId;
+    if (anio)          parametros.anio          = anio;
+    if (periodo)       parametros.periodo       = periodo;
+    if (modalidad)     parametros.modalidad     = modalidad;
+    // El filtro local de docente tiene prioridad cuando está definido.
+    if (docenteIdLocal) parametros.docenteId   = docenteIdLocal;
+    return parametros;
 }
 
 
 // Cursos
 
 export const obtenerCursos   = (docenteId) => 
-    api.get('/courses', { params: docenteId ? { docenteId } : {} }).then(res => res.data);
-export const crearCurso      = (datos)    => api.post('/courses', datos).then(res => res.data);
-export const actualizarCurso = (id, datos)=> api.put(`/courses/${id}`, datos).then(res => res.data);
-export const eliminarCurso   = (id)       => api.delete(`/courses/${id}`).then(res => res.data);
+    clienteApi.get('/materias', { params: docenteId ? { docenteId } : {} }).then(respuesta => respuesta.data);
+export const crearCurso      = (datos)    => clienteApi.post('/materias', datos).then(respuesta => respuesta.data);
+export const actualizarCurso = (id, datos)=> clienteApi.put(`/materias/${id}`, datos).then(respuesta => respuesta.data);
+export const eliminarCurso   = (id)       => clienteApi.delete(`/materias/${id}`).then(respuesta => respuesta.data);
 
 // Estudiantes
 
@@ -74,21 +74,21 @@ export const eliminarCurso   = (id)       => api.delete(`/courses/${id}`).then(r
  * @param {object} filtros   - { codigo, grupo, docenteId } opcionales
  */
 export const obtenerEstudiantes = (idCurso, filtros = {}) =>
-    api.get('/students', {
+    clienteApi.get('/estudiantes', {
         params: {
             courseId: idCurso,
             ...filtrosGlobales({ ...filtros }),
         },
-    }).then(res => res.data);
+    }).then(respuesta => respuesta.data);
 
 export const crearEstudiante    = (idCurso, datos) =>
-    api.post('/students', datos, { params: { courseId: idCurso } }).then(res => res.data);
+    clienteApi.post('/estudiantes', datos, { params: { courseId: idCurso } }).then(respuesta => respuesta.data);
 
 export const actualizarEstudiante = (id, datos) =>
-    api.put(`/students/${id}`, datos).then(res => res.data);
+    clienteApi.put(`/estudiantes/${id}`, datos).then(respuesta => respuesta.data);
 
 export const eliminarEstudiante = (idCurso, id) =>
-    api.delete(`/students/${id}`, { params: { courseId: idCurso } }).then(res => res.data);
+    clienteApi.delete(`/estudiantes/${id}`, { params: { courseId: idCurso } }).then(respuesta => respuesta.data);
 
 // Asistencia
 
@@ -103,11 +103,11 @@ export const obtenerAsistencia = (idCurso, fecha, filtros = {}) => {
         ...(fecha && { date: fecha }),
         ...filtrosGlobales({ ...filtros }),
     };
-    return api.get('/attendance', { params }).then(res => res.data);
+    return clienteApi.get('/asistencia', { params }).then(respuesta => respuesta.data);
 };
 
 export const guardarAsistencia = (datos) =>
-    api.post('/attendance', datos).then(res => res.data);
+    clienteApi.post('/asistencia', datos).then(respuesta => respuesta.data);
 
 // Reportes
 
@@ -117,41 +117,41 @@ export const guardarAsistencia = (datos) =>
  * @param {object} filtros   - { codigo, grupo, docenteId } opcionales
  */
 export const obtenerReportes = (idCurso, params = {}, filtros = {}) =>
-    api.get('/reports', {
+    clienteApi.get('/reportes', {
         params: {
             ...(idCurso ? { courseId: idCurso } : {}),
             ...params,
             ...filtrosGlobales({ ...filtros }),
         },
-    }).then(res => res.data);
+    }).then(respuesta => respuesta.data);
 
 /**
  * Obtiene la data detallada para exportar a Excel.
  */
 export const obtenerDataExportacion = (idCurso, params = {}, filtros = {}, options = {}) =>
-    api.get('/reports/export', {
+    clienteApi.get('/reportes/exportar', {
         params: {
             ...(idCurso ? { courseId: idCurso } : {}),
             ...params,
             ...filtrosGlobales({ ...filtros }),
         },
         ...options,
-    }).then(res => res.data);
+    }).then(respuesta => respuesta.data);
 
 /**
  * Reporte semanal agregado (Chart A + B).
  * @param {object} params - Cualquier combinación de courseId, docenteId, modalidad,
  *                          periodo, anio, startDate, endDate, etc.
  */
-export const obtenerReportesSemanal = (params = {}) =>
-    api.get('/reports/semanal', { params }).then(res => res.data);
+export const obtenerReportesSemanal = (parametros = {}) =>
+    clienteApi.get('/reportes/semanal', { params: parametros }).then(respuesta => respuesta.data);
 
 // Docentes
 
 export const obtenerDocentes = () =>
-    api.get('/teachers').then(res => res.data.filter(u => {
-        const role = String(u.role).toUpperCase();
-        return role === 'TEACHER' || role === 'DOCENTE';
+    clienteApi.get('/docentes').then(respuesta => respuesta.data.filter(docente => {
+        const rol = String(docente.role).toUpperCase();
+        return rol === 'TEACHER' || rol === 'DOCENTE';
     }));
 
 /**
@@ -159,18 +159,18 @@ export const obtenerDocentes = () =>
  * @param {string} [docenteId] - Opcional: filtrar por docente
  */
 export const obtenerAsistenciaHoyPorCurso = (docenteId) =>
-    api.get('/attendance/hoy', { params: docenteId ? { docenteId } : {} })
-        .then(res => Array.isArray(res.data?.cursos) ? res.data.cursos : []);
+    clienteApi.get('/asistencia/hoy', { params: docenteId ? { docenteId } : {} })
+        .then(respuesta => Array.isArray(respuesta.data?.cursos) ? respuesta.data.cursos : []);
 
 // Notificaciones
 
 export const enviarNotificacionesSemanal = () =>
-    api.post('/notifications/send-weekly').then(res => res.data);
+    clienteApi.post('/notificaciones/enviar-semanal').then(respuesta => respuesta.data);
 
 export const obtenerEstadoNotificaciones = () =>
-    api.get('/notifications/send-weekly').then(res => res.data);
+    clienteApi.get('/notificaciones/enviar-semanal').then(respuesta => respuesta.data);
 
 export const obtenerEstadoWhatsApp = (limite = 50) =>
-    api.get('/notifications/whatsapp-status', { params: { limite } }).then(res => res.data);
+    clienteApi.get('/notificaciones/estado-whatsapp', { params: { limite } }).then(respuesta => respuesta.data);
 
-export default api;
+export default clienteApi;

@@ -335,7 +335,7 @@ export default function Reportes() {
                 setSeriesNombres(series.map((s) => s.nombre));
                 setDatosLineChart(mergeSemanales(series));
 
-                // Chart B: always the selected course (base)
+                // Gráfico B: siempre usa la materia seleccionada como base.
                 const base = modoGrupo === 'materia' && series[0]
                     ? series[0].semanas
                     : (cursoSeleccionado
@@ -429,7 +429,7 @@ export default function Reportes() {
 
             if (exportarBackend) {
                 const params = { teacherId };
-                const response = await api.get('/reports/download', {
+                const response = await api.get('/reportes/descargar', {
                     params,
                     responseType: 'blob',
                 });
@@ -623,7 +623,7 @@ export default function Reportes() {
             // Registrar un único log de auditoría con las materias exportadas
             try {
                 const courseNames = cursosExportar.map(c => c.name || c.nombre || c.code || c.id);
-                await api.post('/audit/log', {
+                await api.post('/auditoria/registro', {
                     action: 'EXPORTAR_REPORTE',
                     target: 'REPORT',
                     details: {

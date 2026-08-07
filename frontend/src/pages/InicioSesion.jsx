@@ -19,7 +19,7 @@ export default function InicioSesion() {
         setMostrarOlvido(false);
         setCargando(true);
         try {
-            const res = await api.post('/auth/login', { email: correo, password: contrasena });
+            const res = await api.post('/autenticacion/iniciar-sesion', { email: correo, password: contrasena });
             iniciarSesion(res.data.token, res.data.teacher);
             navegar('/');
         } catch (err) {

@@ -21,7 +21,7 @@ export default function Docentes() {
 
     const obtenerProfesores = async () => {
         try {
-            const datos = await api.get('/teachers').then(r => r.data);
+            const datos = await api.get('/docentes').then(r => r.data);
             setProfesores(datos);
         } catch {
             toast.error('Error al cargar profesores');
@@ -37,7 +37,7 @@ export default function Docentes() {
         const toastId = toast.loading('Procesando envío de correos...');
 
         try {
-            const res = await api.post('/notifications/send-weekly');
+            const res = await api.post('/notificaciones/enviar-semanal');
             const { results } = res.data;
             toast.success(
                 `Proceso completado: ${results.sent} enviados, ${results.skipped} omitidos.`,
@@ -59,13 +59,13 @@ export default function Docentes() {
         try {
             if (editandoId) {
                 // Actualizar docente existente
-                const res = await api.put(`/teachers/${editandoId}`, formulario);
+                const res = await api.put(`/docentes/${editandoId}`, formulario);
                 setProfesores(prev => prev.map(p => p.id === editandoId ? res.data : p));
                 toast.success('Docente actualizado correctamente');
                 cancelarEdicion();
             } else {
                 // Crear nuevo docente
-                const nuevoProfesor = await api.post('/teachers', formulario).then(r => r.data);
+                const nuevoProfesor = await api.post('/docentes', formulario).then(r => r.data);
                 setProfesores(prev => [...prev, nuevoProfesor]);
                 setFormulario({ documento: '', nombre: '', correo: '', password: '', role: 'TEACHER' });
                 toast.success('Docente creado correctamente');
@@ -102,7 +102,7 @@ export default function Docentes() {
         if (!confirm(`¿Eliminar al docente "${nombre}"? Esta acción no se puede deshacer.`)) return;
         setEliminandoId(id);
         try {
-            await api.delete(`/teachers/${id}`);
+            await api.delete(`/docentes/${id}`);
             setProfesores(prev => prev.filter(p => p.id !== id));
             toast.success('Docente eliminado');
         } catch {

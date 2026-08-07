@@ -1,25 +1,39 @@
-FROM node:20-alpine
+FROM node:20-alpine AS dependencias
 
 WORKDIR /app
 
-# Archivos de configuración
 COPY package*.json ./
 COPY prisma ./prisma/
 
-# Instalar dependencias
-RUN npm install
+RUN npm ci
 
-# Copiar resto del código
+FROM node:20-alpine AS compilacion
+
+WORKDIR /app
+
+COPY --from=dependencias /app/node_modules ./node_modules
 COPY . .
 
-# Generar cliente prisma
-RUN npx prisma generate
+RUN npx prisma generate && npm run build && npm prune --omit=dev
 
-# Construir Next.js
-RUN npm run build
+FROM node:20-alpine AS produccion
 
-# Puerto para Next.js
-EXPOSE 3001
+WORKDIR /app
 
-# Comando de inicio
+ENV NODE_ENV=production
+ENV PORT=4000
+
+COPY --from=compilacion --chown=node:node /app/package*.json ./
+COPY --from=compilacion --chown=node:node /app/node_modules ./node_modules
+COPY --from=compilacion --chown=node:node /app/.next ./.next
+COPY --from=compilacion --chown=node:node /app/prisma ./prisma
+COPY --from=compilacion --chown=node:node /app/server.js ./server.js
+COPY --from=compilacion --chown=node:node /app/src ./src
+
+USER node
+
+EXPOSE 4000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 CMD node -e "fetch('http://127.0.0.1:4000/api/salud').then((respuesta) => process.exit(respuesta.ok ? 0 : 1)).catch(() => process.exit(1))"
+
 CMD ["npm", "start"]

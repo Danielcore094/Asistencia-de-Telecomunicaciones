@@ -9,6 +9,24 @@ Aplicación para registrar asistencia, administrar cursos y estudiantes, generar
 - `backend/src/jobs/`: trabajos de notificación semanal y de ausencias por WhatsApp.
 - `docker-compose.yml`: servicios locales de PostgreSQL y Evolution API.
 
+## Rutas de API
+
+La API usa rutas en español bajo el prefijo `/api`:
+
+| Recurso | Ruta |
+| --- | --- |
+| Autenticación | `/api/autenticacion` |
+| Materias | `/api/materias` |
+| Estudiantes | `/api/estudiantes` |
+| Docentes | `/api/docentes` |
+| Asistencia | `/api/asistencia` |
+| Reportes | `/api/reportes` |
+| Auditoría | `/api/auditoria` |
+| Notificaciones | `/api/notificaciones` |
+| Salud | `/api/salud` |
+
+Las rutas anteriores en inglés, como `/api/courses`, `/api/auth` y `/api/reports`, fueron retiradas y responden `404`.
+
 ## Requisitos
 
 - Node.js 20 o superior.
@@ -23,15 +41,32 @@ Aplicación para registrar asistencia, administrar cursos y estudiantes, generar
 npm install
 ```
 
-2. Crea `backend/.env` desde `backend/.env.example` y define, como mínimo, `DATABASE_URL`, `DIRECT_URL` y `JWT_SECRET`.
+2. Si usarás los servicios locales de Docker, crea `.env` desde `.env.example`, reemplaza sus valores y arranca PostgreSQL y Evolution API:
 
-3. Crea `frontend/.env` desde `frontend/.env.example`. Para desarrollo local usa:
+```bash
+docker compose up -d
+```
+
+Los puertos `5432` y `5000` quedan asociados únicamente a `127.0.0.1`; no quedan accesibles desde otros equipos de la red. Redis de Evolution API no publica ningún puerto: persiste las sesiones en un volumen local y Evolution se reconecta automáticamente sin eliminar una instancia desconectada. No subas el archivo `.env` al repositorio.
+
+Para actualizar Evolution API de forma controlada, conserva los volúmenes y ejecuta:
+
+```bash
+docker compose pull evolution_api
+docker compose up -d evolution_api
+```
+
+Evita cerrar sesión o desvincular el dispositivo desde WhatsApp salvo que sea necesario. Si debes volver a vincularlo, realiza un único escaneo de QR y verifica primero el estado de la instancia antes de generar otro código.
+
+3. Crea `backend/.env` desde `backend/.env.example` y define, como mínimo, `DATABASE_URL`, `DIRECT_URL` y `JWT_SECRET`.
+
+4. Crea `frontend/.env` desde `frontend/.env.example`. Para desarrollo local usa:
 
 ```env
 VITE_API_URL=http://localhost:4000/api
 ```
 
-4. Genera el cliente Prisma y aplica las migraciones:
+5. Genera el cliente Prisma y aplica las migraciones:
 
 ```bash
 cd backend
@@ -39,7 +74,7 @@ npx prisma generate
 npx prisma migrate deploy
 ```
 
-5. Inicia ambos servicios desde la raíz:
+6. Inicia ambos servicios desde la raíz:
 
 ```bash
 npm run dev
@@ -87,3 +122,44 @@ Los artefactos de Actions son almacenamiento temporal. Descarga los respaldos pe
 ## Despliegue
 
 El `Dockerfile` del backend puede desplegarse en Railway, Render o una plataforma equivalente. Configura las variables de entorno del backend en el panel del proveedor; nunca publiques archivos `.env` ni credenciales en el repositorio.
+
+### Configuración de producción
+
+El backend no inicia en producción si faltan `JWT_SECRET` o `CORS_ALLOWED_ORIGINS`. Configura además `DATABASE_URL`, `DIRECT_URL`, `FRONTEND_URL` y las credenciales de correo y WhatsApp que correspondan. `CORS_ALLOWED_ORIGINS` contiene una lista separada por comas de orígenes exactos, por ejemplo:
+
+```env
+CORS_ALLOWED_ORIGINS=https://asistencia.institucion.edu.co
+FRONTEND_URL=https://asistencia.institucion.edu.co
+EJECUTAR_CRON=false
+```
+
+En desarrollo, si no se define `CORS_ALLOWED_ORIGINS`, se autoriza únicamente `http://localhost:3000`. El secreto JWT temporal de desarrollo solo evita bloquear el entorno local; configura siempre `JWT_SECRET` antes de desplegar.
+
+El límite de intentos de inicio de sesión usa memoria solo durante el desarrollo local. En producción son obligatorias `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN`, para que el límite sea compartido entre todas las réplicas del backend.
+
+El proxy o plataforma debe terminar TLS, redirigir HTTP a HTTPS y enviar `X-Forwarded-For` únicamente desde proxies confiables. La API expone `GET /api/salud`, que comprueba la conexión a PostgreSQL y sirve para health checks del proveedor.
+
+### Flujo de despliegue
+
+1. Ejecuta las migraciones una sola vez por versión antes de iniciar nuevas réplicas:
+
+```bash
+docker build --target compilacion --tag telecom-backend:migraciones backend
+docker run --rm --env-file backend/.env telecom-backend:migraciones npx prisma migrate deploy
+```
+
+2. Construye y publica la imagen de producción:
+
+```bash
+docker build --tag registro-asistencia-backend:VERSION backend
+```
+
+3. Inicia las réplicas web con `EJECUTAR_CRON=false`. Inicia exactamente una instancia dedicada con `EJECUTAR_CRON=true`; esta programa las notificaciones los domingos a las 09:00 en `America/Bogota`.
+4. Comprueba `/api/salud`, los errores de aplicación y la entrega de notificaciones antes de dirigir tráfico a la nueva versión. Conserva la imagen anterior para rollback.
+
+### Monitoreo y recuperación
+
+- Alerta por respuestas `5xx`, fallos de health check, errores de cron, respaldos fallidos y notificaciones no enviadas.
+- Centraliza logs con fecha, nivel y contexto; no almacenes contraseñas, tokens ni datos personales innecesarios.
+- Replica cada respaldo cifrado a almacenamiento institucional y realiza pruebas de restauración periódicas. Define formalmente el RPO y RTO institucionales.
+- El límite de inicio de sesión se almacena en Redis REST en producción; monitorea sus errores y configura alertas cuando el servicio no esté disponible.

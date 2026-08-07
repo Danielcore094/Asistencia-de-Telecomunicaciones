@@ -25,7 +25,7 @@ export const ProveedorCurso = ({ children }) => {
         return (guardado === 'null' || !guardado) ? null : guardado;
     });
 
-    // Persist secondary filters in localStorage
+    // Persistir filtros secundarios en el almacenamiento local.
     useEffect(() => {
         if (grupoSeleccionado !== null) {
             localStorage.setItem('selectedGroup', grupoSeleccionado);
