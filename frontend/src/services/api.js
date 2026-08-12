@@ -173,4 +173,10 @@ export const obtenerEstadoNotificaciones = () =>
 export const obtenerEstadoWhatsApp = (limite = 50) =>
     clienteApi.get('/notificaciones/estado-whatsapp', { params: { limite } }).then(respuesta => respuesta.data);
 
+export const descargarResumenSemestral = (params = {}) =>
+    clienteApi.get('/reportes/resumen-semestral', { params, responseType: 'blob' });
+
+export const obtenerCatalogoMaterias = () =>
+    clienteApi.get('/materias/catalogo').then(r => r.data);
+
 export default clienteApi;

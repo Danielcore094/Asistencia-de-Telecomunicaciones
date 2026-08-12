@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import api, { obtenerReportes, obtenerReportesSemanal, obtenerDocentes, obtenerDataExportacion, obtenerAsistencia, obtenerEstudiantes } from '../services/api';
+import api, { obtenerReportes, obtenerReportesSemanal, obtenerDocentes, obtenerDataExportacion, obtenerAsistencia, obtenerEstudiantes, descargarResumenSemestral } from '../services/api';
 import { Download, TrendingUp, LayoutGrid, PieChart as PieIcon, Users, Loader2 } from 'lucide-react';
 import * as xlsx from 'xlsx-js-style';
 import toast from 'react-hot-toast';
@@ -251,6 +251,7 @@ export default function Reportes() {
     const [cargandoSemanal, setCargandoSemanal] = useState(false);
     const [docentes, setDocentes] = useState([]);
     const [exportandoSemanal, setExportandoSemanal] = useState(false);
+    const [exportandoResumen, setExportandoResumen] = useState(false);
 
     const filtros = {
         codigo: codigoSeleccionado,
@@ -648,6 +649,36 @@ export default function Reportes() {
         }
     };
 
+    const exportarResumenSemestral = async () => {
+        setExportandoResumen(true);
+        try {
+            const params = {};
+            // Usar año/período del primer curso disponible si hay filtros activos
+            if (cursoSeleccionado?.academicYear)   params.anio    = cursoSeleccionado.academicYear;
+            if (cursoSeleccionado?.academicPeriod) params.periodo = cursoSeleccionado.academicPeriod;
+
+            const respuesta = await descargarResumenSemestral(params);
+            const contentDisposition = respuesta.headers['content-disposition'] || '';
+            const match = /filename="?([^";]+)"?/.exec(contentDisposition);
+            const nombreArchivo = match ? match[1] : `Resumen_Semestral_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+            const blob = new Blob([respuesta.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const url  = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href     = url;
+            link.download = nombreArchivo;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            toast.success('Resumen semestral descargado correctamente');
+        } catch (error) {
+            const mensaje = error?.response?.data?.error || error?.message || 'Error desconocido';
+            toast.error('Error al descargar resumen: ' + mensaje);
+        } finally {
+            setExportandoResumen(false);
+        }
+    };
 
 
     return (
@@ -703,8 +734,19 @@ export default function Reportes() {
                                 disabled={(datos.length === 0 && cursoSeleccionado) || exportando || (!cursoSeleccionado && cursos.length === 0)}
                                 className="boton-primario inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed min-w-[140px]"
                             >
-                                {exportando ? <Loader2 size={15} className="animate-spin" aria-label="Exportando" /> : <Download size={15} aria-label="Descargar reporte" />}
-                                {exportando ? 'Generando...' : esDocente ? 'Descargar reporte' : 'Exportar Excel'}
+                                {exportando ? <Loader2 size={15} className="animate-spin" aria-label="Exportando" /> : <Download size={15} aria-label="Descargar reporte detallado" />}
+                                {exportando ? 'Generando...' : esDocente ? 'Descargar reporte' : 'Exportar detallado'}
+                            </button>
+                        )}
+                        {isAdmin && (
+                            <button
+                                type="button"
+                                onClick={exportarResumenSemestral}
+                                disabled={exportandoResumen}
+                                className="boton-secundario inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed min-w-[140px]"
+                            >
+                                {exportandoResumen ? <Loader2 size={15} className="animate-spin" aria-label="Generando resumen" /> : <Download size={15} aria-label="Descargar resumen semestral" />}
+                                {exportandoResumen ? 'Generando...' : 'Resumen semestral'}
                             </button>
                         )}
                     </div>

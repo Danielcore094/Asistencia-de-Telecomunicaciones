@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useCurso } from '../context/ContextoCurso';
-import { obtenerReportes, crearCurso, eliminarCurso, actualizarCurso } from '../services/api';
+import { obtenerReportes, crearCurso, eliminarCurso, actualizarCurso, obtenerCatalogoMaterias } from '../services/api';
 import { BookOpen, Trash2, Plus, Loader2, ChevronDown, Pencil, Download, Upload, X, CheckCircle2, AlertCircle, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAutenticacion } from '../context/ContextoAutenticacion';
@@ -13,6 +13,7 @@ export default function Materias() {
     const isAdmin = usuario?.role === 'ADMIN';
     const [estadisticasCursos, setEstadisticasCursos] = useState([]);
     const [cargandoEstadisticas, setCargandoEstadisticas] = useState(false);
+    const [catalogo, setCatalogo] = useState([]);
     const [formularioCurso, setFormularioCurso] = useState({ name: '', code: '', groupCode: '', academicPeriod: '1', academicYear: new Date().getFullYear().toString(), dia: '', horaInicio: '', horaFin: '', dia2: '', horaInicio2: '', horaFin2: '', franja: '', programa: '' });
     const [modalFormularioVisible, setModalFormularioVisible] = useState(false);
     const [mostrarSegundoDia, setMostrarSegundoDia] = useState(false);
@@ -43,6 +44,10 @@ export default function Materias() {
     const [filasImportCurso, setFilasImportCurso] = useState([]);
     const [modalImportCursoVisible, setModalImportCursoVisible] = useState(false);
     const inputArchivoCursoRef = useRef(null);
+
+    useEffect(() => {
+        obtenerCatalogoMaterias().then(setCatalogo).catch(() => setCatalogo([]));
+    }, []);
 
     useEffect(() => {
         const cargarEstadisticas = async () => {
@@ -459,26 +464,90 @@ export default function Materias() {
                         <div className="overflow-auto flex-1 px-6 py-4">
                             <form id="form-curso" onSubmit={manejarEnvioCurso} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 items-end">
                     <div>
+                        <label className="mb-1 block text-sm font-medium text-texto-secundario">Programa</label>
+                        <div className="relative">
+                            <select
+                                required
+                                className="campo pr-8 py-1.5 w-full appearance-none bg-white"
+                                value={formularioCurso.programa}
+                                onChange={(e) => setFormularioCurso({
+                                    ...formularioCurso,
+                                    programa: e.target.value,
+                                    name: '',
+                                    code: '',
+                                })}
+                            >
+                                <option value="">Seleccionar</option>
+                                {[...new Set(catalogo.map(m => m.programa))].sort().map(prog => (
+                                    <option key={prog} value={prog}>{prog}</option>
+                                ))}
+                            </select>
+                            <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-texto-secundario" />
+                        </div>
+                    </div>
+                    <div>
                         <label className="mb-1 block text-sm font-medium text-texto-secundario">Nombre de la materia</label>
-                        <input
-                            type="text"
-                            required
-                            placeholder="Ej. Matemáticas I"
-                            className="campo w-full"
-                            value={formularioCurso.name}
-                            onChange={(e) => setFormularioCurso({ ...formularioCurso, name: e.target.value })}
-                        />
+                        <div className="relative">
+                            <select
+                                className="campo pr-8 w-full appearance-none"
+                                value={formularioCurso.name}
+                                required
+                                disabled={!formularioCurso.programa}
+                                onChange={(e) => {
+                                    const seleccionada = catalogo.find(m => m.nombre === e.target.value);
+                                    setFormularioCurso({
+                                        ...formularioCurso,
+                                        name: e.target.value,
+                                        code: seleccionada ? seleccionada.codigo : '',
+                                    });
+                                }}
+                            >
+                                <option value="">{formularioCurso.programa ? 'Seleccionar materia...' : 'Primero seleccione un programa'}</option>
+                                {catalogo
+                                    .filter(m => m.programa === formularioCurso.programa)
+                                    .map(m => (
+                                        <option key={m.id} value={m.nombre}>
+                                            {m.semestre ? `S${m.semestre} — ` : ''}{m.nombre}
+                                        </option>
+                                    ))}
+                            </select>
+                            <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-texto-secundario" />
+                        </div>
                     </div>
                     <div>
                         <label className="mb-1 block text-sm font-medium text-texto-secundario">Código</label>
                         <input
                             type="text"
                             required
-                            placeholder="Ej. MAT-101"
+                            placeholder="Se completa al elegir materia"
                             className="campo w-full uppercase"
                             value={formularioCurso.code}
+                            readOnly={catalogo.some(m => m.nombre === formularioCurso.name)}
                             onChange={(e) => setFormularioCurso({ ...formularioCurso, code: e.target.value })}
                         />
+                    </div>
+                    <div>
+                        <label className="mb-1 block text-sm font-medium text-texto-secundario">Franja</label>
+                        <div className="relative">
+                            <select
+                                required
+                                className="campo pr-8 py-1.5 w-full appearance-none bg-white"
+                                value={formularioCurso.franja}
+                                onChange={(e) => setFormularioCurso({
+                                    ...formularioCurso,
+                                    franja: e.target.value,
+                                    horaInicio: '',
+                                    horaFin: '',
+                                    horaInicio2: '',
+                                    horaFin2: '',
+                                })}
+                            >
+                                <option value="">Seleccionar</option>
+                                <option value="Diurna">Diurna</option>
+                                <option value="Nocturna">Nocturna</option>
+                            </select>
+                            <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-texto-secundario" />
+                        </div>
                     </div>
                     <div>
                         <label className="mb-1 block text-sm font-medium text-texto-secundario">Grupo</label>
@@ -517,45 +586,6 @@ export default function Materias() {
                                     const year = (new Date().getFullYear() + i).toString();
                                     return <option key={year} value={year}>{year}</option>;
                                 })}
-                            </select>
-                            <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-texto-secundario" />
-                        </div>
-                    </div>
-                    <div>
-                        <label className="mb-1 block text-sm font-medium text-texto-secundario">Franja</label>
-                        <div className="relative">
-                            <select
-                                required
-                                className="campo pr-8 py-1.5 w-full appearance-none bg-white"
-                                value={formularioCurso.franja}
-                                onChange={(e) => setFormularioCurso({
-                                    ...formularioCurso,
-                                    franja: e.target.value,
-                                    horaInicio: '',
-                                    horaFin: '',
-                                    horaInicio2: '',
-                                    horaFin2: '',
-                                })}
-                            >
-                                <option value="">Seleccionar</option>
-                                <option value="Diurna">Diurna</option>
-                                <option value="Nocturna">Nocturna</option>
-                            </select>
-                            <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-texto-secundario" />
-                        </div>
-                    </div>
-                    <div>
-                        <label className="mb-1 block text-sm font-medium text-texto-secundario">Programa</label>
-                        <div className="relative">
-                            <select
-                                required
-                                className="campo pr-8 py-1.5 w-full appearance-none bg-white"
-                                value={formularioCurso.programa}
-                                onChange={(e) => setFormularioCurso({ ...formularioCurso, programa: e.target.value })}
-                            >
-                                <option value="">Seleccionar</option>
-                                <option value="Ingeniería de Telecomunicaciones">Ingeniería de Telecomunicaciones</option>
-                                <option value="Tecnología en Gestión de Sistemas de Telecomunicaciones">Tecnología en Gestión de Sistemas de Telecomunicaciones</option>
                             </select>
                             <ChevronDown size={14} className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-texto-secundario" />
                         </div>
@@ -721,7 +751,7 @@ export default function Materias() {
 
                                 <div className="flex items-start gap-2">
                                     <div className="periodo-badge" style={{ background: 'var(--color-accent)', color: 'white', borderColor: 'color-mix(in srgb, var(--color-accent) 90%, transparent)' }}>
-                                        <span className="periodo-badge__text">Periodo {curso.periodo} ({curso.anio})</span>
+                                        <span className="periodo-badge__text">P{curso.periodo}-{curso.anio}</span>
                                     </div>
                                 </div>
                             </div>

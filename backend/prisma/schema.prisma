@@ -124,3 +124,14 @@ model RegistroAuditoria {
 
   @@map("registro_auditoria")
 }
+
+model MateriaCatalogo {
+  id       String  @id @default(cuid()) @map("id")
+  codigo   String  @map("codigo")
+  nombre   String  @map("nombre")
+  programa String  @default("Ingenieria de Telecomunicaciones") @map("programa")
+  semestre Int?    @map("semestre")
+
+  @@unique([codigo, programa])
+  @@map("materias_catalogo")
+}
