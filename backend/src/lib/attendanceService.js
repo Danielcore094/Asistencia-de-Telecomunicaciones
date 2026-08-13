@@ -462,7 +462,7 @@ export async function createSemesterSummaryExcel({ anio, periodo } = {}) {
         orderBy: [{ name: 'asc' }, { groupCode: 'asc' }],
         include: {
             teacher:  { select: { name: true } },
-            students: { select: { documento: true } },
+            matriculas: { select: { estudianteId: true } },
         },
     });
 
@@ -557,7 +557,7 @@ export async function createSemesterSummaryExcel({ anio, periodo } = {}) {
     courses.forEach((curso, idx) => {
         const sRow = idx % 2 === 0 ? sNormal : sAlt;
         const sN   = idx % 2 === 0 ? sNum    : sNumAlt;
-        const matriculados = curso.students.length;
+        const matriculados = curso.matriculas.length;
         totalesMatri.total += matriculados;
 
         // Calcular APROBARON: estudiantes con >70% de asistencia en el semestre
@@ -638,8 +638,8 @@ export async function createSemesterSummaryExcel({ anio, periodo } = {}) {
     };
     const mergesEsp = [];
 
-    const programa = courses[0]?.students?.[0]
-        ? (await prisma.estudiante.findFirst({ where: { documento: courses[0].students[0].documento }, select: { programa: true } }))?.programa || ''
+    const programa = courses[0]?.matriculas?.[0]
+        ? (await prisma.estudiante.findFirst({ where: { documento: courses[0].matriculas[0].estudianteId }, select: { programa: true } }))?.programa || ''
         : '';
 
     addE(0, 0, programa || 'PROGRAMA ACADÉMICO', sTitulo);

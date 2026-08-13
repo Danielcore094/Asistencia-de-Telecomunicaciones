@@ -22,7 +22,7 @@ model Estudiante {
   attendances      Asistencia[]
   notificationLogs RegistroNotificacion[]
   whatsappLogs     RegistroNotificacionWhatsapp[]
-  courses          Curso[]                    @relation("CourseToStudent")
+  matriculas       CursoEstudiante[]
 
   @@map("estudiantes")
 }
@@ -47,10 +47,20 @@ model Curso {
   updatedAt       DateTime      @updatedAt @map("fecha_actualizacion")
   attendances     Asistencia[]
   teacher         Docente       @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  students        Estudiante[] @relation("CourseToStudent")
+  matriculas      CursoEstudiante[]
 
   @@unique([code, groupCode, academicPeriod, academicYear, teacherId])
   @@map("cursos")
+}
+
+model CursoEstudiante {
+  cursoId       String     @map("A")
+  estudianteId  String     @map("B")
+  curso         Curso      @relation(fields: [cursoId], references: [id], onDelete: Cascade)
+  estudiante    Estudiante @relation(fields: [estudianteId], references: [documento], onDelete: Cascade)
+
+  @@id([cursoId, estudianteId])
+  @@map("Curso_Estudiante")
 }
 
 model Asistencia {

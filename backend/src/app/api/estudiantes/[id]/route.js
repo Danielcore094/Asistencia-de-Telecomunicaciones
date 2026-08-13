@@ -68,23 +68,25 @@ export async function DELETE(request, { params }) {
         // Primero verificamos el estudiante y sus cursos
         const estudiante = await prisma.estudiante.findUnique({
             where: { documento: params.id },
-            include: { courses: true }
+            include: { matriculas: true }
         });
 
         if (!estudiante) {
             return Response.json({ error: 'Estudiante no encontrado' }, { status: 404 });
         }
 
-        if (estudiante.courses.length <= 1) {
+        if (estudiante.matriculas.length <= 1) {
             // Si solo tiene este curso, borramos el estudiante completo
             await prisma.estudiante.delete({ where: { documento: params.id } });
         } else {
             // Si tiene otros cursos, solo lo desconectamos de este curso
-            await prisma.estudiante.update({
-                where: { documento: params.id },
-                data: {
-                    courses: { disconnect: { id: idCurso } }
-                }
+            await prisma.cursoEstudiante.delete({
+                where: {
+                    cursoId_estudianteId: {
+                        cursoId: idCurso,
+                        estudianteId: params.id,
+                    },
+                },
             });
         }
 

@@ -38,6 +38,9 @@ const hayCruce = (c1, c2) => {
     return false;
 };
 
+const obtenerCursosMatriculados = (estudiante) =>
+    estudiante.matriculas.map((matricula) => matricula.curso);
+
 // GET - obtener lista de estudiantes de un curso con filtros opcionales
 
 export async function GET(request) {
@@ -64,8 +67,8 @@ export async function GET(request) {
             return Response.json({ error: acceso.error }, { status: acceso.status })
         }
 
-        // Condición WHERE base sobre Student (relación N:M con courses)
-        const where = { courses: { some: { id: idCurso } } }
+        // Condición base sobre las matrículas del estudiante.
+        const filtroMatricula = { cursoId: idCurso }
 
         // Filtros adicionales a través de la relación Course
         const filtroCurso = {}
@@ -73,9 +76,9 @@ export async function GET(request) {
         if (grupo)     filtroCurso.groupCode = grupo
         if (docenteId) filtroCurso.teacherId = docenteId
 
-        if (Object.keys(filtroCurso).length > 0) {
-            where.courses = { some: { ...where.courses.some, ...filtroCurso } }
-        }
+        if (Object.keys(filtroCurso).length > 0) filtroMatricula.curso = filtroCurso
+
+        const where = { matriculas: { some: filtroMatricula } }
 
         const estudiantes = await prisma.estudiante.findMany({
             where,
@@ -137,15 +140,16 @@ export async function POST(request) {
                 // Verificar si existe el estudiante con sus cursos actuales
                 const estudianteExistente = await prisma.estudiante.findUnique({
                     where: { documento: docLimpio },
-                    include: { courses: true }
+                    include: { matriculas: { include: { curso: true } } }
                 });
 
                 if (estudianteExistente) {
+                    const cursosMatriculados = obtenerCursosMatriculados(estudianteExistente)
                     // Verificar si ya está en la materia
-                    if (estudianteExistente.courses.some(c => c.id === curso.id)) continue;
+                    if (cursosMatriculados.some(c => c.id === curso.id)) continue;
 
                     // Verificar cruce de horarios
-                    for (const cActual of estudianteExistente.courses) {
+                    for (const cActual of cursosMatriculados) {
                         if (hayCruce(cActual, curso)) {
                             throw new Error(`Cruce de horarios para ${e.name} con la materia ${cActual.name}`);
                         }
@@ -158,7 +162,7 @@ export async function POST(request) {
                         name: limpiarTexto(e.name),
                         email: limpiarTexto(e.email),
                         whatsapp: limpiarTexto(e.whatsapp),
-                        courses: { connect: { id: curso.id } }
+                        matriculas: { create: { curso: { connect: { id: curso.id } } } }
                     },
                     create: {
                         documento: docLimpio,
@@ -167,7 +171,7 @@ export async function POST(request) {
                         whatsapp: limpiarTexto(e.whatsapp),
                         franja: franjaEstudiante,
                         programa: limpiarTexto(e.programa),
-                        courses: { connect: { id: curso.id } }
+                        matriculas: { create: { curso: { connect: { id: curso.id } } } }
                     }
                 });
                 count++;
@@ -193,17 +197,18 @@ export async function POST(request) {
 
         const estudianteExistente = await prisma.estudiante.findUnique({
             where: { documento: documentoLimpio },
-            include: { courses: true }
+            include: { matriculas: { include: { curso: true } } }
         });
 
         if (estudianteExistente) {
+            const cursosMatriculados = obtenerCursosMatriculados(estudianteExistente)
             // Verificar si ya está en esta materia
-            if (estudianteExistente.courses.some(c => c.id === curso.id)) {
+            if (cursosMatriculados.some(c => c.id === curso.id)) {
                 return Response.json({ error: 'El estudiante ya está inscrito en esta materia' }, { status: 400 });
             }
             
             // Validar cruce
-            for (const cActual of estudianteExistente.courses) {
+            for (const cActual of cursosMatriculados) {
                 if (hayCruce(cActual, curso)) {
                     return Response.json({ error: `Cruce de horarios detectado con la materia: ${cActual.name}` }, { status: 400 });
                 }
@@ -216,7 +221,7 @@ export async function POST(request) {
                 name: nombreLimpio,
                 email: limpiarTexto(email),
                 whatsapp: limpiarTexto(whatsapp),
-                courses: { connect: { id: idCurso } }
+                matriculas: { create: { curso: { connect: { id: idCurso } } } }
             },
             create: {
                 documento: documentoLimpio,
@@ -225,7 +230,7 @@ export async function POST(request) {
                 whatsapp: limpiarTexto(whatsapp),
                 franja: franjaLimpia,
                 programa: limpiarTexto(programa),
-                courses: { connect: { id: idCurso } }
+                matriculas: { create: { curso: { connect: { id: idCurso } } } }
             }
         })
 
