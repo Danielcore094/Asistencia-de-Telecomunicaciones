@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
-import { obtenerUsuarioDePeticion } from '@/lib/auth'
+import { obtenerUsuarioDePeticion } from '@/lib/autenticacion'
 import { obtenerErrorContrasena } from '@/lib/politicaContrasena'
 
 // GET — listar profesores (ADMIN: todos, TEACHER: solo él mismo)

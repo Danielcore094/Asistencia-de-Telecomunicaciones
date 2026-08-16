@@ -35,7 +35,7 @@ jobs:
         run: |
           test -n "$DATABASE_URL"
           test -n "$BACKUP_ENCRYPTION_PASSWORD"
-          node backend/scripts/backupDatabase.mjs
+          node backend/scripts/respaldarBaseDatos.mjs
           gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase "$BACKUP_ENCRYPTION_PASSWORD" backups/*.dump
           rm backups/*.dump
 

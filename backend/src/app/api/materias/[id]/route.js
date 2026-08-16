@@ -2,8 +2,8 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { obtenerUsuarioDePeticion } from '@/lib/auth'
-import { encontrarConflictoHorario } from '@/lib/courseSchedule'
+import { obtenerUsuarioDePeticion } from '@/lib/autenticacion'
+import { encontrarConflictoHorario } from '@/lib/horarioCurso'
 
 export async function PUT(request, { params }) {
     try {

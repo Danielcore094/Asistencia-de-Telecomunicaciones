@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { obtenerUsuarioDePeticion, verificarAccesoCurso } from '@/lib/auth'
+import { obtenerUsuarioDePeticion, verificarAccesoCurso } from '@/lib/autenticacion'
 
 // Construye la condición de Prisma para los filtros opcionales.
 const estadosAsistencia = new Set(['Presente', 'Ausente', 'Justificado'])
@@ -185,7 +185,7 @@ export async function POST(request) {
         await prisma.$transaction(operaciones)
         
         // Registro de auditoría
-        const { registrarAccion } = await import('@/lib/auditService');
+        const { registrarAccion } = await import('@/lib/servicioAuditoria');
         registrarAccion({
             usuario,
             accion: 'GUARDAR_ASISTENCIA',
@@ -198,19 +198,19 @@ export async function POST(request) {
         // Disparar notificaciones WhatsApp solo para 'Ausente' (no Justificado)
         const ausentes = records.filter(r => r.status === 'Ausente');
         if (ausentes.length > 0) {
-            const { runAbsenceWhatsAppNotification } = await import('@/jobs/absenceWhatsAppNotification');
+            const { ejecutarNotificacionWhatsAppAusencia } = await import('@/jobs/notificacionWhatsAppAusencia');
             setImmediate(() =>
-                runAbsenceWhatsAppNotification(ausentes, courseId, date)
+                ejecutarNotificacionWhatsAppAusencia(ausentes, courseId, date)
                     .catch(err => console.error('[attendance-route] Error en job WhatsApp:', err))
             );
         }
 
-        const { runEarlyLossRiskNotification } = await import('@/jobs/earlyLossRiskNotification');
+        const { ejecutarNotificacionRiesgoPerdidaTemprana } = await import('@/jobs/notificacionRiesgoPerdidaTemprana');
         setImmediate(() =>
-            runEarlyLossRiskNotification({
-                courseId,
-                studentIds: records.map((record) => record.studentId),
-                date,
+            ejecutarNotificacionRiesgoPerdidaTemprana({
+                idCurso: courseId,
+                idsEstudiantes: records.map((record) => record.studentId),
+                fecha: date,
             }).catch(err => console.error('[attendance-route] Error en alerta de posible pérdida:', err))
         );
 

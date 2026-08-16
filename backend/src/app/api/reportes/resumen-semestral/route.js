@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-import { createSemesterSummaryExcel } from '@/lib/attendanceService';
-import { obtenerUsuarioDePeticion } from '@/lib/auth';
+import { crearExcelResumenSemestral } from '@/lib/servicioAsistencia';
+import { obtenerUsuarioDePeticion } from '@/lib/autenticacion';
 
 export async function GET(request) {
     try {
@@ -17,13 +17,13 @@ export async function GET(request) {
         const anio    = searchParams.get('anio')    || undefined;
         const periodo = searchParams.get('periodo') || undefined;
 
-        const buffer = await createSemesterSummaryExcel({ anio, periodo });
+        const buffer = await crearExcelResumenSemestral({ anio, periodo });
         if (!buffer) {
             return Response.json({ error: 'No hay datos de asistencia para generar el reporte' }, { status: 404 });
         }
 
         try {
-            const { registrarAccion } = await import('@/lib/auditService');
+            const { registrarAccion } = await import('@/lib/servicioAuditoria');
             await registrarAccion({
                 usuario,
                 accion: 'EXPORTAR_REPORTE',

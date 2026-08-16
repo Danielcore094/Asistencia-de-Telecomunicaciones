@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import prisma from '@/lib/prisma';
-import { obtenerUsuarioDePeticion } from '@/lib/auth';
+import { obtenerUsuarioDePeticion } from '@/lib/autenticacion';
 
 export async function GET(request) {
     try {

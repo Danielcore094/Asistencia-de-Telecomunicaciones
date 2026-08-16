@@ -1,8 +1,8 @@
 export const dynamic = 'force-dynamic';
 
 import prisma from '@/lib/prisma';
-import { obtenerUsuarioDePeticion } from '@/lib/auth';
-import { fmtBogota } from '@/lib/dateUtils';
+import { obtenerUsuarioDePeticion } from '@/lib/autenticacion';
+import { formatearFechaBogota } from '@/lib/utilidadesFechas';
 // Importamos 'headers' para forzar a Next.js a tratar la ruta como dinámica en el build de forma interna
 import { headers } from 'next/headers';
 
@@ -25,7 +25,7 @@ export async function GET(request) {
             ? (sp.get('docenteId') || null)
             : usuario.id;
 
-        const hoy = fmtBogota(new Date());
+        const hoy = formatearFechaBogota(new Date());
 
         // 1. Obtener todos los cursos (opcionalmente filtrados por docente)
         const cursosWhere = docenteId ? { teacherId: docenteId } : {};

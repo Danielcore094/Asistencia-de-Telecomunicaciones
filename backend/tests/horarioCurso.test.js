@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { encontrarConflictoHorario } from '../src/lib/courseSchedule.js';
+import { encontrarConflictoHorario } from '../src/lib/horarioCurso.js';
 
 const cursoExistente = {
     id: 'curso-existente',

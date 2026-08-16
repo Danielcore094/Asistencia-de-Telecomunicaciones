@@ -2,21 +2,21 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { obtenerUsuarioDePeticion, verificarAccesoCurso } from '@/lib/auth'
+import { obtenerUsuarioDePeticion, verificarAccesoCurso } from '@/lib/autenticacion'
 
 const SEMANAS_PERIODO = 16
 const MINUTOS_HORA_ACADEMICA = 45
 
-const parseHora = (valor) => {
+const convertirHoraAMinutos = (valor) => {
     if (!valor || typeof valor !== 'string') return null
     const [h, m] = valor.split(':').map(Number)
     if (Number.isNaN(h) || Number.isNaN(m)) return null
     return h * 60 + m
 }
 
-const minutosSesion = (inicio, fin) => {
-    const ini = parseHora(inicio)
-    const fn = parseHora(fin)
+const calcularMinutosSesion = (inicio, fin) => {
+    const ini = convertirHoraAMinutos(inicio)
+    const fn = convertirHoraAMinutos(fin)
     if (ini === null || fn === null || fn <= ini) return 0
     return fn - ini
 }
@@ -24,8 +24,8 @@ const minutosSesion = (inicio, fin) => {
 const clasesPeriodoCurso = (curso) => {
     if (!curso) return 0
     const minutosSemana =
-        minutosSesion(curso.horaInicio, curso.horaFin) +
-        minutosSesion(curso.horaInicio2, curso.horaFin2)
+        calcularMinutosSesion(curso.horaInicio, curso.horaFin) +
+        calcularMinutosSesion(curso.horaInicio2, curso.horaFin2)
 
     if (minutosSemana <= 0) return 0
 
@@ -58,8 +58,8 @@ const diaSemanaDesdeFecha = (fecha) => {
 const unidadesRegistro = (curso, fecha) => {
     if (!curso) return 1
 
-    const duracionDia1 = Math.max(1, Math.round(minutosSesion(curso.horaInicio, curso.horaFin) / MINUTOS_HORA_ACADEMICA))
-    const duracionDia2 = Math.max(0, Math.round(minutosSesion(curso.horaInicio2, curso.horaFin2) / MINUTOS_HORA_ACADEMICA))
+    const duracionDia1 = Math.max(1, Math.round(calcularMinutosSesion(curso.horaInicio, curso.horaFin) / MINUTOS_HORA_ACADEMICA))
+    const duracionDia2 = Math.max(0, Math.round(calcularMinutosSesion(curso.horaInicio2, curso.horaFin2) / MINUTOS_HORA_ACADEMICA))
     const diaRegistro = diaSemanaDesdeFecha(fecha)
     const dia1 = normalizarDia(curso.dia)
     const dia2 = normalizarDia(curso.dia2)

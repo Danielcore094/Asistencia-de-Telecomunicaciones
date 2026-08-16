@@ -1,15 +1,15 @@
 /**
  * notificacionWhatsAppAusencia.js
- * Job que envía notificaciones de WhatsApp a estudiantes ausentes
+ * Envía notificaciones de WhatsApp a estudiantes ausentes
  * cuando el profesor guarda la asistencia de una clase.
  *
- * Se ejecuta en fire-and-forget (no bloquea la respuesta HTTP).
- * Aplica un delay de WHATSAPP_SEND_DELAY_MS entre cada mensaje
+ * Se ejecuta en segundo plano para no bloquear la respuesta HTTP.
+ * Espera el tiempo definido en WHATSAPP_SEND_DELAY_MS entre mensajes
  * para evitar bloqueos de WhatsApp/Evolution API.
  */
 
 import prisma from '../lib/prisma.js';
-import { sendWhatsAppMessage } from '../lib/whatsappService.js';
+import { enviarMensajeWhatsApp } from '../lib/servicioWhatsapp.js';
 
 /** Espera N milisegundos */
 const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -42,7 +42,7 @@ function construirMensajeAusencia({ studentName, date, courseName }) {
  * @param {string} idCurso
  * @param {string} fecha  - Formato YYYY-MM-DD
  */
-export async function runAbsenceWhatsAppNotification(registros, idCurso, fecha) {
+export async function ejecutarNotificacionWhatsAppAusencia(registros, idCurso, fecha) {
     const delayConfigurado = Number(process.env.WHATSAPP_SEND_DELAY_MS ?? 10000);
     // Evita ráfagas muy rápidas que suelen afectar la entregabilidad en WhatsApp.
     const delayEnvioMs = Number.isFinite(delayConfigurado)
@@ -118,7 +118,7 @@ export async function runAbsenceWhatsAppNotification(registros, idCurso, fecha) 
                 courseName: curso.name,
             });
 
-            const resultado = await sendWhatsAppMessage({
+            const resultado = await enviarMensajeWhatsApp({
                 phone: estudiante.whatsapp,
                 message: mensaje,
             });

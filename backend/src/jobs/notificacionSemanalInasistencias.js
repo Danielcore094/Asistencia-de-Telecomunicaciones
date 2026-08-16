@@ -1,6 +1,6 @@
 /**
- * weeklyAbsenceNotification.js
- * Job principal: orquesta el envío del reporte semanal de asistencia.
+ * notificacionSemanalInasistencias.js
+ * Coordina el envío del reporte semanal de asistencia.
  *
  * Lógica:
  *   1. Genera un Excel POR DOCENTE con solo sus materias (semana anterior).
@@ -9,10 +9,17 @@
  */
 
 import prisma from '../lib/prisma.js';
-import { sendEmail, buildAbsenceEmailHTML, buildWeeklyReportEmailHTML } from '../lib/emailService.js';
-import { getWeeklyAbsences, createWeeklyReportsByTeacher } from '../lib/attendanceService.js';
+import {
+    enviarCorreo,
+    construirCorreoInasistenciasHTML,
+    construirCorreoReporteSemanalHTML,
+} from '../lib/servicioCorreo.js';
+import {
+    obtenerInasistenciasSemanales,
+    crearReportesSemanalesPorDocente,
+} from '../lib/servicioAsistencia.js';
 
-export async function runWeeklyNotification() {
+export async function ejecutarNotificacionSemanalInasistencias() {
     console.log('\n========================================');
     console.log('[notification-job] Iniciando envío de notificaciones semanales...');
     console.log(`[notification-job] Hora: ${new Date().toISOString()}`);
@@ -24,7 +31,7 @@ export async function runWeeklyNotification() {
     // ── 1. Generar y enviar un Excel por docente ──────────────────────────
     if (destinatario) {
         try {
-            const reportesPorDocente = await createWeeklyReportsByTeacher();
+            const reportesPorDocente = await crearReportesSemanalesPorDocente();
 
             if (reportesPorDocente.length === 0) {
                 console.log('[notification-job] Sin reportes por docente para enviar.');
@@ -35,7 +42,7 @@ export async function runWeeklyNotification() {
                     const { teacherName, buffer, weekStart, weekEnd, courseCount } = reporte;
                     const nombreArchivo = `reporte-${teacherName.replace(/\s+/g, '-').toLowerCase()}-${weekStart}.xlsx`;
 
-                    const htmlContent = buildWeeklyReportEmailHTML({
+                    const htmlContent = construirCorreoReporteSemanalHTML({
                         weekStart,
                         weekEnd,
                         courseCount,
@@ -43,7 +50,7 @@ export async function runWeeklyNotification() {
                         teacherName,
                     });
 
-                    const resultado = await sendEmail({
+                    const resultado = await enviarCorreo({
                         to:          destinatario,
                         toName:      process.env.WEEKLY_REPORT_RECIPIENT_NAME || 'Administrador',
                         subject:     `Reporte semanal — ${teacherName} (${weekStart} al ${weekEnd})`,
@@ -76,7 +83,7 @@ export async function runWeeklyNotification() {
 
     // ── 2. Notificaciones individuales a estudiantes con inasistencias ────
     try {
-        const listaInasistencias = await getWeeklyAbsences();
+        const listaInasistencias = await obtenerInasistenciasSemanales();
 
         if (listaInasistencias.length === 0) {
             console.log('[notification-job] Sin inasistencias en la semana. No se envían correos a estudiantes.');
@@ -120,7 +127,7 @@ export async function runWeeklyNotification() {
                 continue;
             }
 
-            const contenidoHtml = buildAbsenceEmailHTML({
+            const contenidoHtml = construirCorreoInasistenciasHTML({
                 studentName:   estudiante.studentName,
                 totalAbsences: estudiante.totalAbsences,
                 courses:       estudiante.courses,
@@ -128,7 +135,7 @@ export async function runWeeklyNotification() {
                 weekEnd:       estudiante.weekEnd,
             });
 
-            const resultadoCorreo = await sendEmail({
+            const resultadoCorreo = await enviarCorreo({
                 to:          estudiante.email,
                 toName:      estudiante.studentName,
                 subject:     'Reporte semanal de inasistencias',

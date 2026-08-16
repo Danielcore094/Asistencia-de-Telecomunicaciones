@@ -1,5 +1,5 @@
 /**
- * whatsappService.js
+ * servicioWhatsapp.js
  * Servicio para enviar mensajes de WhatsApp usando Evolution API.
  * No requiere SDK externo — usa fetch nativo de Node.js 18+.
  */
@@ -16,9 +16,9 @@
  * @param {string} rawNumber - Número tal como está guardado en la BD
  * @returns {string} Número normalizado
  */
-function normalizePhoneNumber(rawNumber) {
+function normalizarNumeroTelefono(numeroOriginal) {
     // Eliminar todo lo que no sea dígito
-    const digits = rawNumber.replace(/\D/g, '');
+    const digits = numeroOriginal.replace(/\D/g, '');
 
     // Ya tiene código de país Colombia (57) — 12 dígitos
     if (digits.length === 12 && digits.startsWith('57')) {
@@ -43,23 +43,23 @@ function normalizePhoneNumber(rawNumber) {
  * @param {string} options.message - Texto del mensaje
  * @returns {Promise<{ success: boolean, error?: string }>}
  */
-export async function sendWhatsAppMessage({ phone, message }) {
+export async function enviarMensajeWhatsApp({ phone, message }) {
     const baseUrl  = process.env.EVOLUTION_API_URL;
     const apiKey   = process.env.EVOLUTION_API_KEY;
     const instance = process.env.EVOLUTION_INSTANCE;
 
     if (!baseUrl || !instance) {
         const msg = 'EVOLUTION_API_URL y EVOLUTION_INSTANCE son requeridas en el .env';
-        console.error('[whatsappService]', msg);
+        console.error('[servicioWhatsapp]', msg);
         return { success: false, error: msg };
     }
 
-    const number = normalizePhoneNumber(phone);
+    const number = normalizarNumeroTelefono(phone);
 
     const textoLimpio = String(message ?? '').trim();
     if (!textoLimpio) {
         const msg = 'El mensaje de WhatsApp está vacío';
-        console.error('[whatsappService]', msg);
+        console.error('[servicioWhatsapp]', msg);
         return { success: false, error: msg };
     }
 
@@ -87,16 +87,16 @@ export async function sendWhatsAppMessage({ phone, message }) {
 
         if (!response.ok) {
             const errorBody = await response.text();
-            console.error(`[whatsappService] Error Evolution API (${response.status}):`, errorBody);
+            console.error(`[servicioWhatsapp] Error Evolution API (${response.status}):`, errorBody);
             return { success: false, error: `Evolution ${response.status}: ${errorBody}` };
         }
 
         const data = await response.json();
-        console.log(`[whatsappService] ✅ Mensaje enviado a ${number} — key: ${data.key?.id ?? 'ok'}`);
+        console.log(`[servicioWhatsapp] ✅ Mensaje enviado a ${number} — key: ${data.key?.id ?? 'ok'}`);
         return { success: true };
 
     } catch (err) {
-        console.error('[whatsappService] Error de red:', err.message);
+        console.error('[servicioWhatsapp] Error de red:', err.message);
         return { success: false, error: err.message };
     }
 }

@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import prisma from '@/lib/prisma';
 import crypto from 'crypto';
-import { sendEmail } from '@/lib/emailService';
+import { enviarCorreo } from '@/lib/servicioCorreo';
 
 const respuestaGenerica = {
     message: 'Si el correo está registrado, recibirás instrucciones para restablecer tu contraseña.',
@@ -59,7 +59,7 @@ export async function POST(request) {
             </div>
         `;
 
-        const emailResult = await sendEmail({
+        const emailResult = await enviarCorreo({
             to: email,
             toName: teacher.name,
             subject: 'Restablecer contraseña - Asistencia Telecomunicaciones',

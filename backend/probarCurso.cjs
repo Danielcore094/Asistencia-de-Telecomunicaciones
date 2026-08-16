@@ -1,7 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-async function test() {
+async function probar() {
     try {
         // Primero buscar un teacher
         const teacher = await prisma.teacher.findFirst();
@@ -12,7 +12,7 @@ async function test() {
         console.log('✅ Profe encontrado:', teacher.email);
 
         // Intentar crear un curso
-        const course = await prisma.course.create({
+        const curso = await prisma.course.create({
             data: {
                 name: 'Prueba de Telecomunicaciones',
                 code: 'TEST-001',
@@ -20,12 +20,12 @@ async function test() {
             }
         });
         console.log('✅ Curso creado exitosamente:');
-        console.log('   ID:', course.id, '(tipo:', typeof course.id, ')');
-        console.log('   Nombre:', course.name);
-        console.log('   Código:', course.code);
+        console.log('   ID:', curso.id, '(tipo:', typeof curso.id, ')');
+        console.log('   Nombre:', curso.name);
+        console.log('   Código:', curso.code);
 
         // Limpiar
-        await prisma.course.delete({ where: { id: course.id } });
+        await prisma.course.delete({ where: { id: curso.id } });
         console.log('✅ Curso de prueba eliminado.');
     } catch (err) {
         console.error('❌ Error:', err.message);
@@ -36,4 +36,4 @@ async function test() {
     }
 }
 
-test();
+probar();

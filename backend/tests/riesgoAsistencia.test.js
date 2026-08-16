@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { esDurantePrimerasDosSemanas, evaluarRiesgoPerdidaTemprana } from '../src/lib/attendanceRisk.js';
+import { esDurantePrimerasDosSemanas, evaluarRiesgoPerdidaTemprana } from '../src/lib/riesgoAsistencia.js';
 
 const curso = {
     dia: 'Martes',

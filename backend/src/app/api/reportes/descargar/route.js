@@ -1,8 +1,8 @@
 export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server'
-import { createWeeklyReportForTeacher } from '@/lib/attendanceService'
-import { obtenerUsuarioDePeticion } from '@/lib/auth'
+import { crearReporteSemanalPorDocente } from '@/lib/servicioAsistencia'
+import { obtenerUsuarioDePeticion } from '@/lib/autenticacion'
 
 export async function GET(request) {
     try {
@@ -22,13 +22,13 @@ export async function GET(request) {
             return Response.json({ error: 'No podés descargar el reporte de otro docente' }, { status: 403 })
         }
 
-        const reporte = await createWeeklyReportForTeacher({ teacherId: idDocente })
+        const reporte = await crearReporteSemanalPorDocente({ teacherId: idDocente })
         if (!reporte) {
             return Response.json({ error: 'No se encontró reporte para este docente' }, { status: 404 })
         }
 
         try {
-            const { registrarAccion } = await import('@/lib/auditService')
+            const { registrarAccion } = await import('@/lib/servicioAuditoria')
             await registrarAccion({
                 usuario,
                 accion: 'EXPORTAR_REPORTE',

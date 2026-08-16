@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 
-import { obtenerUsuarioDePeticion } from '@/lib/auth';
+import { obtenerUsuarioDePeticion } from '@/lib/autenticacion';
 import prisma from '@/lib/prisma';
 
 /**

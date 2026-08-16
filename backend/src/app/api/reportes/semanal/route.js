@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import prisma from '@/lib/prisma'
-import { getLunesSemana } from '@/lib/dateUtils'
+import { obtenerLunesSemana } from '@/lib/utilidadesFechas'
 
 // GET — reporte semanal agregado
 // Parámetros: courseId?, codigo?, grupo?, docenteId?, anio?, periodo?, modalidad?,
@@ -58,7 +58,7 @@ export async function GET(request) {
         // ── Agrupar por tiempo ───────────────────────────────────────────────
         const porTiempo = {}
         registros.forEach(({ date, present, status }) => {
-            const clave = agrupacion === 'semana' ? getLunesSemana(date) : date
+            const clave = agrupacion === 'semana' ? obtenerLunesSemana(date) : date
             if (!porTiempo[clave]) {
                 porTiempo[clave] = { presente: 0, ausente: 0, justificado: 0 }
             }

@@ -1,5 +1,5 @@
 /**
- * emailService.js
+ * servicioCorreo.js
  * Servicio de envío de correos usando la API REST de Brevo.
  * No requiere SDK externo — usa fetch nativo de Node.js 18+.
  */
@@ -15,14 +15,14 @@ const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
  * @param {string} options.htmlContent - Contenido HTML del correo
  * @returns {Promise<{success: boolean, messageId?: string, error?: string}>}
  */
-export async function sendEmail({ to, toName, subject, htmlContent, attachments = [] }) {
+export async function enviarCorreo({ to, toName, subject, htmlContent, attachments = [] }) {
     const apiKey = process.env.BREVO_API_KEY;
     const senderEmail = process.env.BREVO_SENDER_EMAIL;
     const senderName = process.env.BREVO_SENDER_NAME || 'Sistema de Asistencia';
 
     if (!apiKey || !senderEmail) {
         const msg = 'BREVO_API_KEY y BREVO_SENDER_EMAIL son requeridas en el .env';
-        console.error('[emailService]', msg);
+        console.error('[servicioCorreo]', msg);
         return { success: false, error: msg };
     }
 
@@ -49,16 +49,16 @@ export async function sendEmail({ to, toName, subject, htmlContent, attachments 
 
         if (!response.ok) {
             const errorBody = await response.text();
-            console.error(`[emailService] Error Brevo (${response.status}):`, errorBody);
+            console.error(`[servicioCorreo] Error Brevo (${response.status}):`, errorBody);
             return { success: false, error: `Brevo ${response.status}: ${errorBody}` };
         }
 
         const data = await response.json();
-        console.log(`[emailService] Correo enviado a ${to} — messageId: ${data.messageId}`);
+        console.log(`[servicioCorreo] Correo enviado a ${to} — messageId: ${data.messageId}`);
         return { success: true, messageId: data.messageId };
 
     } catch (err) {
-        console.error('[emailService] Error de red:', err.message);
+        console.error('[servicioCorreo] Error de red:', err.message);
         return { success: false, error: err.message };
     }
 }
@@ -73,7 +73,7 @@ export async function sendEmail({ to, toName, subject, htmlContent, attachments 
  * @param {string} params.weekEnd    - Fecha fin de semana (YYYY-MM-DD)
  * @returns {string} HTML del correo
  */
-export function buildAbsenceEmailHTML({ studentName, totalAbsences, courses, weekStart, weekEnd }) {
+export function construirCorreoInasistenciasHTML({ studentName, totalAbsences, courses, weekStart, weekEnd }) {
     const courseList = courses.map(c => `<li style="margin: 4px 0;">${c}</li>`).join('');
 
     return `
@@ -134,7 +134,7 @@ export function buildAbsenceEmailHTML({ studentName, totalAbsences, courses, wee
 </html>`;
 }
 
-export function buildEarlyLossRiskEmailHTML({ studentName, courseName, percentage, absences, threshold }) {
+export function construirCorreoRiesgoPerdidaHTML({ studentName, courseName, percentage, absences, threshold }) {
     return `
 <!DOCTYPE html>
 <html lang="es">
@@ -166,7 +166,7 @@ export function buildEarlyLossRiskEmailHTML({ studentName, courseName, percentag
 </html>`;
 }
 
-export function buildWeeklyReportEmailHTML({ weekStart, weekEnd, courseCount, totalRecords }) {
+export function construirCorreoReporteSemanalHTML({ weekStart, weekEnd, courseCount, totalRecords }) {
     return `
 <!DOCTYPE html>
 <html lang="es">

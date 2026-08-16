@@ -1,12 +1,15 @@
 import prisma from '../lib/prisma.js';
-import { buildEarlyLossRiskEmailHTML, sendEmail } from '../lib/emailService.js';
-import { esDurantePrimerasDosSemanas, evaluarRiesgoPerdidaTemprana } from '../lib/attendanceRisk.js';
+import {
+    construirCorreoRiesgoPerdidaHTML,
+    enviarCorreo,
+} from '../lib/servicioCorreo.js';
+import { esDurantePrimerasDosSemanas, evaluarRiesgoPerdidaTemprana } from '../lib/riesgoAsistencia.js';
 
 const ACCION_ALERTA_RIESGO = 'ALERTA_POSIBLE_PERDIDA';
 
-export async function runEarlyLossRiskNotification({ courseId, studentIds, date }) {
+export async function ejecutarNotificacionRiesgoPerdidaTemprana({ idCurso, idsEstudiantes, fecha }) {
     const curso = await prisma.curso.findUnique({
-        where: { id: courseId },
+        where: { id: idCurso },
         select: {
             id: true,
             name: true,
@@ -22,26 +25,30 @@ export async function runEarlyLossRiskNotification({ courseId, studentIds, date 
     if (!curso) return;
 
     const primerRegistro = await prisma.asistencia.findFirst({
-        where: { courseId },
+        where: { courseId: idCurso },
         orderBy: { date: 'asc' },
         select: { date: true },
     });
-    if (!primerRegistro || !esDurantePrimerasDosSemanas(primerRegistro.date, date)) return;
+    if (!primerRegistro || !esDurantePrimerasDosSemanas(primerRegistro.date, fecha)) return;
 
-    for (const studentId of [...new Set(studentIds)]) {
+    for (const idEstudiante of [...new Set(idsEstudiantes)]) {
         const yaNotificado = await prisma.registroAuditoria.findFirst({
             where: {
-                userId: studentId,
+                userId: idEstudiante,
                 action: ACCION_ALERTA_RIESGO,
                 target: 'COURSE',
-                targetId: courseId,
+                targetId: idCurso,
             },
             select: { id: true },
         });
         if (yaNotificado) continue;
 
         const registros = await prisma.asistencia.findMany({
-            where: { courseId, studentId, date: { gte: primerRegistro.date, lte: date } },
+            where: {
+                courseId: idCurso,
+                studentId: idEstudiante,
+                date: { gte: primerRegistro.date, lte: fecha },
+            },
             include: { student: { select: { name: true, email: true } } },
         });
         const estudiante = registros[0]?.student;
@@ -50,11 +57,11 @@ export async function runEarlyLossRiskNotification({ courseId, studentIds, date 
         const riesgo = evaluarRiesgoPerdidaTemprana(curso, registros);
         if (!riesgo.enRiesgo) continue;
 
-        const resultadoCorreo = await sendEmail({
+        const resultadoCorreo = await enviarCorreo({
             to: estudiante.email,
             toName: estudiante.name,
             subject: `Alerta de posible pérdida por inasistencias - ${curso.name}`,
-            htmlContent: buildEarlyLossRiskEmailHTML({
+            htmlContent: construirCorreoRiesgoPerdidaHTML({
                 studentName: estudiante.name,
                 courseName: curso.name,
                 percentage: riesgo.porcentajeAsistencia,
@@ -70,12 +77,12 @@ export async function runEarlyLossRiskNotification({ courseId, studentIds, date 
 
         await prisma.registroAuditoria.create({
             data: {
-                userId: studentId,
+                userId: idEstudiante,
                 userName: estudiante.name,
                 userRole: 'STUDENT',
                 action: ACCION_ALERTA_RIESGO,
                 target: 'COURSE',
-                targetId: courseId,
+                targetId: idCurso,
                 details: {
                     porcentajeAsistencia: riesgo.porcentajeAsistencia,
                     unidadesAusentes: riesgo.unidadesAusentes,

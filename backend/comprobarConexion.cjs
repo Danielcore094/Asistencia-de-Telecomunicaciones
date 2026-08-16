@@ -14,15 +14,15 @@ async function testConnection() {
         process.exit(1);
     }
 
-    const client = new Client({
+    const cliente = new Client({
         connectionString: process.env.DATABASE_URL.replace(':5433', ':5432').replace(':Sopor1141@', ':Teleco2026@')
     });
 
     try {
-        await client.connect();
+        await cliente.connect();
         console.log('✅ Conexión exitosa a PostgreSQL.');
 
-        const tablesRes = await client.query(`
+        const tablesRes = await cliente.query(`
             SELECT table_name 
             FROM information_schema.tables 
             WHERE table_schema = 'public'
@@ -31,7 +31,7 @@ async function testConnection() {
         console.log('Tablas encontradas:', tablesRes.rows.map(r => r.table_name).join(', '));
 
         if (tablesRes.rows.some(r => r.table_name === 'Student')) {
-            const countRes = await client.query('SELECT COUNT(*) FROM "Student"');
+            const countRes = await cliente.query('SELECT COUNT(*) FROM "Student"');
             console.log(`Número de registros en 'Student': ${countRes.rows[0].count}`);
         }
 
@@ -40,7 +40,7 @@ async function testConnection() {
         if (err.message) console.error('Mensaje de error:', err.message);
         if (err.stack) console.error('Stack trace:', err.stack);
     } finally {
-        await client.end();
+        await cliente.end();
         console.log('--- Prueba finalizada ---');
     }
 }

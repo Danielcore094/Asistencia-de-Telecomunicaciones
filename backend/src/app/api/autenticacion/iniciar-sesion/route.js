@@ -66,7 +66,7 @@ export async function POST(request) {
         console.log(`[Login] Sesión iniciada: ${email} (${docente.role})`)
         
         // Registro de auditoría
-        const { registrarAccion } = await import('@/lib/auditService');
+        const { registrarAccion } = await import('@/lib/servicioAuditoria');
         registrarAccion({
             usuario: { id: docente.id, name: docente.name, role: docente.role },
             accion: 'LOGIN',

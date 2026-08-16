@@ -1,5 +1,5 @@
 /**
- * dateUtils.js
+ * utilidadesFechas.js
  * Utilidades centralizadas para manejo de fechas en formato YYYY-MM-DD
  * usando siempre la zona horaria de Colombia (America/Bogota).
  */
@@ -7,7 +7,7 @@
 /**
  * Formatea una fecha (Date o string) a YYYY-MM-DD en hora de Colombia.
  */
-export const fmtBogota = (d = new Date()) => {
+export const formatearFechaBogota = (d = new Date()) => {
     const date = d instanceof Date ? d : new Date(d);
     return new Intl.DateTimeFormat('en-CA', {
         timeZone: 'America/Bogota',
@@ -19,7 +19,7 @@ export const fmtBogota = (d = new Date()) => {
  * Devuelve el lunes de la semana que contiene la fecha dada.
  * @param {string} dateStr - Fecha en formato YYYY-MM-DD
  */
-export const getLunesSemana = (dateStr) => {
+export const obtenerLunesSemana = (dateStr) => {
     const [year, month, day] = dateStr.split('-').map(Number);
     const d = new Date(year, month - 1, day);
     const dow = d.getDay();
@@ -35,9 +35,9 @@ export const getLunesSemana = (dateStr) => {
 /**
  * Obtiene el rango Lunes-Sábado de la semana actual.
  */
-export const getCurrentWeekRange = (referenceDate = new Date()) => {
-    const hoyStr = fmtBogota(referenceDate);
-    const lunesStr = getLunesSemana(hoyStr);
+export const obtenerRangoSemanaActual = (referenceDate = new Date()) => {
+    const hoyStr = formatearFechaBogota(referenceDate);
+    const lunesStr = obtenerLunesSemana(hoyStr);
     
     const [y, m, d] = lunesStr.split('-').map(Number);
     const lunes = new Date(y, m - 1, d);
@@ -47,7 +47,7 @@ export const getCurrentWeekRange = (referenceDate = new Date()) => {
     
     return {
         weekStart: lunesStr,
-        weekEnd: fmtBogota(sabado)
+        weekEnd: formatearFechaBogota(sabado)
     };
 };
 
@@ -55,9 +55,9 @@ export const getCurrentWeekRange = (referenceDate = new Date()) => {
  * Obtiene el rango Lunes-Sábado de la semana ANTERIOR.
  * Cuando el cron corre el domingo, esta función retorna la semana que acaba de terminar.
  */
-export const getPreviousWeekRange = (referenceDate = new Date()) => {
-    const hoyStr = fmtBogota(referenceDate);
-    const lunesActualStr = getLunesSemana(hoyStr);
+export const obtenerRangoSemanaAnterior = (referenceDate = new Date()) => {
+    const hoyStr = formatearFechaBogota(referenceDate);
+    const lunesActualStr = obtenerLunesSemana(hoyStr);
 
     const [y, m, d] = lunesActualStr.split('-').map(Number);
     const lunesActual = new Date(y, m - 1, d);
@@ -70,7 +70,7 @@ export const getPreviousWeekRange = (referenceDate = new Date()) => {
     sabadoAnterior.setDate(lunesAnterior.getDate() + 5);
 
     return {
-        weekStart: fmtBogota(lunesAnterior),
-        weekEnd:   fmtBogota(sabadoAnterior),
+        weekStart: formatearFechaBogota(lunesAnterior),
+        weekEnd:   formatearFechaBogota(sabadoAnterior),
     };
 };

@@ -1,16 +1,16 @@
 const SEMANAS_PERIODO = 16;
 const MINUTOS_HORA_ACADEMICA = 45;
 
-const parseHora = (valor) => {
+const convertirHoraAMinutos = (valor) => {
     if (!valor || typeof valor !== 'string') return null;
     const [hora, minuto] = valor.split(':').map(Number);
     if (Number.isNaN(hora) || Number.isNaN(minuto)) return null;
     return hora * 60 + minuto;
 };
 
-const minutosSesion = (inicio, fin) => {
-    const inicioMinutos = parseHora(inicio);
-    const finMinutos = parseHora(fin);
+const calcularMinutosSesion = (inicio, fin) => {
+    const inicioMinutos = convertirHoraAMinutos(inicio);
+    const finMinutos = convertirHoraAMinutos(fin);
     if (inicioMinutos === null || finMinutos === null || finMinutos <= inicioMinutos) return 0;
     return finMinutos - inicioMinutos;
 };
@@ -24,8 +24,8 @@ const diaSemanaDesdeFecha = (fecha) => {
 };
 
 const unidadesRegistro = (curso, fecha) => {
-    const unidadesDia1 = Math.max(1, Math.round(minutosSesion(curso.horaInicio, curso.horaFin) / MINUTOS_HORA_ACADEMICA));
-    const unidadesDia2 = Math.max(0, Math.round(minutosSesion(curso.horaInicio2, curso.horaFin2) / MINUTOS_HORA_ACADEMICA));
+    const unidadesDia1 = Math.max(1, Math.round(calcularMinutosSesion(curso.horaInicio, curso.horaFin) / MINUTOS_HORA_ACADEMICA));
+    const unidadesDia2 = Math.max(0, Math.round(calcularMinutosSesion(curso.horaInicio2, curso.horaFin2) / MINUTOS_HORA_ACADEMICA));
     const diaRegistro = diaSemanaDesdeFecha(fecha);
 
     if (diaRegistro === normalizarDia(curso.dia)) return unidadesDia1;
@@ -43,8 +43,8 @@ export const esDurantePrimerasDosSemanas = (fechaPrimerRegistro, fecha) => {
 };
 
 export const evaluarRiesgoPerdidaTemprana = (curso, registros) => {
-    const minutosSemana = minutosSesion(curso.horaInicio, curso.horaFin)
-        + minutosSesion(curso.horaInicio2, curso.horaFin2);
+    const minutosSemana = calcularMinutosSesion(curso.horaInicio, curso.horaFin)
+        + calcularMinutosSesion(curso.horaInicio2, curso.horaFin2);
     const totalClasesPeriodo = Math.round(minutosSemana / MINUTOS_HORA_ACADEMICA) * SEMANAS_PERIODO;
     const umbralPerdida = Math.ceil(totalClasesPeriodo * 0.2);
     const resumen = registros.reduce((total, registro) => {

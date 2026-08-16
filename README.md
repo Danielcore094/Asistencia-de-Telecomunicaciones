@@ -97,7 +97,7 @@ GitHub Actions ejecuta estas pruebas y compila frontend y backend en cada `push`
 Para crear un respaldo local de PostgreSQL:
 
 ```bash
-DATABASE_URL="postgresql://usuario:contrasena@host:5432/base" node backend/scripts/backupDatabase.mjs
+DATABASE_URL="postgresql://usuario:contrasena@host:5432/base" node backend/scripts/respaldarBaseDatos.mjs
 ```
 
 El archivo se crea en `backups/` con formato personalizado de PostgreSQL. Para restaurarlo en una base de datos vacía:

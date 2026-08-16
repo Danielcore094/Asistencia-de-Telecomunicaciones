@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
-import { obtenerUsuarioDePeticion } from '@/lib/auth';
+import { obtenerUsuarioDePeticion } from '@/lib/autenticacion';
 import { obtenerErrorContrasena } from '@/lib/politicaContrasena';
 
 export async function PUT(request) {

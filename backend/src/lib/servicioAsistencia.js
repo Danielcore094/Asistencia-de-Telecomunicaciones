@@ -1,22 +1,16 @@
-/**
- * attendanceService.js
- * Servicio para consultar las inasistencias semanales de estudiantes
- * y generar los reportes Excel de asistencia por docente.
- */
-
 import prisma from './prisma.js';
-import { fmtBogota, getPreviousWeekRange, getLunesSemana } from './dateUtils.js';
+import { formatearFechaBogota, obtenerRangoSemanaAnterior, obtenerLunesSemana } from './utilidadesFechas.js';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const XLSX = require('xlsx-js-style');
 
 /**
- * Obtiene las inasistencias de la semana ANTERIOR agrupadas por estudiante.
+ * Obtiene las inasistencias de la semana anterior y las agrupa por estudiante.
  */
-export async function getWeeklyAbsences({ referenceDate } = {}) {
-    const { weekStart, weekEnd } = getPreviousWeekRange(referenceDate);
+export async function obtenerInasistenciasSemanales({ referenceDate } = {}) {
+    const { weekStart, weekEnd } = obtenerRangoSemanaAnterior(referenceDate);
 
-    console.log(`[attendanceService] Consultando inasistencias del ${weekStart} al ${weekEnd}`);
+    console.log(`[servicioAsistencia] Consultando inasistencias del ${weekStart} al ${weekEnd}`);
 
     const dates = [];
     const [sy, sm, sd] = weekStart.split('-').map(Number);
@@ -24,7 +18,7 @@ export async function getWeeklyAbsences({ referenceDate } = {}) {
     const start = new Date(sy, sm - 1, sd);
     const end   = new Date(ey, em - 1, ed);
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        dates.push(fmtBogota(d));
+        dates.push(formatearFechaBogota(d));
     }
 
     const absences = await prisma.asistencia.findMany({
@@ -63,11 +57,11 @@ export async function getWeeklyAbsences({ referenceDate } = {}) {
         courses: Array.from(entry.courses),
     }));
 
-    console.log(`[attendanceService] Estudiantes con inasistencias: ${result.length}`);
+    console.log(`[servicioAsistencia] Estudiantes con inasistencias: ${result.length}`);
     return result;
 }
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+// Funciones auxiliares
 
 function formatearNombre(nombre) {
     if (!nombre) return '';
@@ -85,8 +79,8 @@ function compararPorApellido(a, b) {
     return apellido(a).localeCompare(apellido(b), 'es');
 }
 
-function fmtCabecera(dateStr) {
-    const [y, m, d] = dateStr.split('-').map(Number);
+function formatearFechaCabecera(fecha) {
+    const [y, m, d] = fecha.split('-').map(Number);
     return `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
 }
 
@@ -122,24 +116,23 @@ function crearEstilos() {
 }
 
 /**
- * Genera un Excel de asistencia para UN docente específico.
- * Contiene una hoja por cada materia del docente con:
+ * Genera el reporte de asistencia de un docente en formato Excel.
+ * Incluye una hoja por cada materia, con la siguiente información:
  *   - Perfil del curso
- *   - TABLA 1: Asistencia por día (P/A/J/–)
- *   - TABLA 2: Directorio de contacto de estudiantes
+ *   - Asistencia diaria (P/A/J/–)
+ *   - Directorio de contacto de los estudiantes
  *
  * @param {Object} params
  * @param {string} params.teacherId    - ID del docente
- * @param {string} params.weekStart    - Fecha inicio semana (YYYY-MM-DD)
- * @param {string} params.weekEnd      - Fecha fin semana   (YYYY-MM-DD)
- * @param {string[]} params.dates      - Array de fechas de la semana
- * @returns {Promise<Buffer|null>}     - Buffer del Excel, o null si el docente no tiene cursos con estudiantes
+ * @param {string} params.weekStart    - Fecha de inicio de la semana (YYYY-MM-DD)
+ * @param {string} params.weekEnd      - Fecha de finalización de la semana (YYYY-MM-DD)
+ * @param {string[]} params.dates      - Fechas que componen la semana
+ * @returns {Promise<Buffer|null>}     - Archivo en memoria o null si el docente no tiene cursos con estudiantes
  */
 async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
-    const fechasCab = dates.map(fmtCabecera);
+    const fechasCab = dates.map(formatearFechaCabecera);
     const estilos   = crearEstilos();
 
-    // Cursos del docente
     const courses = await prisma.curso.findMany({
         where: { teacherId },
         orderBy: [{ name: 'asc' }, { groupCode: 'asc' }],
@@ -153,7 +146,7 @@ async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
     let hojasScritas = 0;
 
     for (const curso of courses) {
-        // Estudiantes del curso (derivados de asistencias históricas)
+        // Identifica a los estudiantes a partir del historial de asistencia del curso.
         const estudiantesRaw = await prisma.estudiante.findMany({
             where: { attendances: { some: { courseId: curso.id } } },
             select: {
@@ -172,7 +165,6 @@ async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
             compararPorApellido(a.name, b.name)
         );
 
-        // Asistencia de la semana para este curso
         const asistencias = await prisma.asistencia.findMany({
             where: { courseId: curso.id, date: { in: dates } },
             select: { studentId: true, date: true, present: true, status: true },
@@ -184,7 +176,6 @@ async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
             mapa[reg.studentId][reg.date] = reg;
         }
 
-        // Construir hoja
         const ws       = {};
         const rowsMeta = [];
         let r = 0;
@@ -197,7 +188,7 @@ async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
             };
         };
 
-        // ── Perfil del curso ──────────────────────────────────────────────
+        // ── Información del curso
         const reportTitle = `Reporte de Asistencia - ${curso.name || 'Materia'} ${curso.groupCode ? `(${curso.groupCode})` : ''}`.trim();
         const reportSubtitle = `Semana del ${fechasCab[0]} al ${fechasCab[5]}`;
         const reportOrg = 'UTS - Sistema de Asistencia de Telecomunicaciones';
@@ -239,7 +230,7 @@ async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
         }
         rowsMeta.push({ hpt: 8 }); r++;
 
-        // ── TABLA 1: Asistencia ───────────────────────────────────────────
+        // ── Asistencia diaria
         ['Documento', 'Nombre del Alumno', ...fechasCab].forEach((t, c) =>
             addCell(r, c, t, estilos.sEnc)
         );
@@ -268,7 +259,7 @@ async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
 
         rowsMeta.push({ hpt: 8 }); r++;
 
-        // ── TABLA 2: Directorio de contacto ──────────────────────────────
+        // ── Directorio de contacto ───────────────────────────────────────
         addCell(r, 0, 'Directorio de contacto', estilos.sSeccion);
         for (let c = 1; c < 8; c++) addCell(r, c, '', estilos.sSeccion);
         merges.push({ s: { r, c: 0 }, e: { r, c: 7 } });
@@ -299,7 +290,7 @@ async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
         merges.push({ s: { r, c: 0 }, e: { r, c: 7 } });
         r++;
 
-        // ── Metadatos de hoja ─────────────────────────────────────────────
+        // ── Configuración de la hoja ──────────────────────────────────────
         ws['!merges'] = merges;
         ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: directoryHeaderRow, c: 0 }, e: { r: directoryHeaderRow, c: 5 } }) };
         ws['!freeze'] = { xSplit: 0, ySplit: 8 };
@@ -331,28 +322,26 @@ async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
 }
 
 /**
- * Genera y retorna un Excel por docente para todos los docentes del sistema.
- * Devuelve un array de { teacherName, buffer, weekStart, weekEnd, courseCount }.
+ * Genera un reporte semanal en Excel para cada docente del sistema.
+ * Devuelve una lista con { teacherName, buffer, weekStart, weekEnd, courseCount }.
  *
  * @param {Object} [options]
  * @param {Date} [options.referenceDate]
  */
-export async function createWeeklyReportsByTeacher({ referenceDate } = {}) {
-    const { weekStart, weekEnd } = getPreviousWeekRange(referenceDate);
+export async function crearReportesSemanalesPorDocente({ referenceDate } = {}) {
+    const { weekStart, weekEnd } = obtenerRangoSemanaAnterior(referenceDate);
 
-    console.log(`[attendanceService] Generando reportes por docente: ${weekStart} → ${weekEnd}`);
+    console.log(`[servicioAsistencia] Generando reportes por docente: ${weekStart} → ${weekEnd}`);
 
-    // Fechas lunes–sábado
     const dates = [];
     const [sy, sm, sd] = weekStart.split('-').map(Number);
     const [ey, em, ed] = weekEnd.split('-').map(Number);
     const start = new Date(sy, sm - 1, sd);
     const end   = new Date(ey, em - 1, ed);
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        dates.push(fmtBogota(d));
+        dates.push(formatearFechaBogota(d));
     }
 
-    // Obtener solo docentes que tienen cursos
     const teachers = await prisma.docente.findMany({
         where: { courses: { some: {} } },
         select: { id: true, name: true, email: true },
@@ -370,11 +359,10 @@ export async function createWeeklyReportsByTeacher({ referenceDate } = {}) {
         });
 
         if (!buffer) {
-            console.log(`[attendanceService] Sin cursos con estudiantes para: ${teacher.name}`);
+            console.log(`[servicioAsistencia] Sin cursos con estudiantes para: ${teacher.name}`);
             continue;
         }
 
-        // Contar cursos del docente
         const courseCount = await prisma.curso.count({ where: { teacherId: teacher.id } });
 
         reportes.push({
@@ -386,15 +374,15 @@ export async function createWeeklyReportsByTeacher({ referenceDate } = {}) {
             courseCount,
         });
 
-        console.log(`[attendanceService] Reporte generado: ${teacher.name} (${courseCount} materias)`);
+        console.log(`[servicioAsistencia] Reporte generado: ${teacher.name} (${courseCount} materias)`);
     }
 
     return reportes;
 }
 
-export async function createWeeklyReportForTeacher({ teacherId, referenceDate } = {}) {
+export async function crearReporteSemanalPorDocente({ teacherId, referenceDate } = {}) {
     if (!teacherId) return null;
-    const { weekStart, weekEnd } = getPreviousWeekRange(referenceDate);
+    const { weekStart, weekEnd } = obtenerRangoSemanaAnterior(referenceDate);
 
     const teacher = await prisma.docente.findUnique({
         where: { id: teacherId },
@@ -408,7 +396,7 @@ export async function createWeeklyReportForTeacher({ teacherId, referenceDate } 
     const start = new Date(sy, sm - 1, sd);
     const end = new Date(ey, em - 1, ed);
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        dates.push(fmtBogota(d));
+        dates.push(formatearFechaBogota(d));
     }
 
     const buffer = await generarExcelDocente({
@@ -431,11 +419,11 @@ export async function createWeeklyReportForTeacher({ teacherId, referenceDate } 
 }
 
 /**
- * @deprecated Usar createWeeklyReportsByTeacher en su lugar.
- * Mantenido por compatibilidad con código existente.
+ * @deprecated Usar crearReportesSemanalesPorDocente en su lugar.
+ * Se conserva para mantener la compatibilidad con el código existente.
  */
-export async function createWeeklyCourseExcelReport({ referenceDate } = {}) {
-    const reportes = await createWeeklyReportsByTeacher({ referenceDate });
+export async function crearReporteExcelSemanalCurso({ referenceDate } = {}) {
+    const reportes = await crearReportesSemanalesPorDocente({ referenceDate });
     if (reportes.length === 0) return { buffer: Buffer.alloc(0), weekStart: '', weekEnd: '', courseCount: 0, totalRecords: 0 };
     const r = reportes[0];
     return { buffer: r.buffer, weekStart: r.weekStart, weekEnd: r.weekEnd, courseCount: r.courseCount, totalRecords: 0 };
@@ -443,16 +431,16 @@ export async function createWeeklyCourseExcelReport({ referenceDate } = {}) {
 
 /**
  * Genera un Excel de resumen semestral con una fila por curso.
- * Formato similar al archivo "Reporte de Asistencia" institucional:
- *   - Hoja "Asistencia": CODIGO, DOCENTE, MATERIA, GRUPO, MATRI., semanas (01-N), APROBARON
- *   - Hoja "Estudiantes Especiales": plantilla con estudiantes en riesgo crítico
+ * Sigue la estructura del reporte institucional de asistencia:
+ *   - "Asistencia": código, docente, materia, grupo, estudiantes matriculados, semanas y aprobados
+ *   - "Estudiantes Especiales": estudiantes con un nivel crítico de inasistencia
  *
  * @param {Object} [params]
- * @param {string} [params.anio]    - Filtrar por año académico
- * @param {string} [params.periodo] - Filtrar por período académico
+ * @param {string} [params.anio]    - Año académico que se desea consultar
+ * @param {string} [params.periodo] - Período académico que se desea consultar
  * @returns {Promise<Buffer|null>}
  */
-export async function createSemesterSummaryExcel({ anio, periodo } = {}) {
+export async function crearExcelResumenSemestral({ anio, periodo } = {}) {
     const filtroCurso = {};
     if (anio)    filtroCurso.academicYear   = anio;
     if (periodo) filtroCurso.academicPeriod = periodo;
@@ -475,20 +463,26 @@ export async function createSemesterSummaryExcel({ anio, periodo } = {}) {
         select: { courseId: true, studentId: true, date: true, present: true },
     });
 
-    // Determinar semanas únicas de forma secuencial (01, 02, 03...)
     const lunesSet = new Set();
-    for (const a of todasAsistencias) lunesSet.add(getLunesSemana(a.date));
-    const semanas = [...lunesSet].sort(); // array de 'YYYY-MM-DD' lunes
+    for (const a of todasAsistencias) lunesSet.add(obtenerLunesSemana(a.date));
+    const semanas = [...lunesSet].sort();
     const numSemanas = semanas.length;
     const semanaLabel = (i) => String(i + 1).padStart(2, '0');
 
-    // Presentes por curso y semana: { courseId -> { lunesStr -> count } }
+    // Agrupa los datos por curso para procesar las asistencias una sola vez.
     const presentesPorCursoSemana = {};
+    const asistenciasPorCursoEstudiante = {};
     for (const a of todasAsistencias) {
         if (!presentesPorCursoSemana[a.courseId]) presentesPorCursoSemana[a.courseId] = {};
-        const lunes = getLunesSemana(a.date);
+        const lunes = obtenerLunesSemana(a.date);
         if (!presentesPorCursoSemana[a.courseId][lunes]) presentesPorCursoSemana[a.courseId][lunes] = 0;
         if (a.present) presentesPorCursoSemana[a.courseId][lunes]++;
+
+        if (!asistenciasPorCursoEstudiante[a.courseId]) asistenciasPorCursoEstudiante[a.courseId] = {};
+        const asistenciasCurso = asistenciasPorCursoEstudiante[a.courseId];
+        if (!asistenciasCurso[a.studentId]) asistenciasCurso[a.studentId] = { presentes: 0, total: 0 };
+        asistenciasCurso[a.studentId].total++;
+        if (a.present) asistenciasCurso[a.studentId].presentes++;
     }
 
     // ── Estilos ──────────────────────────────────────────────────────────────
@@ -523,14 +517,12 @@ export async function createSemesterSummaryExcel({ anio, periodo } = {}) {
 
     let r = 0;
 
-    // Fila 0: título
     const anioPeriodo = (anio && periodo) ? `${anio}-${periodo}` : (anio || periodo || new Date().getFullYear());
     addC(r, 0, `Reporte de Asistencia ${anioPeriodo} — UTS Telecomunicaciones`, sTitulo);
     for (let c = 1; c <= lastCol; c++) addC(r, c, '', sTitulo);
     merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: lastCol } });
     rowsMeta.push({ hpt: 26 }); r++;
 
-    // Fila 1: encabezados fijos + "SEMANA" (merged) + APROBARON
     addC(r, 0, 'CODIGO',   sEncLeft);
     addC(r, 1, 'DOCENTE',  sEncLeft);
     addC(r, 2, 'MATERIA',  sEncLeft);
@@ -542,14 +534,12 @@ export async function createSemesterSummaryExcel({ anio, periodo } = {}) {
     if (numSemanas > 1) merges.push({ s: { r: 1, c: 5 }, e: { r: 1, c: 5 + numSemanas - 1 } });
     rowsMeta.push({ hpt: 24 }); r++;
 
-    // Fila 2: números de semana
     addC(r, 0, '', sEncLeft); addC(r, 1, '', sEncLeft); addC(r, 2, '', sEncLeft);
     addC(r, 3, '', sEncPurp); addC(r, 4, '', sEncPurp);
     semanas.forEach((_, i) => addC(r, 5 + i, semanaLabel(i), sEncVerde));
     addC(r, lastCol, '', sEncPurp);
     rowsMeta.push({ hpt: 20 }); r++;
 
-    // Filas de datos
     const totalesSemana = new Array(numSemanas).fill(0);
     const totalesMatri  = { total: 0 };
     const totalesAprobaron = { total: 0 };
@@ -560,15 +550,8 @@ export async function createSemesterSummaryExcel({ anio, periodo } = {}) {
         const matriculados = curso.matriculas.length;
         totalesMatri.total += matriculados;
 
-        // Calcular APROBARON: estudiantes con >70% de asistencia en el semestre
-        const asistenciasPorEstudiante = {};
-        const totalClasesCurso = todasAsistencias.filter(a => a.courseId === curso.id).length;
-        for (const a of todasAsistencias) {
-            if (a.courseId !== curso.id) continue;
-            if (!asistenciasPorEstudiante[a.studentId]) asistenciasPorEstudiante[a.studentId] = { presentes: 0, total: 0 };
-            asistenciasPorEstudiante[a.studentId].total++;
-            if (a.present) asistenciasPorEstudiante[a.studentId].presentes++;
-        }
+        // Cuenta los estudiantes que alcanzaron al menos un 70 % de asistencia.
+        const asistenciasPorEstudiante = asistenciasPorCursoEstudiante[curso.id] ?? {};
         const aprobaron = Object.values(asistenciasPorEstudiante).filter(
             ({ presentes, total }) => total > 0 && (presentes / total) >= 0.7
         ).length;
@@ -588,14 +571,13 @@ export async function createSemesterSummaryExcel({ anio, periodo } = {}) {
         rowsMeta.push({ hpt: 20 }); r++;
     });
 
-    // Fila de totales
     addC(r, 0, 'TOTALES', sTotal);
     for (let c = 1; c <= 4; c++) addC(r, c, '', sTotal);
     semanas.forEach((_, i) => addC(r, 5 + i, totalesSemana[i], sTotal));
     addC(r, lastCol, totalesAprobaron.total, sTotal);
     rowsMeta.push({ hpt: 22 }); r++;
 
-    // Fila de porcentajes (presentes / matriculados totales)
+    // Calcula el porcentaje semanal sobre el total de estudiantes matriculados.
     const sPct = { fill: { fgColor: { rgb: 'EDE9F7' } }, font: { name: 'Courier New', sz: 9, color: { rgb: '6B2D8B' } }, alignment: { horizontal: 'center', vertical: 'center' }, border };
     addC(r, 0, '% asistencia', sPct);
     for (let c = 1; c <= 4; c++) addC(r, c, '', sPct);
@@ -608,25 +590,22 @@ export async function createSemesterSummaryExcel({ anio, periodo } = {}) {
     addC(r, lastCol, '', sPct);
     rowsMeta.push({ hpt: 18 }); r++;
 
-    // Nota de generación
     addC(r, 0, `Informe generado: ${new Date().toLocaleString('es-CO', { timeZone: 'America/Bogota' })}`, sNota);
     merges.push({ s: { r, c: 0 }, e: { r, c: lastCol } });
     rowsMeta.push({ hpt: 16 }); r++;
 
-    // Metadatos de hoja
     ws['!ref']    = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: r - 1, c: lastCol } });
     ws['!merges'] = merges;
     ws['!rows']   = rowsMeta;
-    ws['!freeze'] = { xSplit: 5, ySplit: 3 }; // congelar columnas fijas y filas de encabezado
-    // Anchos de columna
+    ws['!freeze'] = { xSplit: 5, ySplit: 3 }; // Mantiene visibles las columnas fijas y los encabezados.
     const colWidths = [
-        { wch: 14 }, // CODIGO
-        { wch: 30 }, // DOCENTE
-        { wch: 36 }, // MATERIA
-        { wch: 10 }, // GRUPO
-        { wch: 9  }, // MATRI.
-        ...semanas.map(() => ({ wch: 7 })), // semanas
-        { wch: 12 }, // APROBARON
+        { wch: 14 },
+        { wch: 30 },
+        { wch: 36 },
+        { wch: 10 },
+        { wch: 9  },
+        ...semanas.map(() => ({ wch: 7 })),
+        { wch: 12 },
     ];
     ws['!cols'] = colWidths;
     ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 2, c: 0 }, e: { r: 2, c: lastCol } }) };
@@ -655,7 +634,7 @@ export async function createSemesterSummaryExcel({ anio, periodo } = {}) {
     const headersEsp = ['DOCUMENTO', 'NOMBRE', 'CORREO', 'TELEFONOS', 'ASIGNATURA', 'SEMESTRE', 'DOCENTE QUIEN REPORTA', 'OBSERVACIONES'];
     headersEsp.forEach((h, c) => addE(3, c, h, sEncLeft));
 
-    // Estudiantes con asistencia < 60% en algún curso (casos críticos)
+    // Incluye a quienes tienen menos del 60 % de asistencia en algún curso.
     let resp = 4;
     const estudiantesEnRiesgo = await prisma.estudiante.findMany({
         where: { attendances: { some: { courseId: { in: courseIds } } } },

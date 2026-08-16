@@ -1,6 +1,6 @@
 export const dynamic = 'force-dynamic';
 
-import { obtenerUsuarioDePeticion } from '@/lib/auth'
+import { obtenerUsuarioDePeticion } from '@/lib/autenticacion'
 
 // POST /api/auditoria/registro
 export async function POST(request) {
@@ -13,7 +13,7 @@ export async function POST(request) {
         const target = body.target || 'REPORT'
         const details = body.details || {}
 
-        const { registrarAccion } = await import('@/lib/auditService')
+        const { registrarAccion } = await import('@/lib/servicioAuditoria')
         await registrarAccion({
             usuario,
             accion: action,

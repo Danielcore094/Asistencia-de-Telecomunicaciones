@@ -15,7 +15,7 @@ import cron from 'node-cron';
 
 // Importar el job de notificaciones
 // Usamos dynamic import para compatibilidad con el módulo ESM de Next.js
-let runWeeklyNotification;
+let ejecutarNotificacionSemanalInasistencias;
 
 const dev = process.env.NODE_ENV !== 'production';
 const PORT = parseInt(process.env.PORT || '4000', 10);
@@ -31,14 +31,14 @@ const handle = app.getRequestHandler();
 
 app.prepare().then(async () => {
     // Importar el job después de que Next.js esté listo
-    const jobModule = await import('./src/jobs/weeklyAbsenceNotification.js');
-    runWeeklyNotification = jobModule.runWeeklyNotification;
+    const moduloNotificacion = await import('./src/jobs/notificacionSemanalInasistencias.js');
+    ejecutarNotificacionSemanalInasistencias = moduloNotificacion.ejecutarNotificacionSemanalInasistencias;
 
     if (ejecutarCron) {
         cron.schedule('0 9 * * 0', async () => {
             console.log('\n[cron] Tarea semanal ejecutada - Domingo 09:00');
             try {
-                await runWeeklyNotification();
+                await ejecutarNotificacionSemanalInasistencias();
             } catch (err) {
                 console.error('[cron] Error en tarea programada:', err.message);
             }

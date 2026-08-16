@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 
-import { obtenerUsuarioDePeticion } from '@/lib/auth';
-import { runWeeklyNotification } from '@/jobs/weeklyAbsenceNotification';
+import { obtenerUsuarioDePeticion } from '@/lib/autenticacion';
+import { ejecutarNotificacionSemanalInasistencias } from '@/jobs/notificacionSemanalInasistencias';
 import prisma from '@/lib/prisma';
 
 /**
@@ -21,7 +21,7 @@ export async function POST(request) {
     console.log(`[send-weekly] Ejecución manual por: ${usuario.email} a las ${new Date().toISOString()}`);
 
     try {
-        const resultados = await runWeeklyNotification();
+        const resultados = await ejecutarNotificacionSemanalInasistencias();
         return Response.json({
             success: true,
             message: 'Proceso de notificación completado',
@@ -88,18 +88,18 @@ export async function GET(request) {
 
 /** Helper: calcula lunes de la semana actual en hora Colombia */
 function obtenerSemanaActual() {
-    const fmtBogota = (d) => new Intl.DateTimeFormat('en-CA', {
+    const formatearFechaBogota = (d) => new Intl.DateTimeFormat('en-CA', {
         timeZone: 'America/Bogota',
         year: 'numeric', month: '2-digit', day: '2-digit',
     }).format(d);
 
-    const hoy = fmtBogota(new Date());
+    const hoy = formatearFechaBogota(new Date());
     const [y, m, d] = hoy.split('-').map(Number);
     const fecha = new Date(y, m - 1, d);
     const diaSemana = fecha.getDay();
     const diasAlLunes = diaSemana === 0 ? -6 : 1 - diaSemana;
     const lunes = new Date(fecha);
     lunes.setDate(fecha.getDate() + diasAlLunes);
-    return { weekStart: fmtBogota(lunes) };
+    return { weekStart: formatearFechaBogota(lunes) };
 }
 

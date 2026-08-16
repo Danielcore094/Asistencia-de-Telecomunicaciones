@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { obtenerUsuarioDePeticion, verificarAccesoCurso } from '@/lib/auth'
+import { obtenerUsuarioDePeticion, verificarAccesoCurso } from '@/lib/autenticacion'
 
 function limpiarTexto(valor) {
     if (valor === null || valor === undefined) return null
@@ -10,26 +10,26 @@ function limpiarTexto(valor) {
     return texto === '' ? null : texto
 }
 
-const parseTime = (timeStr) => {
-    if (!timeStr) return null;
-    const [h, m] = timeStr.split(':').map(Number);
+const convertirHoraAMinutos = (hora) => {
+    if (!hora) return null;
+    const [h, m] = hora.split(':').map(Number);
     return h * 60 + m;
 };
 
-const hayCruce = (c1, c2) => {
+const hayCruce = (curso1, curso2) => {
     const horarios1 = [];
-    if (c1.dia && c1.horaInicio && c1.horaFin) horarios1.push({ dia: c1.dia, start: parseTime(c1.horaInicio), end: parseTime(c1.horaFin) });
-    if (c1.dia2 && c1.horaInicio2 && c1.horaFin2) horarios1.push({ dia: c1.dia2, start: parseTime(c1.horaInicio2), end: parseTime(c1.horaFin2) });
+    if (curso1.dia && curso1.horaInicio && curso1.horaFin) horarios1.push({ dia: curso1.dia, inicio: convertirHoraAMinutos(curso1.horaInicio), fin: convertirHoraAMinutos(curso1.horaFin) });
+    if (curso1.dia2 && curso1.horaInicio2 && curso1.horaFin2) horarios1.push({ dia: curso1.dia2, inicio: convertirHoraAMinutos(curso1.horaInicio2), fin: convertirHoraAMinutos(curso1.horaFin2) });
 
     const horarios2 = [];
-    if (c2.dia && c2.horaInicio && c2.horaFin) horarios2.push({ dia: c2.dia, start: parseTime(c2.horaInicio), end: parseTime(c2.horaFin) });
-    if (c2.dia2 && c2.horaInicio2 && c2.horaFin2) horarios2.push({ dia: c2.dia2, start: parseTime(c2.horaInicio2), end: parseTime(c2.horaFin2) });
+    if (curso2.dia && curso2.horaInicio && curso2.horaFin) horarios2.push({ dia: curso2.dia, inicio: convertirHoraAMinutos(curso2.horaInicio), fin: convertirHoraAMinutos(curso2.horaFin) });
+    if (curso2.dia2 && curso2.horaInicio2 && curso2.horaFin2) horarios2.push({ dia: curso2.dia2, inicio: convertirHoraAMinutos(curso2.horaInicio2), fin: convertirHoraAMinutos(curso2.horaFin2) });
 
-    for (const h1 of horarios1) {
-        for (const h2 of horarios2) {
-            if (h1.dia === h2.dia) {
+    for (const horario1 of horarios1) {
+        for (const horario2 of horarios2) {
+            if (horario1.dia === horario2.dia) {
                 // Cruce: empiezan antes de que termine el otro, y terminan después de que empiece el otro
-                if (h1.start < h2.end && h1.end > h2.start) {
+                if (horario1.inicio < horario2.fin && horario1.fin > horario2.inicio) {
                     return true;
                 }
             }
@@ -235,7 +235,7 @@ export async function POST(request) {
         })
 
         // Registro de auditoría
-        const { registrarAccion } = await import('@/lib/auditService');
+        const { registrarAccion } = await import('@/lib/servicioAuditoria');
         registrarAccion({
             usuario,
             accion: 'CREAR_ESTUDIANTE',
