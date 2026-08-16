@@ -56,7 +56,7 @@ const cargarCatalogoMaterias = async () => {
                     programa: materia.programa,
                 },
             },
-            update: datos,
+            update: {},
             create: {
                 codigo: materia.codigo,
                 ...datos,

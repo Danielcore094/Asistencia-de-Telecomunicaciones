@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Inicio from './pages/Inicio.jsx';
 import Materias from './pages/Materias.jsx';
+import CatalogoMaterias from './pages/CatalogoMaterias.jsx';
 import Estudiantes from './pages/Estudiantes.jsx';
 import Asistencia from './pages/Asistencia.jsx';
 import Historial from './pages/Historial.jsx';
@@ -28,6 +29,7 @@ export default function EnrutadorApp() {
                             <Routes>
                                 <Route path="/" element={<Inicio />} />
                                 <Route path="/cursos" element={<Materias />} />
+                                <Route path="/catalogo-materias" element={<CatalogoMaterias />} />
                                 <Route path="/estudiantes" element={<Estudiantes />} />
                                 <Route path="/asistencia" element={<Asistencia />} />
                                 <Route path="/historial" element={<Historial />} />

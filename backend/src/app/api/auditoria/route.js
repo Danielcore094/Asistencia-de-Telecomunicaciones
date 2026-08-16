@@ -22,9 +22,29 @@ export async function GET(request) {
             orderBy: { createdAt: 'desc' }
         })
 
+        const idsCursos = [...new Set(logs
+            .filter((log) => log.target === 'COURSE' && log.targetId)
+            .map((log) => log.targetId))]
+        const cursos = idsCursos.length > 0
+            ? await prisma.curso.findMany({
+                where: { id: { in: idsCursos } },
+                select: { id: true, numero: true },
+            })
+            : []
+        const numerosPorCurso = new Map(cursos.map((curso) => [
+            curso.id,
+            String(curso.numero).padStart(6, '0'),
+        ]))
+        const logsConIdentificador = logs.map((log) => ({
+            ...log,
+            identificadorEntidad: log.target === 'COURSE'
+                ? numerosPorCurso.get(log.targetId) || log.details?.identificadorEntidad || null
+                : null,
+        }))
+
         const total = await prisma.registroAuditoria.count()
 
-        return Response.json({ logs, total })
+        return Response.json({ logs: logsConIdentificador, total })
     } catch (error) {
         console.error('[Audit API Error]:', error)
         return Response.json({ error: 'Error al obtener logs de auditoría' }, { status: 500 })

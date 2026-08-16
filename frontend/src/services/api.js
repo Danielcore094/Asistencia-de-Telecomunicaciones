@@ -179,4 +179,13 @@ export const descargarResumenSemestral = (params = {}) =>
 export const obtenerCatalogoMaterias = () =>
     clienteApi.get('/materias/catalogo').then(r => r.data);
 
+export const crearMateriaCatalogo = (datos) =>
+    clienteApi.post('/materias/catalogo', datos).then(respuesta => respuesta.data);
+
+export const actualizarMateriaCatalogo = (id, datos) =>
+    clienteApi.put(`/materias/catalogo/${id}`, datos).then(respuesta => respuesta.data);
+
+export const eliminarMateriaCatalogo = (id) =>
+    clienteApi.delete(`/materias/catalogo/${id}`).then(respuesta => respuesta.data);
+
 export default clienteApi;

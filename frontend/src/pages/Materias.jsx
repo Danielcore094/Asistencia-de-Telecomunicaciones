@@ -419,10 +419,10 @@ export default function Materias() {
                                     type="button"
                                     onClick={() => setModalFormularioVisible(true)}
                                     className="boton-primario inline-flex items-center gap-2"
-                                    title="Crear Nueva Materia"
+                                    title="Crear nueva asignación"
                                 >
                                     <Plus size={16} />
-                                    Nueva Materia
+                                    Nueva asignación
                                 </button>
                                 <button
                                     type="button"
@@ -455,7 +455,7 @@ export default function Materias() {
                         <div className="flex items-center justify-between px-6 py-4 border-b shrink-0" style={{ borderColor: 'var(--color-border)' }}>
                             <h3 className="text-lg font-semibold flex items-center gap-2">
                                 {cursoEnEdicion ? <Pencil size={20} className="text-primario" /> : <Plus size={20} className="text-primario" />}
-                                {cursoEnEdicion ? 'Editar Materia' : 'Crear Nueva Materia'}
+                                {cursoEnEdicion ? 'Editar asignación' : 'Crear nueva asignación'}
                             </h3>
                             <button type="button" onClick={cancelarEdicion} disabled={guardandoCurso} className="p-1.5 rounded-md disabled:opacity-50" style={{ color: 'var(--color-muted)' }}>
                                 <X size={20} />

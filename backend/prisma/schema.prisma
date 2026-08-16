@@ -29,6 +29,7 @@ model Estudiante {
 
 model Curso {
   id              String        @id @default(cuid()) @map("id")
+  numero          Int           @unique @default(autoincrement()) @map("numero")
   name            String        @map("nombre")
   code            String        @map("codigo")
   teacherId       String        @map("docente_id")

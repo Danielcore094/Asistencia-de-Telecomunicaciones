@@ -15,6 +15,21 @@ import {
     ChevronRight
 } from 'lucide-react';
 
+const etiquetasEntidad = {
+    AUTH: 'Autenticación',
+    COURSE: 'Materia',
+    REPORT: 'Reporte',
+    STUDENT: 'Estudiante',
+    ATTENDANCE: 'Asistencia',
+    MATERIA_CATALOGO: 'Catálogo de materias',
+    TEACHER: 'Docente',
+    USER: 'Usuario',
+    NOTIFICATION: 'Notificación',
+};
+
+const obtenerEtiquetaEntidad = (entidad) => etiquetasEntidad[entidad]
+    || entidad.replace(/_/g, ' ').toLowerCase().replace(/^\w/, (letra) => letra.toUpperCase());
+
 const Auditoria = () => {
     const [registros, setRegistros] = useState([]);
     const [cargando, setCargando] = useState(true);
@@ -74,6 +89,7 @@ const Auditoria = () => {
             grupo: 'Grupo',
             group: 'Grupo',
             targetId: 'ID de entidad',
+            identificadorEntidad: 'ID de materia',
             userId: 'ID de usuario',
             name: 'Nombre',
             docente: 'Docente',
@@ -136,7 +152,14 @@ const Auditoria = () => {
                 }
             }
         }
-        if (log.targetId && !Object.prototype.hasOwnProperty.call(detalles, 'targetId')) {
+        if (log.target === 'COURSE') {
+            for (let i = filasTodas.length - 1; i >= 0; i--) {
+                if (filasTodas[i][0] === 'targetId') filasTodas.splice(i, 1);
+            }
+            if (log.identificadorEntidad && !Object.prototype.hasOwnProperty.call(detalles, 'identificadorEntidad')) {
+                filasTodas.unshift(['identificadorEntidad', log.identificadorEntidad]);
+            }
+        } else if (log.targetId && !Object.prototype.hasOwnProperty.call(detalles, 'targetId')) {
             filasTodas.unshift(['targetId', log.targetId]);
         }
 
@@ -203,7 +226,7 @@ const Auditoria = () => {
     const logsFiltrados = registros.filter(log => 
         log.userName.toLowerCase().includes(terminoBusqueda.toLowerCase()) ||
         log.action.toLowerCase().includes(terminoBusqueda.toLowerCase()) ||
-        log.target.toLowerCase().includes(terminoBusqueda.toLowerCase())
+        obtenerEtiquetaEntidad(log.target).toLowerCase().includes(terminoBusqueda.toLowerCase())
     );
 
     return (
@@ -333,7 +356,7 @@ const Auditoria = () => {
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                            {log.target}
+                                            {obtenerEtiquetaEntidad(log.target)}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">

@@ -11,7 +11,8 @@ import {
     History,
     User,
     ChevronDown,
-    ShieldCheck
+    ShieldCheck,
+    Library
 } from 'lucide-react';
 import { useAutenticacion } from '../context/ContextoAutenticacion';
 import { useCurso } from '../context/ContextoCurso';
@@ -20,6 +21,7 @@ import { useCurso } from '../context/ContextoCurso';
 const elementosNavegacion = [
     { ruta: '/', etiqueta: 'Panel Principal', icono: LayoutDashboard },
     { ruta: '/cursos', etiqueta: 'Materias', icono: BookOpen },
+    { ruta: '/catalogo-materias', etiqueta: 'Catálogo', icono: Library, adminOnly: true },
     { ruta: '/estudiantes', etiqueta: 'Estudiantes', icono: Users },
     { ruta: '/asistencia', etiqueta: 'Asistencia', icono: ClipboardCheck, docenteOnly: true },
     { ruta: '/historial', etiqueta: 'Historial', icono: History },
@@ -178,7 +180,7 @@ export default function LayoutPrincipal({ children }) {
             <nav className="fixed bottom-0 left-0 right-0 z-20 border-t topbar-bg md:hidden">
                 <ul
                     className={`grid ${
-                        usuario?.role === 'ADMIN' ? 'grid-cols-7' : 'grid-cols-6'
+                        usuario?.role === 'ADMIN' ? 'grid-cols-8' : 'grid-cols-6'
                     }`}
                 >
                     {elementosNavegacion
