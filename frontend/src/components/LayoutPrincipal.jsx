@@ -16,7 +16,6 @@ import {
 } from 'lucide-react';
 import { useAutenticacion } from '../context/ContextoAutenticacion';
 import { useCurso } from '../context/ContextoCurso';
-// Elementos del menú de navegación principal
 
 const elementosNavegacion = [
     { ruta: '/', etiqueta: 'Panel Principal', icono: LayoutDashboard },
@@ -42,7 +41,6 @@ export default function LayoutPrincipal({ children }) {
         navegar('/login');
     };
 
-    // Cerrar menú al hacer clic fuera
     useEffect(() => {
         function handleClickOutside(event) {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -57,7 +55,6 @@ export default function LayoutPrincipal({ children }) {
 
     return (
         <div className="min-h-screen bg-beige text-texto">
-            {/* Barra superior */}
 
             <header
                 className="fixed left-0 right-0 top-0 z-20 border-b topbar-bg"
@@ -71,7 +68,6 @@ export default function LayoutPrincipal({ children }) {
                         gap: 'var(--space-4)',
                     }}
                 >
-                    {/* Logo */}
                     <div className="flex items-center shrink-0">
                         <img
                             src="/logo.png"
@@ -80,14 +76,12 @@ export default function LayoutPrincipal({ children }) {
                         />
                     </div>
 
-                    {/* Título centrado — solo desktop */}
                     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none hidden xl:block">
                         <h1 className="text-xl font-bold text-primario">
                             Control de Asistencia Telecomunicaciones
                         </h1>
                     </div>
 
-                    {/* Título fallback mobile */}
                     <div className="xl:hidden flex-1 px-2 text-center">
                         <h1 className="text-base font-bold text-primario truncate">
                             Control de Asistencia
@@ -109,7 +103,6 @@ export default function LayoutPrincipal({ children }) {
                             <ChevronDown size={14} className="text-texto-secundario" aria-label="Abrir menú" />
                         </button>
 
-                        {/* Menú Desplegable */}
                         {menuAbierto && (
                             <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-borde bg-superficie shadow-lg overflow-hidden py-1">
                                 <Link
@@ -137,7 +130,6 @@ export default function LayoutPrincipal({ children }) {
                 </div>
             </header>
 
-            {/* Sidebar de escritorio */}
 
             <aside className="sidebar-nav fixed bottom-0 left-0 top-topbar z-10 hidden w-sidebar border-r md:block">
                 <nav className="flex h-full flex-col px-3 pt-24 pb-4">
@@ -167,7 +159,6 @@ export default function LayoutPrincipal({ children }) {
                 </nav>
             </aside>
 
-            {/* Contenido principal */}
 
             <main className="px-4 pb-24 pt-[calc(var(--topbar-height)+var(--space-8))] md:pl-[calc(var(--sidebar-width)+var(--space-8))] md:pr-8">
                 <div className="mx-auto w-full max-w-[var(--content-max-width)]">
@@ -175,7 +166,6 @@ export default function LayoutPrincipal({ children }) {
                 </div>
             </main>
 
-            {/* Navegación inferior en mobile */}
 
             <nav className="fixed bottom-0 left-0 right-0 z-20 border-t topbar-bg md:hidden">
                 <ul

@@ -3,11 +3,6 @@ export const dynamic = 'force-dynamic';
 import { obtenerUsuarioDePeticion } from '@/lib/autenticacion';
 import prisma from '@/lib/prisma';
 
-/**
- * GET /api/notificaciones/estado-whatsapp
- * Devuelve el historial reciente de notificaciones WhatsApp.
- * Solo accesible por ADMIN.
- */
 export async function GET(request) {
     const usuario = obtenerUsuarioDePeticion(request);
     if (!usuario) {
@@ -20,7 +15,6 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const limite = Math.min(parseInt(searchParams.get('limite') || '50'), 100);
 
-    // Últimos N registros de WhatsApp ordenados por envío más reciente
     const logs = await prisma.registroNotificacionWhatsapp.findMany({
         take: limite,
         orderBy: { sentAt: 'desc' },
@@ -29,7 +23,6 @@ export async function GET(request) {
         },
     });
 
-    // Obtener nombres de cursos para los logs (courseIds únicos)
     const courseIds = [...new Set(logs.map(l => l.courseId))];
     const cursos = courseIds.length > 0
         ? await prisma.curso.findMany({
@@ -39,7 +32,6 @@ export async function GET(request) {
         : [];
     const cursoMap = Object.fromEntries(cursos.map(c => [c.id, c.name]));
 
-    // Resumen global
     const [totalEnviados, totalErrores, totalOmitidos] = await Promise.all([
         prisma.registroNotificacionWhatsapp.count({ where: { status: 'SUCCESS' } }),
         prisma.registroNotificacionWhatsapp.count({ where: { status: 'ERROR'   } }),

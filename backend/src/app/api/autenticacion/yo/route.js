@@ -2,7 +2,6 @@ export const dynamic = 'force-dynamic';
 
 import { obtenerUsuarioDePeticion } from '@/lib/autenticacion'
 
-// GET /api/autenticacion/yo: devuelve los datos del docente autenticado.
 export async function GET(request) {
     const usuario = obtenerUsuarioDePeticion(request)
     if (!usuario) {

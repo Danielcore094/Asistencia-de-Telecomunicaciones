@@ -3,31 +3,22 @@ export const dynamic = 'force-dynamic';
 import prisma from '@/lib/prisma';
 import { obtenerUsuarioDePeticion } from '@/lib/autenticacion';
 import { formatearFechaBogota } from '@/lib/utilidadesFechas';
-// Importamos 'headers' para forzar a Next.js a tratar la ruta como dinámica en el build de forma interna
 import { headers } from 'next/headers';
 
-// GET /api/asistencia/hoy
-// Devuelve el % de asistencia del día de hoy por materia.
-// Params opcionales: docenteId (para filtrar solo sus materias)
-// Response: { cursos: [{ id, nombre, porcentaje, presentes, total }] }
 export async function GET(request) {
     try {
-        // Al llamar a headers(), Next.js aborta de inmediato cualquier intento de pre-renderizar estáticamente esta ruta
-        // Verificar autenticación
         const usuario = obtenerUsuarioDePeticion(request);
         if (!usuario) {
             return Response.json({ error: 'No autorizado' }, { status: 401 });
         }
 
         const sp = new URL(request.url).searchParams;
-        // TEACHER: solo ve sus propias materias. ADMIN: puede filtrar por docenteId o ver todo.
         const docenteId = usuario.role === 'ADMIN'
             ? (sp.get('docenteId') || null)
             : usuario.id;
 
         const hoy = formatearFechaBogota(new Date());
 
-        // 1. Obtener todos los cursos (opcionalmente filtrados por docente)
         const cursosWhere = docenteId ? { teacherId: docenteId } : {};
         const cursos = await prisma.curso.findMany({
             where: cursosWhere,
@@ -39,7 +30,6 @@ export async function GET(request) {
             return Response.json({ cursos: [] });
         }
 
-        // 2. Obtener registros de asistencia de hoy para todos esos cursos
         const cursoIds = cursos.map(c => c.id);
         const registros = await prisma.asistencia.findMany({
             where: {
@@ -49,7 +39,6 @@ export async function GET(request) {
             select: { courseId: true, present: true, status: true },
         });
 
-        // 3. Agrupar por curso y calcular porcentaje
         const agrupado = {};
         registros.forEach(r => {
             if (!agrupado[r.courseId]) {
@@ -61,7 +50,7 @@ export async function GET(request) {
         });
 
         const resultado = cursos
-            .filter(c => agrupado[c.id]) // solo los que tienen registro hoy
+            .filter(c => agrupado[c.id])
             .map(c => {
                 const { presentes, total } = agrupado[c.id];
                 const porcentaje = total > 0 ? Math.round((presentes / total) * 100) : 0;

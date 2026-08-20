@@ -17,7 +17,6 @@ export async function PUT(request) {
         const body = await request.json();
         const { name, currentPassword, newPassword } = body;
 
-        // Fetch user from DB
         const teacher = await prisma.docente.findUnique({
             where: { id: idUsuario },
         });
@@ -28,12 +27,10 @@ export async function PUT(request) {
 
         const updateData = {};
 
-        // Update name if provided
         if (name && name.trim() !== '') {
             updateData.name = name;
         }
 
-        // Update password if requested
         if (newPassword && newPassword.trim() !== '') {
             if (!currentPassword) {
                 return Response.json({ error: 'Se requiere la contraseña actual para cambiarla' }, { status: 400 });
@@ -53,7 +50,6 @@ export async function PUT(request) {
             updateData.passwordHash = await bcrypt.hash(newPassword, salt);
         }
 
-        // Apply changes
         if (Object.keys(updateData).length > 0) {
             await prisma.docente.update({
                 where: { id: idUsuario },
@@ -61,8 +57,6 @@ export async function PUT(request) {
             });
         }
 
-        // It is recommended to return a new token if the payload fields change (like name) 
-        // but for simplicity, the client can just rely on state update for now or re-fetch /me
         return Response.json({ success: true, message: 'Perfil actualizado correctamente' });
 
     } catch (error) {

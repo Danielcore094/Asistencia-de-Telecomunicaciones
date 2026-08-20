@@ -28,7 +28,6 @@ export function middleware(request) {
         return NextResponse.json({ error: 'Origen no permitido' }, { status: 403 })
     }
 
-    // Gestionar solicitudes de verificación previa OPTIONS.
     if (request.method === 'OPTIONS') {
         const response = new NextResponse(null, {
             status: 204,
@@ -41,7 +40,6 @@ export function middleware(request) {
     return origin ? aplicarEncabezadosCors(response, origin) : response
 }
 
-// Aplicar únicamente a las rutas de la API.
 export const config = {
     matcher: '/api/:path*',
 }

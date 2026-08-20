@@ -58,13 +58,11 @@ export default function Docentes() {
         setGuardando(true);
         try {
             if (editandoId) {
-                // Actualizar docente existente
                 const res = await api.put(`/docentes/${editandoId}`, formulario);
                 setProfesores(prev => prev.map(p => p.id === editandoId ? res.data : p));
                 toast.success('Docente actualizado correctamente');
                 cancelarEdicion();
             } else {
-                // Crear nuevo docente
                 const nuevoProfesor = await api.post('/docentes', formulario).then(r => r.data);
                 setProfesores(prev => [...prev, nuevoProfesor]);
                 setFormulario({ documento: '', nombre: '', correo: '', password: '', role: 'TEACHER' });
@@ -83,7 +81,7 @@ export default function Docentes() {
             documento: profesor.id,
             nombre: profesor.name,
             correo: profesor.email,
-            password: '', // Contraseña opcional en edición
+            password: '',
             role: profesor.role
         });
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -120,7 +118,6 @@ export default function Docentes() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-                {/* Formulario de creación */}
                 <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 self-start">
                     <h2 className="text-lg font-bold text-gray-800 mb-5 flex items-center gap-2">
                         {editandoId ? <Pencil size={20} className="text-amber-600" /> : <UserPlus size={20} className="text-brand-purple" />}
@@ -219,7 +216,6 @@ export default function Docentes() {
                     </form>
                 </div>
 
-                {/* Panel de acciones del sistema (solo ADMIN) */}
                 {usuario?.role === 'ADMIN' && (
                     <div className="lg:col-span-2 bg-gradient-to-br from-brand-purple to-purple-800 rounded-2xl shadow-lg border border-purple-700/50 p-6 self-start text-white">
                         <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
@@ -246,7 +242,6 @@ export default function Docentes() {
                     </div>
                 )}
 
-                {/* Listado de profesores */}
                 <div className="lg:col-span-3 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                     <div className="p-4 bg-gray-50 font-bold text-gray-700 border-b flex items-center gap-2">
                         <Users size={18} />

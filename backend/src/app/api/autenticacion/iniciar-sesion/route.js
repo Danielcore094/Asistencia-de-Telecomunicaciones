@@ -12,7 +12,6 @@ const obtenerIpCliente = (request) => {
     return ipReenviada?.split(',')[0].trim() || request.headers.get('x-real-ip') || 'desconocida'
 }
 
-// POST /api/autenticacion/iniciar-sesion: autenticación de docentes.
 export async function POST(request) {
     try {
         console.log('[Login] Intento de inicio de sesión recibido')
@@ -40,14 +39,12 @@ export async function POST(request) {
             return Response.json({ error: 'Demasiados intentos. Intenta nuevamente más tarde' }, { status: 429 })
         }
 
-        // Buscar docente por email
         const docente = await prisma.docente.findUnique({ where: { email } })
         if (!docente) {
             console.log(`[Login] Usuario no encontrado: ${email}`)
             return Response.json({ error: 'Credenciales incorrectas' }, { status: 401 })
         }
 
-        // Verificar contraseña
         const esValida = await bcrypt.compare(password, docente.passwordHash)
         if (!esValida) {
             console.log(`[Login] Contraseña incorrecta para: ${email}`)
@@ -56,7 +53,6 @@ export async function POST(request) {
 
         await Promise.all([limpiarIntentos(claveIp), limpiarIntentos(claveCuenta)])
 
-        // Generar token JWT
         const token = jwt.sign(
             { id: docente.id, email: docente.email, name: docente.name, role: docente.role },
             SECRETO,
@@ -65,7 +61,6 @@ export async function POST(request) {
 
         console.log(`[Login] Sesión iniciada: ${email} (${docente.role})`)
         
-        // Registro de auditoría
         const { registrarAccion } = await import('@/lib/servicioAuditoria');
         registrarAccion({
             usuario: { id: docente.id, name: docente.name, role: docente.role },

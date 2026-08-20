@@ -92,7 +92,7 @@ export default function FiltrosGlobales({
     soloMateria = false,
     filtroDia = null,
     mostrarTodas = true,
-    soloDocente = false, // Nueva prop para pantalla de Materias
+    soloDocente = false,
 }) {
     const { usuario } = useAutenticacion();
     const isAdmin = usuario?.role === 'ADMIN';
@@ -110,12 +110,10 @@ export default function FiltrosGlobales({
 
     const [docentes, setDocentes] = useState([]);
 
-    // Cargar docentes si es admin
     useEffect(() => {
         if (isAdmin) {
             obtenerDocentes().then(lista => {
                 setDocentes(lista);
-                // Si no hay docente seleccionado, elegir el primero de la lista
                 if (!docenteSeleccionado && lista.length > 0) {
                     setDocenteSeleccionado(lista[0].id);
                 }
@@ -123,7 +121,6 @@ export default function FiltrosGlobales({
         }
     }, [isAdmin, docenteSeleccionado, setDocenteSeleccionado]);
 
-    // 1. Filtrar cursos por día
     const cursosFiltrados = useMemo(() => {
         if (!filtroDia) return cursos;
 
@@ -132,7 +129,6 @@ export default function FiltrosGlobales({
         );
     }, [cursos, filtroDia]);
 
-    // 2. Materias únicas (por nombre)
     const nombresUnicos = useMemo(() => {
         const vistos = new Set();
 
@@ -145,7 +141,6 @@ export default function FiltrosGlobales({
         });
     }, [cursosFiltrados]);
 
-    // 3. Grupos disponibles
     const gruposDisponibles = useMemo(() => {
         if (!cursoSeleccionado) return [];
 
@@ -165,7 +160,6 @@ export default function FiltrosGlobales({
             );
     }, [cursosFiltrados, cursoSeleccionado]);
 
-    // 4. Auto seleccionar curso cuando cambia el día
     useEffect(() => {
         if (filtroDia && cursosFiltrados.length > 0) {
             const isSelectedValid =
@@ -194,7 +188,6 @@ export default function FiltrosGlobales({
         mostrarTodas,
     ]);
 
-    // 5. Sincronizar grupo seleccionado
     const gruposDisponiblesKey = gruposDisponibles
         .map((g) => g.groupCode)
         .join(',');
@@ -214,7 +207,6 @@ export default function FiltrosGlobales({
         if (!existe) {
             const primerGrupo = gruposDisponibles[0];
             
-            // Evitar loop: Solo actualizar si es necesario
             if (grupoSeleccionado !== primerGrupo.groupCode) {
                 setGrupoSeleccionado(primerGrupo.groupCode);
             }
@@ -232,7 +224,6 @@ export default function FiltrosGlobales({
         soloDocente
     ]);
 
-    // Cambio de materia
     const handleCambioMateria = (e) => {
         const selectedName = e.target.value;
         if (selectedName === 'TODAS') {
@@ -261,7 +252,6 @@ export default function FiltrosGlobales({
         }
     };
 
-    // Cambio de grupo
     const handleCambioGrupo = (e) => {
         const cursoDelGrupo = gruposDisponibles.find(
             (c) => c.groupCode === e.target.value
@@ -290,7 +280,6 @@ export default function FiltrosGlobales({
                     onChange={(e) => {
                         const val = e.target.value;
                         setDocenteSeleccionado(val);
-                        // Al cambiar docente, resetear materia para evitar inconsistencias
                         seleccionarCurso(null);
                     }}
                 >

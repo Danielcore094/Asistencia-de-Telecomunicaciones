@@ -4,9 +4,6 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const XLSX = require('xlsx-js-style');
 
-/**
- * Obtiene las inasistencias de la semana anterior y las agrupa por estudiante.
- */
 export async function obtenerInasistenciasSemanales({ referenceDate } = {}) {
     const { weekStart, weekEnd } = obtenerRangoSemanaAnterior(referenceDate);
 
@@ -61,7 +58,6 @@ export async function obtenerInasistenciasSemanales({ referenceDate } = {}) {
     return result;
 }
 
-// Funciones auxiliares
 
 function formatearNombre(nombre) {
     if (!nombre) return '';
@@ -115,20 +111,6 @@ function crearEstilos() {
     };
 }
 
-/**
- * Genera el reporte de asistencia de un docente en formato Excel.
- * Incluye una hoja por cada materia, con la siguiente información:
- *   - Perfil del curso
- *   - Asistencia diaria (P/A/J/–)
- *   - Directorio de contacto de los estudiantes
- *
- * @param {Object} params
- * @param {string} params.teacherId    - ID del docente
- * @param {string} params.weekStart    - Fecha de inicio de la semana (YYYY-MM-DD)
- * @param {string} params.weekEnd      - Fecha de finalización de la semana (YYYY-MM-DD)
- * @param {string[]} params.dates      - Fechas que componen la semana
- * @returns {Promise<Buffer|null>}     - Archivo en memoria o null si el docente no tiene cursos con estudiantes
- */
 async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
     const fechasCab = dates.map(formatearFechaCabecera);
     const estilos   = crearEstilos();
@@ -146,7 +128,6 @@ async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
     let hojasScritas = 0;
 
     for (const curso of courses) {
-        // Identifica a los estudiantes a partir del historial de asistencia del curso.
         const estudiantesRaw = await prisma.estudiante.findMany({
             where: { attendances: { some: { courseId: curso.id } } },
             select: {
@@ -188,7 +169,6 @@ async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
             };
         };
 
-        // ── Información del curso
         const reportTitle = `Reporte de Asistencia - ${curso.name || 'Materia'} ${curso.groupCode ? `(${curso.groupCode})` : ''}`.trim();
         const reportSubtitle = `Semana del ${fechasCab[0]} al ${fechasCab[5]}`;
         const reportOrg = 'UTS - Sistema de Asistencia de Telecomunicaciones';
@@ -230,7 +210,6 @@ async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
         }
         rowsMeta.push({ hpt: 8 }); r++;
 
-        // ── Asistencia diaria
         ['Documento', 'Nombre del Alumno', ...fechasCab].forEach((t, c) =>
             addCell(r, c, t, estilos.sEnc)
         );
@@ -259,7 +238,6 @@ async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
 
         rowsMeta.push({ hpt: 8 }); r++;
 
-        // ── Directorio de contacto ───────────────────────────────────────
         addCell(r, 0, 'Directorio de contacto', estilos.sSeccion);
         for (let c = 1; c < 8; c++) addCell(r, c, '', estilos.sSeccion);
         merges.push({ s: { r, c: 0 }, e: { r, c: 7 } });
@@ -290,7 +268,6 @@ async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
         merges.push({ s: { r, c: 0 }, e: { r, c: 7 } });
         r++;
 
-        // ── Configuración de la hoja ──────────────────────────────────────
         ws['!merges'] = merges;
         ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: directoryHeaderRow, c: 0 }, e: { r: directoryHeaderRow, c: 5 } }) };
         ws['!freeze'] = { xSplit: 0, ySplit: 8 };
@@ -321,13 +298,6 @@ async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
     return Buffer.from(XLSX.write(wb, { type: 'array', bookType: 'xlsx' }));
 }
 
-/**
- * Genera un reporte semanal en Excel para cada docente del sistema.
- * Devuelve una lista con { teacherName, buffer, weekStart, weekEnd, courseCount }.
- *
- * @param {Object} [options]
- * @param {Date} [options.referenceDate]
- */
 export async function crearReportesSemanalesPorDocente({ referenceDate } = {}) {
     const { weekStart, weekEnd } = obtenerRangoSemanaAnterior(referenceDate);
 
@@ -418,10 +388,6 @@ export async function crearReporteSemanalPorDocente({ teacherId, referenceDate }
     };
 }
 
-/**
- * @deprecated Usar crearReportesSemanalesPorDocente en su lugar.
- * Se conserva para mantener la compatibilidad con el código existente.
- */
 export async function crearReporteExcelSemanalCurso({ referenceDate } = {}) {
     const reportes = await crearReportesSemanalesPorDocente({ referenceDate });
     if (reportes.length === 0) return { buffer: Buffer.alloc(0), weekStart: '', weekEnd: '', courseCount: 0, totalRecords: 0 };
@@ -429,17 +395,6 @@ export async function crearReporteExcelSemanalCurso({ referenceDate } = {}) {
     return { buffer: r.buffer, weekStart: r.weekStart, weekEnd: r.weekEnd, courseCount: r.courseCount, totalRecords: 0 };
 }
 
-/**
- * Genera un Excel de resumen semestral con una fila por curso.
- * Sigue la estructura del reporte institucional de asistencia:
- *   - "Asistencia": código, docente, materia, grupo, estudiantes matriculados, semanas y aprobados
- *   - "Estudiantes Especiales": estudiantes con un nivel crítico de inasistencia
- *
- * @param {Object} [params]
- * @param {string} [params.anio]    - Año académico que se desea consultar
- * @param {string} [params.periodo] - Período académico que se desea consultar
- * @returns {Promise<Buffer|null>}
- */
 export async function crearExcelResumenSemestral({ anio, periodo } = {}) {
     const filtroCurso = {};
     if (anio)    filtroCurso.academicYear   = anio;
@@ -469,7 +424,6 @@ export async function crearExcelResumenSemestral({ anio, periodo } = {}) {
     const numSemanas = semanas.length;
     const semanaLabel = (i) => String(i + 1).padStart(2, '0');
 
-    // Agrupa los datos por curso para procesar las asistencias una sola vez.
     const presentesPorCursoSemana = {};
     const asistenciasPorCursoEstudiante = {};
     for (const a of todasAsistencias) {
@@ -485,7 +439,6 @@ export async function crearExcelResumenSemestral({ anio, periodo } = {}) {
         if (a.present) asistenciasCurso[a.studentId].presentes++;
     }
 
-    // ── Estilos ──────────────────────────────────────────────────────────────
     const border = {
         top:    { style: 'thin', color: { rgb: 'D1D5DB' } },
         bottom: { style: 'thin', color: { rgb: 'D1D5DB' } },
@@ -505,14 +458,13 @@ export async function crearExcelResumenSemestral({ anio, periodo } = {}) {
     const sAprobado= { fill: { fgColor: { rgb: 'F2F9E7' } }, font: { ...baseFont, bold: true, color: { rgb: '3D7A00' } }, alignment: { horizontal: 'center', vertical: 'center' }, border };
     const sNota    = { font: { name: 'Arial', sz: 9, italic: true, color: { rgb: '6B7280' } }, alignment: { horizontal: 'left', vertical: 'center' } };
 
-    // ── Hoja "Asistencia" ────────────────────────────────────────────────────
     const ws  = {};
     const addC = (r, c, v, s) => {
         ws[XLSX.utils.encode_cell({ r, c })] = { v: v ?? '', t: typeof v === 'number' ? 'n' : 's', s };
     };
     const merges = [];
     const rowsMeta = [];
-    const numCols = 5 + numSemanas + 1; // CODIGO..MATRI. + semanas + APROBARON
+    const numCols = 5 + numSemanas + 1;
     const lastCol  = numCols - 1;
 
     let r = 0;
@@ -550,7 +502,6 @@ export async function crearExcelResumenSemestral({ anio, periodo } = {}) {
         const matriculados = curso.matriculas.length;
         totalesMatri.total += matriculados;
 
-        // Cuenta los estudiantes que alcanzaron al menos un 70 % de asistencia.
         const asistenciasPorEstudiante = asistenciasPorCursoEstudiante[curso.id] ?? {};
         const aprobaron = Object.values(asistenciasPorEstudiante).filter(
             ({ presentes, total }) => total > 0 && (presentes / total) >= 0.7
@@ -577,7 +528,6 @@ export async function crearExcelResumenSemestral({ anio, periodo } = {}) {
     addC(r, lastCol, totalesAprobaron.total, sTotal);
     rowsMeta.push({ hpt: 22 }); r++;
 
-    // Calcula el porcentaje semanal sobre el total de estudiantes matriculados.
     const sPct = { fill: { fgColor: { rgb: 'EDE9F7' } }, font: { name: 'Courier New', sz: 9, color: { rgb: '6B2D8B' } }, alignment: { horizontal: 'center', vertical: 'center' }, border };
     addC(r, 0, '% asistencia', sPct);
     for (let c = 1; c <= 4; c++) addC(r, c, '', sPct);
@@ -597,7 +547,7 @@ export async function crearExcelResumenSemestral({ anio, periodo } = {}) {
     ws['!ref']    = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: r - 1, c: lastCol } });
     ws['!merges'] = merges;
     ws['!rows']   = rowsMeta;
-    ws['!freeze'] = { xSplit: 5, ySplit: 3 }; // Mantiene visibles las columnas fijas y los encabezados.
+    ws['!freeze'] = { xSplit: 5, ySplit: 3 };
     const colWidths = [
         { wch: 14 },
         { wch: 30 },
@@ -610,7 +560,6 @@ export async function crearExcelResumenSemestral({ anio, periodo } = {}) {
     ws['!cols'] = colWidths;
     ws['!autofilter'] = { ref: XLSX.utils.encode_range({ s: { r: 2, c: 0 }, e: { r: 2, c: lastCol } }) };
 
-    // ── Hoja "Estudiantes Especiales" ────────────────────────────────────────
     const wsEsp  = {};
     const addE   = (row, col, val, sty) => {
         wsEsp[XLSX.utils.encode_cell({ r: row, c: col })] = { v: val ?? '', t: 's', s: sty };
@@ -634,7 +583,6 @@ export async function crearExcelResumenSemestral({ anio, periodo } = {}) {
     const headersEsp = ['DOCUMENTO', 'NOMBRE', 'CORREO', 'TELEFONOS', 'ASIGNATURA', 'SEMESTRE', 'DOCENTE QUIEN REPORTA', 'OBSERVACIONES'];
     headersEsp.forEach((h, c) => addE(3, c, h, sEncLeft));
 
-    // Incluye a quienes tienen menos del 60 % de asistencia en algún curso.
     let resp = 4;
     const estudiantesEnRiesgo = await prisma.estudiante.findMany({
         where: { attendances: { some: { courseId: { in: courseIds } } } },

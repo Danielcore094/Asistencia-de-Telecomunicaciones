@@ -48,7 +48,6 @@ export async function POST(request) {
         const usuario = obtenerUsuarioDePeticion(request)
         if (!usuario) return Response.json({ error: 'No autorizado' }, { status: 401 })
         
-        // El ADMIN solo puede visualizar, no crear materias.
         if (usuario.role === 'ADMIN') {
             return Response.json({ error: 'El administrador no puede crear materias' }, { status: 403 })
         }
@@ -105,7 +104,6 @@ export async function POST(request) {
             data: datosCurso,
         })
 
-        // Registro de auditoría
         const { registrarAccion } = await import('@/lib/servicioAuditoria');
         registrarAccion({
             usuario,

@@ -2,7 +2,6 @@ export const dynamic = 'force-dynamic';
 
 import prisma from '@/lib/prisma'
 
-// GET — exportar asistencia completa en formato CSV
 export async function GET(request) {
     try {
         const asistencias = await prisma.asistencia.findMany({
@@ -12,7 +11,6 @@ export async function GET(request) {
 
         const encabezado = ['ID Estudiante', 'Nombre', 'Fecha', 'Presente', 'Fecha de Registro']
 
-        // Constructor CSV simple con manejo de comas internas
         const escaparCsv = (str) => `"${String(str).replace(/"/g, '""')}"`
 
         const filas = asistencias.map(a => [

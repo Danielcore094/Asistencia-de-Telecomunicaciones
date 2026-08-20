@@ -36,7 +36,6 @@ export default function InicioSesion() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-beige p-4">
             <div className="w-full max-w-md -mt-16">
-                {/* Logo / Header */}
                 <div className="text-center mb-8">
                     <div className="flex justify-center mb-4">
                         <img 
@@ -53,7 +52,6 @@ export default function InicioSesion() {
                     </p>
                 </div>
 
-                {/* Card */}
                 <div className="bg-white border border-borde rounded-3xl p-6 sm:p-8 shadow-sm">
                     <h2 className="text-xl font-bold text-texto mb-6 text-center">Iniciar Sesión</h2>
 

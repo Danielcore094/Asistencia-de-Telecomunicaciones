@@ -71,10 +71,8 @@ const unidadesRegistro = (curso, fecha) => {
     return duracionDia1 > 0 ? duracionDia1 : 1
 }
 
-// GET — reporte de asistencia por porcentaje de presencia con filtros opcionales
 export async function GET(request) {
     try {
-        // Verificar autenticación
         const usuario = obtenerUsuarioDePeticion(request)
         if (!usuario) {
             return Response.json({ error: 'No autorizado' }, { status: 401 })
@@ -94,25 +92,20 @@ export async function GET(request) {
             return Response.json({ error: 'Se requiere courseId, docenteId o anio' }, { status: 400 })
         }
 
-        // Control de acceso para TEACHER
         if (usuario.role !== 'ADMIN') {
-            // Si viene courseId, verificar que le pertenece
             if (idCurso) {
                 const acceso = await verificarAccesoCurso(idCurso, usuario)
                 if (!acceso.permitido) {
                     return Response.json({ error: acceso.error }, { status: acceso.status })
                 }
             }
-            // Si viene docenteId pero no es el suyo propio, bloquear
             if (docenteId && docenteId !== usuario.id) {
                 return Response.json({ error: 'No podés ver reportes de otro docente' }, { status: 403 })
             }
         }
 
-        // Filtro de fechas — si se pasa anio/periodo, derivar fechas automáticamente
         const filtroFecha = {}
         if (anio && periodo && !fechaInicio && !fechaFin) {
-            // Período 1: 01/01 → 30/06 | Período 2: 01/07 → 31/12
             if (periodo === '1') {
                 filtroFecha.gte = `${anio}-01-01`
                 filtroFecha.lte = `${anio}-06-30`
@@ -125,14 +118,12 @@ export async function GET(request) {
             if (fechaFin)    filtroFecha.lte = fechaFin
         }
 
-        // Condición WHERE base — courseId es opcional
         const condicion = {}
         if (idCurso) condicion.courseId = idCurso
         if (Object.keys(filtroFecha).length > 0) {
             condicion.date = filtroFecha
         }
 
-        // Filtros opcionales sobre la relación Course
         const filtroCurso = {}
         if (codigo)    filtroCurso.code           = codigo
         if (grupo)     filtroCurso.groupCode       = grupo
@@ -162,7 +153,6 @@ export async function GET(request) {
             }
         })
 
-        // Agrupar por estudiante
         const estadisticasPorEstudiante = {}
         const cursosPorId = {}
 
@@ -172,12 +162,12 @@ export async function GET(request) {
                 estadisticasPorEstudiante[idEst] = {
                     id:          idEst,
                     name:        reg.student.name,
-                    total:       0,   // días registrados
-                    present:     0,   // días presentes
-                    absent:      0,   // fallas ponderadas por horas académicas
-                    justified:   0,   // días justificados
-                    presentUnits: 0,  // unidades (45 min) presentes
-                    absentUnits:  0,  // unidades (45 min) ausentes
+                    total:       0,
+                    present:     0,
+                    absent:      0,
+                    justified:   0,
+                    presentUnits: 0,
+                    absentUnits:  0,
                     cursos:      new Set(),
                 }
             }
@@ -202,11 +192,10 @@ export async function GET(request) {
         })
 
         const resultado = Object.values(estadisticasPorEstudiante).map(est => {
-            // El porcentaje se calcula sobre las clases que cuentan (no justificadas)
             const clasesQueCuentanUnidades = est.presentUnits + est.absentUnits;
             const percentage = clasesQueCuentanUnidades > 0
                 ? Math.round((est.presentUnits / clasesQueCuentanUnidades) * 100)
-                : 100; // si todo es justificado, no hay fallas
+                : 100;
 
             const totalClasesPeriodo = Array.from(est.cursos)
                 .reduce((acc, idCursoEst) => acc + clasesPeriodoCurso(cursosPorId[idCursoEst]), 0)
@@ -215,7 +204,6 @@ export async function GET(request) {
                 ? calcularUmbralPerdida(totalClasesPeriodo)
                 : calcularUmbralPerdida(clasesQueCuentanUnidades)
 
-            // Máximo de fallas sin perder. Se pierde al alcanzar el umbral del 20%.
             const absencesAllowed = umbralPerdida > 0 ? umbralPerdida - 1 : 0
 
             return {

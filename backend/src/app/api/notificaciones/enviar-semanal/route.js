@@ -4,11 +4,6 @@ import { obtenerUsuarioDePeticion } from '@/lib/autenticacion';
 import { ejecutarNotificacionSemanalInasistencias } from '@/jobs/notificacionSemanalInasistencias';
 import prisma from '@/lib/prisma';
 
-/**
- * POST /api/notificaciones/enviar-semanal
- * Ejecuta manualmente el proceso de notificación semanal.
- * Solo accesible por usuarios con rol ADMIN.
- */
 export async function POST(request) {
     const usuario = obtenerUsuarioDePeticion(request);
     if (!usuario) {
@@ -41,10 +36,6 @@ export async function POST(request) {
     }
 }
 
-/**
- * GET /api/notificaciones/enviar-semanal
- * Devuelve el estado del servicio y el historial reciente de notificaciones.
- */
 export async function GET(request) {
     const usuario = obtenerUsuarioDePeticion(request);
     if (!usuario) {
@@ -54,13 +45,11 @@ export async function GET(request) {
         return Response.json({ error: 'Acceso restringido a administradores' }, { status: 403 });
     }
 
-    // Última ejecución registrada
     const ultimoLog = await prisma.registroNotificacion.findFirst({
         orderBy: { sentAt: 'desc' },
         select: { sentAt: true, weekStart: true, status: true },
     });
 
-    // Conteo de la semana en curso
     const { weekStart } = obtenerSemanaActual();
     const totalEstaSemana = await prisma.registroNotificacion.count({
         where: { weekStart, status: 'SUCCESS' },
@@ -86,7 +75,6 @@ export async function GET(request) {
     });
 }
 
-/** Helper: calcula lunes de la semana actual en hora Colombia */
 function obtenerSemanaActual() {
     const formatearFechaBogota = (d) => new Intl.DateTimeFormat('en-CA', {
         timeZone: 'America/Bogota',

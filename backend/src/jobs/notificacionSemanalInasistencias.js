@@ -1,12 +1,3 @@
-/**
- * notificacionSemanalInasistencias.js
- * Coordina el envío del reporte semanal de asistencia.
- *
- * Lógica:
- *   1. Genera un Excel POR DOCENTE con solo sus materias (semana anterior).
- *   2. Envía un email por docente al destinatario configurado (WEEKLY_REPORT_RECIPIENT_EMAIL).
- *   3. También envía notificaciones individuales a estudiantes con inasistencias.
- */
 
 import prisma from '../lib/prisma.js';
 import {
@@ -28,7 +19,6 @@ export async function ejecutarNotificacionSemanalInasistencias() {
     const resultados = { sent: 0, skipped: 0, errors: 0, details: [] };
     const destinatario = process.env.WEEKLY_REPORT_RECIPIENT_EMAIL;
 
-    // ── 1. Generar y enviar un Excel por docente ──────────────────────────
     if (destinatario) {
         try {
             const reportesPorDocente = await crearReportesSemanalesPorDocente();
@@ -81,7 +71,6 @@ export async function ejecutarNotificacionSemanalInasistencias() {
         console.log('[notification-job] Sin WEEKLY_REPORT_RECIPIENT_EMAIL configurado. Se omiten reportes Excel.');
     }
 
-    // ── 2. Notificaciones individuales a estudiantes con inasistencias ────
     try {
         const listaInasistencias = await obtenerInasistenciasSemanales();
 
@@ -108,7 +97,6 @@ export async function ejecutarNotificacionSemanalInasistencias() {
                 continue;
             }
 
-            // Evitar duplicados
             const existente = await prisma.registroNotificacion.findUnique({
                 where: {
                     studentId_weekStart: {

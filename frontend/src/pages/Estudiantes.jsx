@@ -9,7 +9,6 @@ import { useAutenticacion } from '../context/ContextoAutenticacion';
 import FiltrosGlobales from '../components/FiltrosGlobales';
 import { formatearNombre, compararPorApellido } from '../utils/formatearNombre';
 
-// Modal de edición de estudiante
 
 function ModalEdicion({ estudiante, onGuardar, onCancelar, guardando }) {
     const programasPermitidos = [
@@ -96,7 +95,6 @@ function ModalEdicion({ estudiante, onGuardar, onCancelar, guardando }) {
     );
 }
 
-// Modal de previsualización de importación
 
 function ModalImportacion({ filas, onConfirmar, onCancelar, importando }) {
     return (
@@ -113,7 +111,6 @@ function ModalImportacion({ filas, onConfirmar, onCancelar, importando }) {
                     maxHeight: '80vh',
                 }}
             >
-                {/* Header */}
                 <div
                     className="flex items-center justify-between px-6 py-4 border-b shrink-0"
                     style={{ borderColor: 'var(--color-border)' }}
@@ -140,7 +137,6 @@ function ModalImportacion({ filas, onConfirmar, onCancelar, importando }) {
                     </button>
                 </div>
 
-                {/* Tabla previa */}
                 <div className="overflow-auto flex-1">
                     <table className="w-full text-sm">
                         <thead style={{ background: 'color-mix(in srgb, var(--color-border) 50%, transparent)' }}>
@@ -223,7 +219,6 @@ function ModalImportacion({ filas, onConfirmar, onCancelar, importando }) {
                     </table>
                 </div>
 
-                {/* Footer */}
                 <div
                     className="flex items-center justify-end gap-3 px-6 py-4 border-t shrink-0"
                     style={{ borderColor: 'var(--color-border)' }}
@@ -252,7 +247,6 @@ function ModalImportacion({ filas, onConfirmar, onCancelar, importando }) {
     );
 }
 
-// Componente principal
 
 export default function Estudiantes() {
     const { usuario } = useAutenticacion();
@@ -288,7 +282,6 @@ export default function Estudiantes() {
     const [seleccionados, setSeleccionados] = useState(new Set());
     const [eliminandoMultiple, setEliminandoMultiple] = useState(false);
 
-    // Import state
 
     const inputArchivoRef = useRef(null);
     const [filasImport, setFilasImport] = useState([]);
@@ -302,7 +295,6 @@ export default function Estudiantes() {
         docenteId: docenteSeleccionado,
     };
 
-    // Carga de estudiantes
 
     useEffect(() => {
         const cargarEstudiantes = async () => {
@@ -342,7 +334,6 @@ export default function Estudiantes() {
         cargarEstudiantes();
     }, [cursoSeleccionado, codigoSeleccionado, grupoSeleccionado, docenteSeleccionado, refrescar]);
 
-    // CRUD
 
     const manejarCreacionEstudiante = async (e) => {
         e.preventDefault();
@@ -449,7 +440,6 @@ export default function Estudiantes() {
         }
     };
 
-    // Importación
 
     const normalizarColumnas = (fila) => ({
         documento: fila['Documento'] || fila['documento'] || fila['N Documento'] || fila['N° Documento'] || '',
@@ -473,7 +463,6 @@ export default function Estudiantes() {
         const programaCurso = cursoSeleccionado?.programa || null;
         const documentosExistentes = new Set(estudiantes.map(est => est.documento));
 
-        // Normaliza: minúsculas + sin acentos + sin espacios extras
         const norm = (s) =>
             (s || '').trim().toLowerCase()
                 .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
@@ -550,7 +539,6 @@ export default function Estudiantes() {
 
                 for (let i = 0; i < filasActualizadas.length; i++) {
                     const fila = filasActualizadas[i];
-                    // Omitir duplicados y programa incorrecto
                     if (fila.esDuplicado || fila.programaInvalido) {
                         filasActualizadas[i] = { ...fila, importado: false, error: false };
                         continue;
@@ -571,7 +559,6 @@ export default function Estudiantes() {
                     } catch (err) {
                         const msgError = err.response?.data?.error || err.message || 'Error desconocido';
                         filasActualizadas[i] = { ...fila, importado: false, error: true, errorMensaje: msgError };
-                        // No mostrar toast por fila: el detalle queda en el modal para evitar mensajes duplicados.
                         if (!String(msgError).toLowerCase().includes('ya está inscrito en esta materia')) {
                             otrosErrores++;
                         }
@@ -590,7 +577,6 @@ export default function Estudiantes() {
             toast.error(`${otrosErrores} estudiante${otrosErrores !== 1 ? 's' : ''} no pudieron importarse. Revisa la columna Estado.`);
         }
 
-        // Cerrar solo si todos fueron exitosos
         const hayErrores = filasActualizadas.some((f) => f.error);
         if (!hayErrores) {
             setModalVisible(false);
@@ -614,7 +600,6 @@ export default function Estudiantes() {
         XLSX.writeFile(libro, 'plantilla_estudiantes.xlsx');
     };
 
-    // Filtro local de búsqueda
 
     const filtrados = useMemo(
         () =>
@@ -628,7 +613,6 @@ export default function Estudiantes() {
 
     return (
         <>
-            {/* Modal de edición */}
             {estudianteEnEdicion && (
                 <ModalEdicion
                     estudiante={estudianteEnEdicion}
@@ -711,7 +695,6 @@ export default function Estudiantes() {
                     </section>
                 )}
 
-                {/* Modal Formulario de Nuevo Estudiante */}
                 {cursoSeleccionado && modalFormularioVisible && (
                     <div className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(26,26,46,0.6)', backdropFilter: 'blur(2px)' }}>
                         <div className="modal-panel w-full max-w-4xl rounded-[var(--card-radius)] border flex flex-col" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', maxHeight: '90vh' }}>
@@ -836,7 +819,6 @@ export default function Estudiantes() {
                     </div>
                 )}
 
-                {/* Buscador */}
                 <div className="tarjeta">
                     <div className="flex items-center gap-2 rounded-[var(--input-radius)] border bg-superficie px-3"
                         style={{ borderColor: 'var(--color-border)' }}>
@@ -851,9 +833,7 @@ export default function Estudiantes() {
                     </div>
                 </div>
 
-                {/* Tabla */}
                 <section className="tarjeta p-0">
-                    {/* Barra de acciones de la tabla */}
                     {!isAdmin && (
                     <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
                         <div className="flex items-center gap-3">

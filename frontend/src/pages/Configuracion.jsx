@@ -20,13 +20,11 @@ export default function Configuracion() {
     const [modalFormularioVisible, setModalFormularioVisible] = useState(false);
     const [modoCambioContrasena, setModoCambioContrasena] = useState(false);
 
-    // Estado panel de notificaciones
 
     const [enviandoNotificaciones, setEnviandoNotificaciones] = useState(false);
     const [resultadoNotificaciones, setResultadoNotificaciones] = useState(null);
     const [estadoCron, setEstadoCron] = useState(null);
 
-    // Estado panel de WhatsApp
 
     const [estadoWhatsApp, setEstadoWhatsApp] = useState(null);
     const [cargandoWa, setCargandoWa] = useState(false);
@@ -67,7 +65,6 @@ export default function Configuracion() {
                 const estado = await obtenerEstadoNotificaciones();
                 setEstadoCron(estado);
             } catch (_) {
-                // Silencioso: el cron puede no estar disponible en desarrollo.
             }
         };
 
@@ -86,7 +83,6 @@ export default function Configuracion() {
                 toast.success(modoCambioContrasena ? 'Contraseña actualizada exitosamente' : 'Usuario actualizado exitosamente');
                 cancelarEdicion();
             } else {
-                // Crear nuevo usuario
                 const nuevoProfesor = await api.post('/docentes', formulario).then(r => r.data);
                 setDocentes(prev => [...prev, nuevoProfesor]);
                 setFormulario({ documento: '', name: '', email: '', password: '', role: 'TEACHER' });
@@ -106,7 +102,7 @@ export default function Configuracion() {
             documento: docente.id,
             name: docente.name,
             email: docente.email,
-            password: '', // La contraseña es opcional durante la edición.
+            password: '',
             role: docente.role === 'DOCENTE' || docente.role === 'TEACHER' ? 'TEACHER' : docente.role
         });
         setModoCambioContrasena(false);
@@ -231,7 +227,6 @@ export default function Configuracion() {
                     </article>
                 </section>
 
-                {/* Panel de Notificaciones */}
 
                 <section className="tarjeta">
                     <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -244,7 +239,6 @@ export default function Configuracion() {
                                 Envía correos automáticos a estudiantes con inasistencias registradas durante la semana actual (lunes a sábado).
                                 El sistema evita duplicados: si ya fue notificado esta semana, no se reenvía.
                             </p>
-                            {/* Información del cron automático */}
                             <div className="mt-3 flex flex-wrap gap-4 text-xs">
                                 <span className="flex items-center gap-1.5" style={{ color: 'var(--color-accent)' }}>
                                     <span className="inline-block w-2 h-2 rounded-full" style={{ background: 'var(--color-accent)' }} />
@@ -288,7 +282,6 @@ export default function Configuracion() {
                         </button>
                     </div>
 
-                    {/* Resultado del envío */}
                     {resultadoNotificaciones && (
                         <div className="mt-4 grid grid-cols-3 gap-3">
                             <div className="flex items-center gap-3 rounded-lg p-3" style={{ background: 'color-mix(in srgb, var(--color-present) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--color-present) 25%, transparent)' }}>
@@ -315,7 +308,6 @@ export default function Configuracion() {
                         </div>
                     )}
 
-                    {/* Detalle de estudiantes notificados */}
                     {resultadoNotificaciones?.details?.length > 0 && (
                         <div className="mt-4 overflow-x-auto">
                             <table className="w-full min-w-[500px] text-sm">
@@ -488,7 +480,6 @@ export default function Configuracion() {
                     )}
                 </section>
 
-                {/* Modal Formulario de Nuevo Usuario */}
                 {modalFormularioVisible && (
                     <div className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(26,26,46,0.6)', backdropFilter: 'blur(2px)' }}>
                         <div className="modal-panel w-full max-w-4xl rounded-[var(--card-radius)] border flex flex-col" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', maxHeight: '90vh' }}>
@@ -627,7 +618,6 @@ export default function Configuracion() {
                 )}
             </section>
 
-            {/* Modal Historial WhatsApp */}
 
             {
                 modalWaVisible && estadoWhatsApp && (
@@ -646,7 +636,6 @@ export default function Configuracion() {
                                 maxHeight: '88vh',
                             }}
                         >
-                            {/* Header fijo */}
                             <div className="flex items-center justify-between px-6 py-4 border-b shrink-0" style={{ borderColor: 'var(--color-border)' }}>
                                 <h3 className="text-lg font-semibold flex items-center gap-2">
                                     <MessageSquare size={20} className="text-primario" />
@@ -663,7 +652,6 @@ export default function Configuracion() {
                                 </button>
                             </div>
 
-                            {/* Tarjetas de resumen — fijas */}
                             <div className="px-6 py-4 grid grid-cols-3 gap-3 shrink-0 border-b" style={{ borderColor: 'var(--color-border)' }}>
                                 <div className="flex items-center gap-3 rounded-lg p-3" style={{ background: 'color-mix(in srgb, var(--color-present) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--color-present) 25%, transparent)' }}>
                                     <CheckCircle2 size={20} style={{ color: 'var(--color-present)', flexShrink: 0 }} />
@@ -688,7 +676,6 @@ export default function Configuracion() {
                                 </div>
                             </div>
 
-                            {/* Tabla con scroll */}
                             <div className="overflow-y-auto flex-1 overflow-x-auto">
                                 {estadoWhatsApp.logs.length === 0 ? (
                                     <p className="py-12 text-center text-texto-secundario text-sm">
@@ -724,7 +711,6 @@ export default function Configuracion() {
                                 )}
                             </div>
 
-                            {/* Footer con total */}
                             <div className="px-6 py-3 border-t shrink-0 flex items-center justify-between" style={{ borderColor: 'var(--color-border)' }}>
                                 <p className="text-xs text-texto-secundario">
                                     Mostrando {estadoWhatsApp.logs.length} registro{estadoWhatsApp.logs.length !== 1 ? 's' : ''} más recientes

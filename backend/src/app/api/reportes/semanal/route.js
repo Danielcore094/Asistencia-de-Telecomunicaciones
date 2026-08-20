@@ -3,10 +3,6 @@ export const dynamic = 'force-dynamic';
 import prisma from '@/lib/prisma'
 import { obtenerLunesSemana } from '@/lib/utilidadesFechas'
 
-// GET — reporte semanal agregado
-// Parámetros: courseId?, codigo?, grupo?, docenteId?, anio?, periodo?, modalidad?,
-//             startDate?, endDate?
-// Requiere al menos: courseId | docenteId | modalidad
 export async function GET(request) {
     try {
         const sp          = new URL(request.url).searchParams
@@ -20,7 +16,7 @@ export async function GET(request) {
         const startDate   = sp.get('startDate')  || null
         const endDate     = sp.get('endDate')    || null
 
-        const agrupacion  = sp.get('agrupacion') || 'semana' // 'semana' o 'dia'
+        const agrupacion  = sp.get('agrupacion') || 'semana'
 
         if (!courseId && !docenteId && !modalidad) {
             return Response.json(
@@ -29,7 +25,6 @@ export async function GET(request) {
             )
         }
 
-        // ── WHERE ────────────────────────────────────────────────────────────
         const where = {}
         if (courseId) where.courseId = courseId
         if (startDate || endDate) {
@@ -48,14 +43,12 @@ export async function GET(request) {
 
         if (Object.keys(fc).length > 0) where.course = fc
 
-        // ── Consulta ─────────────────────────────────────────────────────────
         const registros = await prisma.asistencia.findMany({
             where,
             select: { date: true, present: true, status: true },
             orderBy: { date: 'asc' },
         })
 
-        // ── Agrupar por tiempo ───────────────────────────────────────────────
         const porTiempo = {}
         registros.forEach(({ date, present, status }) => {
             const clave = agrupacion === 'semana' ? obtenerLunesSemana(date) : date
@@ -72,7 +65,7 @@ export async function GET(request) {
             .sort()
             .map((clave, idx) => ({
                 semana:      agrupacion === 'semana' ? `Semana ${idx + 1}` : clave,
-                fechaLunes:  clave, // en modo dia esto es simplemente la fecha
+                fechaLunes:  clave,
                 ...porTiempo[clave],
             }))
 

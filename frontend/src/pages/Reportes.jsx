@@ -23,7 +23,6 @@ function v(variable) {
 
 
 
-// Derivados del design system, resueltos en runtime
 const getColoresLineas = () => [
     v('--color-primary'),
     v('--color-accent'),
@@ -50,7 +49,6 @@ function mergeSemanales(series) {
             mapa[semana][nombre] = presente;
         });
     });
-    // Ordenar por n├║mero de semana
     return Object.values(mapa).sort((a, b) => {
         const n = (s) => parseInt(s.semana.replace('Semana ', ''), 10);
         return n(a) - n(b);
@@ -105,7 +103,7 @@ const obtenerRangoFecha = (rango) => {
             return { inicio: formato(hoy), fin: formato(hoy) };
         case 'esta_semana': {
             const inicio = new Date(hoy);
-            const dia = inicio.getDay() || 7; // 1-7 (Lunes-Domingo)
+            const dia = inicio.getDay() || 7;
             inicio.setDate(inicio.getDate() - dia + 1);
             const fin = new Date(inicio);
             fin.setDate(fin.getDate() + 6);
@@ -245,8 +243,8 @@ export default function Reportes() {
     };
 
     const [modoGrupo, setModoGrupo] = useState('materia');
-    const [datosLineChart, setDatosLineChart] = useState([]);  // merged weeks
-    const [seriesNombres, setSeriesNombres] = useState([]);    // series keys for <Line>
+    const [datosLineChart, setDatosLineChart] = useState([]);
+    const [seriesNombres, setSeriesNombres] = useState([]);
     const [datosBarrasSemanales, setDatosBarrasSemanales] = useState([]);
     const [cargandoSemanal, setCargandoSemanal] = useState(false);
     const [docentes, setDocentes] = useState([]);
@@ -336,7 +334,6 @@ export default function Reportes() {
                 setSeriesNombres(series.map((s) => s.nombre));
                 setDatosLineChart(mergeSemanales(series));
 
-                // Gráfico B: siempre usa la materia seleccionada como base.
                 const base = modoGrupo === 'materia' && series[0]
                     ? series[0].semanas
                     : (cursoSeleccionado
@@ -406,7 +403,7 @@ export default function Reportes() {
     );
 
     const datosTorta = useMemo(() => {
-        const brackets = [0, 0, 0, 0];   // >=90, 80-89, 70-79, <70
+        const brackets = [0, 0, 0, 0];
         datos.forEach(({ percentage }) => {
             if (percentage >= 90) brackets[0]++;
             else if (percentage >= 80) brackets[1]++;
@@ -475,9 +472,7 @@ export default function Reportes() {
                 return nombreHoja;
             };
 
-            // Si no hay curso seleccionado, es "Todas las materias"
             if (!cursoSeleccionado) {
-                // Obtener todos los cursos del docente/filtros
                 cursosExportar.push(...(cursos.length > 0 ? cursos : []));
                 
                 if (cursosExportar.length === 0) {
@@ -546,7 +541,6 @@ export default function Reportes() {
                     totalEstudiantes = resumenGeneral.length;
                 }
             } else {
-                // Curso individual seleccionado (comportamiento original)
                 cursosExportar.push(cursoSeleccionado);
                 courseCount = 1;
 
@@ -555,7 +549,6 @@ export default function Reportes() {
                 });
                 totalEstudiantes = (data.resumen || []).length;
 
-                // Hoja 1: Resumen
                 const wsResumen = xlsx.utils.json_to_sheet(data.resumen.map(e => ({
                     'Documento': e.documento,
                     'Estudiante': e.name,
@@ -567,7 +560,6 @@ export default function Reportes() {
                 })));
                 xlsx.utils.book_append_sheet(wb, wsResumen, 'Resumen General');
 
-                // Hoja 2: En Riesgo (<=80)
                 const wsRiesgo = xlsx.utils.json_to_sheet(data.enRiesgo.map(e => ({
                     'Documento': e.documento,
                     'Estudiante': e.name,
@@ -579,7 +571,6 @@ export default function Reportes() {
                 })));
                 xlsx.utils.book_append_sheet(wb, wsRiesgo, 'Estudiantes en Riesgo');
 
-                // Hoja 3: Faltas por Asignatura
                 const wsAsignatura = xlsx.utils.json_to_sheet(data.asignaturas.map(a => ({
                     'Documento': a.documento,
                     'Estudiante': a.estudiante,
@@ -594,7 +585,6 @@ export default function Reportes() {
                 })));
                 xlsx.utils.book_append_sheet(wb, wsAsignatura, 'Faltas por Asignatura');
 
-                // Hoja 4: Directorio de Contacto
                 const wsDirectorio = xlsx.utils.json_to_sheet(data.directorio.map(d => ({
                     'Documento': d.documento,
                     'Estudiante': d.name,
@@ -621,7 +611,6 @@ export default function Reportes() {
             _link.click();
             setTimeout(() => URL.revokeObjectURL(_url), 1000);
 
-            // Registrar un único log de auditoría con las materias exportadas
             try {
                 const courseNames = cursosExportar.map(c => c.name || c.nombre || c.code || c.id);
                 await api.post('/auditoria/registro', {
@@ -653,7 +642,6 @@ export default function Reportes() {
         setExportandoResumen(true);
         try {
             const params = {};
-            // Usar año/período del primer curso disponible si hay filtros activos
             if (cursoSeleccionado?.academicYear)   params.anio    = cursoSeleccionado.academicYear;
             if (cursoSeleccionado?.academicPeriod) params.periodo = cursoSeleccionado.academicPeriod;
 
@@ -829,7 +817,6 @@ export default function Reportes() {
                     </div>
                 ) : (
                     <>
-                        {/* Tab: Distribucion — PieChart por brackets */}
                         {vistaActiva === 'distribucion' && (
                             <div className="p-4 pt-6">
                                 <p
@@ -954,7 +941,6 @@ export default function Reportes() {
                             </div>
                         )}
 
-                        {/* Tab: Tiempo — LineChart semanal */}
                         {vistaActiva === 'tiempo' && (
                             <div className="p-4">
                                 <div
@@ -1095,7 +1081,6 @@ export default function Reportes() {
                             </div>
                         )}
 
-                        {/* Tab: Tabla — detalle por estudiante */}
                         {vistaActiva === 'tabla' && (
                             <div className="overflow-x-auto">
                                 <table className="w-full min-w-[720px] text-sm">

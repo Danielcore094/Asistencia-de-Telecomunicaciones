@@ -19,8 +19,8 @@ const obtenerDiaSemana = (fechaStr) => {
     if (!fechaStr) return null;
     const [year, month, day] = fechaStr.split('-');
     const date = new Date(year, month - 1, day);
-    const dayIndex = date.getDay(); // 0 es Domingo
-    const indices = [6, 0, 1, 2, 3, 4, 5]; // Mapear a [Lunes, Martes...]
+    const dayIndex = date.getDay();
+    const indices = [6, 0, 1, 2, 3, 4, 5];
     return diasSemana[indices[dayIndex]];
 };
 
@@ -57,7 +57,6 @@ export default function Asistencia() {
         docenteId: docenteSeleccionado,
     };
 
-    // Si el curso seleccionado no tiene clase el día de la fecha elegida
     const diaDeFecha = obtenerDiaSemana(fecha);
     const sinMateriaParaElDia = cursoSeleccionado
         ? cursoSeleccionado.dia !== diaDeFecha && cursoSeleccionado.dia2 !== diaDeFecha
@@ -83,7 +82,6 @@ export default function Asistencia() {
                 const mapaAsistencia = {};
                 if (asistenciaExistente.length > 0) {
                     asistenciaExistente.forEach((registro) => {
-                        // Si hay status guardado lo usamos; si no, inferimos del boolean
                         mapaAsistencia[registro.studentId] =
                             registro.status || (registro.present ? 'Presente' : 'Ausente');
                     });
@@ -100,7 +98,6 @@ export default function Asistencia() {
         if (cursoSeleccionado && !sinMateriaParaElDia) {
             cargarDatosActuales();
         } else {
-            // Sin materia para el día o sin materia seleccionada: limpiar estado
             setEstudiantes([]);
             setAsistencia({});
             setCargando(false);
@@ -142,27 +139,21 @@ export default function Asistencia() {
         const hoy = new Date();
         const hoyStr = formatearFechaLocal(hoy);
 
-        // Regla 1: Máximo 5 días atrás
         const hace5Dias = new Date(hoy);
         hace5Dias.setDate(hace5Dias.getDate() - 5);
 
-        // Regla 2: Corte semanal (Domingos a las 02:00 AM)
-        const diaSemana = hoy.getDay(); // 0 = Domingo
+        const diaSemana = hoy.getDay();
         const hora = hoy.getHours();
 
         const fechaCorte = new Date(hoy);
         if (diaSemana === 0 && hora < 2) {
-            // Si es domingo antes de las 02:00, el corte vigente es del domingo pasado
             fechaCorte.setDate(fechaCorte.getDate() - 7);
         } else if (diaSemana !== 0) {
-            // Si es lunes a sábado, el corte fue el domingo anterior
             fechaCorte.setDate(fechaCorte.getDate() - diaSemana);
         }
-        // Si es domingo y hora >= 2, fechaCorte queda como hoy
 
-        fechaCorte.setHours(0, 0, 0, 0); // El domingo de corte es el primer día editable post-corte
+        fechaCorte.setHours(0, 0, 0, 0);
 
-        // El mínimo absoluto es la fecha más reciente entre hace5Dias y fechaCorte
         const minDate = hace5Dias > fechaCorte ? hace5Dias : fechaCorte;
         const minStr = formatearFechaLocal(minDate);
 

@@ -1,11 +1,9 @@
 import axios from 'axios';
 
-// Cliente HTTP base con la URL del backend
 const clienteApi = axios.create({
     baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4000/api',
 });
 
-// Interceptor de petición: agrega el token JWT si existe
 clienteApi.interceptors.request.use(configuracion => {
     const token = localStorage.getItem('token');
     if (token) {
@@ -14,19 +12,16 @@ clienteApi.interceptors.request.use(configuracion => {
     return configuracion;
 });
 
-// Interceptor de respuesta: manejo centralizado de errores
 clienteApi.interceptors.response.use(
     respuesta => respuesta,
     error => {
         const estado = error.response?.status;
         
-        // 401: token expirado o inválido; redirigir al inicio de sesión.
         if (estado === 401 && error.config?.url !== '/autenticacion/iniciar-sesion') {
-            localStorage.clear(); // Limpiar todo el estado
+            localStorage.clear();
             window.location.href = '/login';
         }
         
-        // 403: registrar acceso denegado y permitir que el componente lo gestione.
         if (estado === 403) {
             console.error('[API] Acceso denegado:', error.config.url);
         }
@@ -35,15 +30,7 @@ clienteApi.interceptors.response.use(
     }
 );
 
-// Funciones auxiliares
 
-/**
- * Construye el objeto de query params para filtros opcionales.
- * Omite claves con valor null / undefined / ''.
- *
- * Filtros globales (barra superior): codigo, grupo, docenteId
- * Filtros locales (Historial): anio, periodo, modalidad, docenteIdLocal
- */
 function filtrosGlobales({ cursoId, codigo, grupo, docenteId, anio, periodo, modalidad, docenteIdLocal } = {}) {
     const parametros = {};
     if (cursoId)       parametros.cursoId       = cursoId;
@@ -53,13 +40,11 @@ function filtrosGlobales({ cursoId, codigo, grupo, docenteId, anio, periodo, mod
     if (anio)          parametros.anio          = anio;
     if (periodo)       parametros.periodo       = periodo;
     if (modalidad)     parametros.modalidad     = modalidad;
-    // El filtro local de docente tiene prioridad cuando está definido.
     if (docenteIdLocal) parametros.docenteId   = docenteIdLocal;
     return parametros;
 }
 
 
-// Cursos
 
 export const obtenerCursos   = (docenteId) => 
     clienteApi.get('/materias', { params: docenteId ? { docenteId } : {} }).then(respuesta => respuesta.data);
@@ -67,12 +52,7 @@ export const crearCurso      = (datos)    => clienteApi.post('/materias', datos)
 export const actualizarCurso = (id, datos)=> clienteApi.put(`/materias/${id}`, datos).then(respuesta => respuesta.data);
 export const eliminarCurso   = (id)       => clienteApi.delete(`/materias/${id}`).then(respuesta => respuesta.data);
 
-// Estudiantes
 
-/**
- * @param {string} idCurso   - ID del curso activo (courseId legacy)
- * @param {object} filtros   - { codigo, grupo, docenteId } opcionales
- */
 export const obtenerEstudiantes = (idCurso, filtros = {}) =>
     clienteApi.get('/estudiantes', {
         params: {
@@ -90,13 +70,7 @@ export const actualizarEstudiante = (id, datos) =>
 export const eliminarEstudiante = (idCurso, id) =>
     clienteApi.delete(`/estudiantes/${id}`, { params: { courseId: idCurso } }).then(respuesta => respuesta.data);
 
-// Asistencia
 
-/**
- * @param {string} idCurso   - ID del curso activo
- * @param {string} fecha     - Fecha ISO (opcional)
- * @param {object} filtros   - { codigo, grupo, docenteId } opcionales
- */
 export const obtenerAsistencia = (idCurso, fecha, filtros = {}) => {
     const params = {
         courseId: idCurso,
@@ -109,13 +83,7 @@ export const obtenerAsistencia = (idCurso, fecha, filtros = {}) => {
 export const guardarAsistencia = (datos) =>
     clienteApi.post('/asistencia', datos).then(respuesta => respuesta.data);
 
-// Reportes
 
-/**
- * @param {string} idCurso   - ID del curso activo
- * @param {object} params    - Parámetros adicionales (startDate, endDate, etc.)
- * @param {object} filtros   - { codigo, grupo, docenteId } opcionales
- */
 export const obtenerReportes = (idCurso, params = {}, filtros = {}) =>
     clienteApi.get('/reportes', {
         params: {
@@ -125,9 +93,6 @@ export const obtenerReportes = (idCurso, params = {}, filtros = {}) =>
         },
     }).then(respuesta => respuesta.data);
 
-/**
- * Obtiene la data detallada para exportar a Excel.
- */
 export const obtenerDataExportacion = (idCurso, params = {}, filtros = {}, options = {}) =>
     clienteApi.get('/reportes/exportar', {
         params: {
@@ -138,15 +103,9 @@ export const obtenerDataExportacion = (idCurso, params = {}, filtros = {}, optio
         ...options,
     }).then(respuesta => respuesta.data);
 
-/**
- * Reporte semanal agregado (Chart A + B).
- * @param {object} params - Cualquier combinación de courseId, docenteId, modalidad,
- *                          periodo, anio, startDate, endDate, etc.
- */
 export const obtenerReportesSemanal = (parametros = {}) =>
     clienteApi.get('/reportes/semanal', { params: parametros }).then(respuesta => respuesta.data);
 
-// Docentes
 
 export const obtenerDocentes = () =>
     clienteApi.get('/docentes').then(respuesta => respuesta.data.filter(docente => {
@@ -154,15 +113,10 @@ export const obtenerDocentes = () =>
         return rol === 'TEACHER' || rol === 'DOCENTE';
     }));
 
-/**
- * Asistencia de hoy por materia (para el dashboard del admin).
- * @param {string} [docenteId] - Opcional: filtrar por docente
- */
 export const obtenerAsistenciaHoyPorCurso = (docenteId) =>
     clienteApi.get('/asistencia/hoy', { params: docenteId ? { docenteId } : {} })
         .then(respuesta => Array.isArray(respuesta.data?.cursos) ? respuesta.data.cursos : []);
 
-// Notificaciones
 
 export const enviarNotificacionesSemanal = () =>
     clienteApi.post('/notificaciones/enviar-semanal').then(respuesta => respuesta.data);

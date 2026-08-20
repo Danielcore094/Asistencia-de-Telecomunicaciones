@@ -6,7 +6,6 @@ import { useAutenticacion } from '../context/ContextoAutenticacion';
 import FiltrosGlobales from '../components/FiltrosGlobales';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
-// Cache para variables CSS (evita llamadas costosas a getComputedStyle en cada render)
 const cssCache = new Map();
 function v(variable) {
     if (typeof window === 'undefined') return '#000';
@@ -35,14 +34,12 @@ export default function Inicio() {
     const [cargando, setCargando] = useState(true);
     const [errorCarga, setErrorCarga] = useState(false);
     
-    // Estado para una sola materia
     const [totalEstudiantes, setTotalEstudiantes] = useState(0);
     const [porcentajeHoy, setPorcentajeHoy] = useState(null);
     const [ausentesHoy, setAusentesHoy] = useState(null);
     const [huboClaseHoy, setHuboClaseHoy] = useState(false);
     const [actividadReciente, setActividadReciente] = useState([]);
 
-    // Estado para "Todas las materias"
     const [asistenciaTodas, setAsistenciaTodas] = useState([]);
 
     const isAdmin = usuario?.role === 'ADMIN';
@@ -60,17 +57,14 @@ export default function Inicio() {
             
             try {
                 if (!cursoSeleccionado && isAdmin) {
-                    // Modo "Todas las materias" — solo disponible para ADMIN
                     try {
                         const datosHoy = await obtenerAsistenciaHoyPorCurso();
                         setAsistenciaTodas(Array.isArray(datosHoy) ? datosHoy : []);
                     } catch (errorAsistenciaTodas) {
                         console.error('[Inicio] No se pudo cargar asistencia de hoy (todas las materias):', errorAsistenciaTodas);
-                        // Para admin en vista global no bloqueamos toda la pantalla.
                         setAsistenciaTodas([]);
                     }
                 } else if (cursoSeleccionado) {
-                    // Modo "Materia Específica"
                     const hoy = new Intl.DateTimeFormat('en-CA', {
                         timeZone: 'America/Bogota',
                         year: 'numeric', month: '2-digit', day: '2-digit',
@@ -103,7 +97,6 @@ export default function Inicio() {
                         });
                     }
 
-                    // Solo mostrar error global si TODAS las fuentes fallan.
                     if (totalFallos === 3) {
                         setErrorCarga(true);
                         return;
@@ -121,17 +114,13 @@ export default function Inicio() {
                         setPorcentajeHoy(porcentaje);
                         setAusentesHoy(Math.max(total - presentes, 0));
                     } else {
-                        // No se tomó asistencia hoy → no mostrar como ausentes
                         setPorcentajeHoy(null);
                         setAusentesHoy(null);
                     }
 
                     setActividadReciente(historial.slice(0, 8));
                 }
-                // TEACHER sin materia seleccionada: no hacer nada, panel vacío
             } catch (err) {
-                // Error 403: el curso en localStorage no pertenece a este docente
-                // Se limpia el estado pero NO se muestra banner de error
                 if (err?.response?.status === 403) {
                     setTotalEstudiantes(0);
                     setPorcentajeHoy(null);
@@ -203,7 +192,6 @@ export default function Inicio() {
             </header>
 
             {!cursoSeleccionado && isAdmin ? (
-                // Vista: Todas las materias (Admin)
 
                 <section className="tarjeta">
                     <h3 className="mb-4 text-lg font-medium">% de asistencia hoy (todas las materias)</h3>
@@ -231,7 +219,6 @@ export default function Inicio() {
                                 </PieChart>
                             </ResponsiveContainer>
 
-                            {/* Mapa de Convenciones (Leyenda) */}
                             <div className="flex flex-col gap-3">
                                 {asistenciaTodas.map((entry, index) => (
                                     <div key={entry.id} className="flex items-center gap-3">
@@ -260,7 +247,6 @@ export default function Inicio() {
                     )}
                 </section>
             ) : (
-                // Vista: Materia Específica
 
                 <>
                     <div className="grid gap-4 md:grid-cols-3">

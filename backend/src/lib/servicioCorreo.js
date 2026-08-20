@@ -1,20 +1,6 @@
-/**
- * servicioCorreo.js
- * Servicio de envío de correos usando la API REST de Brevo.
- * No requiere SDK externo — usa fetch nativo de Node.js 18+.
- */
 
 const BREVO_API_URL = 'https://api.brevo.com/v3/smtp/email';
 
-/**
- * Envía un correo electrónico usando Brevo.
- * @param {Object} options
- * @param {string} options.to        - Correo destinatario
- * @param {string} options.toName    - Nombre del destinatario
- * @param {string} options.subject   - Asunto del correo
- * @param {string} options.htmlContent - Contenido HTML del correo
- * @returns {Promise<{success: boolean, messageId?: string, error?: string}>}
- */
 export async function enviarCorreo({ to, toName, subject, htmlContent, attachments = [] }) {
     const apiKey = process.env.BREVO_API_KEY;
     const senderEmail = process.env.BREVO_SENDER_EMAIL;
@@ -63,16 +49,6 @@ export async function enviarCorreo({ to, toName, subject, htmlContent, attachmen
     }
 }
 
-/**
- * Genera el HTML del correo de inasistencias.
- * @param {Object} params
- * @param {string} params.studentName
- * @param {number} params.totalAbsences
- * @param {string[]} params.courses  - Nombres de asignaturas con inasistencia
- * @param {string} params.weekStart  - Fecha inicio de semana (YYYY-MM-DD)
- * @param {string} params.weekEnd    - Fecha fin de semana (YYYY-MM-DD)
- * @returns {string} HTML del correo
- */
 export function construirCorreoInasistenciasHTML({ studentName, totalAbsences, courses, weekStart, weekEnd }) {
     const courseList = courses.map(c => `<li style="margin: 4px 0;">${c}</li>`).join('');
 

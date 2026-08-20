@@ -3,7 +3,6 @@ const prisma = new PrismaClient();
 
 async function probar() {
     try {
-        // Primero buscar un teacher
         const teacher = await prisma.teacher.findFirst();
         if (!teacher) {
             console.error('❌ No hay profesores en la BD. Ejecuta seed.js primero.');
@@ -11,7 +10,6 @@ async function probar() {
         }
         console.log('✅ Profe encontrado:', teacher.email);
 
-        // Intentar crear un curso
         const curso = await prisma.course.create({
             data: {
                 name: 'Prueba de Telecomunicaciones',
@@ -24,7 +22,6 @@ async function probar() {
         console.log('   Nombre:', curso.name);
         console.log('   Código:', curso.code);
 
-        // Limpiar
         await prisma.course.delete({ where: { id: curso.id } });
         console.log('✅ Curso de prueba eliminado.');
     } catch (err) {

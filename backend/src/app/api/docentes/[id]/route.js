@@ -6,7 +6,6 @@ import { obtenerUsuarioDePeticion } from '@/lib/autenticacion'
 import bcrypt from 'bcryptjs'
 import { obtenerErrorContrasena } from '@/lib/politicaContrasena'
 
-// PUT — actualizar un profesor (solo ADMIN)
 export async function PUT(request, { params }) {
     try {
         const usuarioAutenticado = obtenerUsuarioDePeticion(request)
@@ -17,7 +16,6 @@ export async function PUT(request, { params }) {
         const { id } = params
         const { name, email, role, password } = await request.json()
 
-        // Validar si el email ya existe en otro usuario
         if (email) {
             const existente = await prisma.docente.findFirst({
                 where: { 
@@ -55,7 +53,6 @@ export async function PUT(request, { params }) {
     }
 }
 
-// DELETE — eliminar un profesor (solo ADMIN)
 export async function DELETE(request, { params }) {
     try {
         const usuario = obtenerUsuarioDePeticion(request)

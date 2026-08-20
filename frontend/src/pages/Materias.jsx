@@ -164,7 +164,7 @@ export default function Materias() {
 
     const exportarPlantilla = () => {
         const COLS = 13;
-        const FILAS_EXTRA = 30; // Filas vacías adicionales con formato aplicado
+        const FILAS_EXTRA = 30;
 
         const encabezados = [
             'Nombre de la Materia',
@@ -198,32 +198,27 @@ export default function Materias() {
             c.programa || '',
         ]);
 
-        // Columnas que deben forzarse a texto (para que HH:MM no se convierta a tiempo)
-        // Índices: 5=Día1, 6=HI1, 7=HF1, 8=Día2, 9=HI2, 10=HF2
         const colsTexto = new Set([5, 6, 7, 8, 9, 10]);
 
         const totalFilas = 1 + filasDatos.length + FILAS_EXTRA;
         const ws = {};
 
-        // Encabezados (fila 0 → row=0 en índice 0-based, R=1 en XLSX)
         encabezados.forEach((titulo, c) => {
             const ref = XLSX.utils.encode_cell({ r: 0, c });
             ws[ref] = { v: titulo, t: 's', z: '@' };
         });
 
-        // Filas con datos existentes
         filasDatos.forEach((fila, ri) => {
             fila.forEach((valor, ci) => {
                 const ref = XLSX.utils.encode_cell({ r: ri + 1, c: ci });
                 ws[ref] = {
                     v: valor,
-                    t: 's',   // Siempre texto
-                    z: '@',   // Formato texto explícito
+                    t: 's',
+                    z: '@',
                 };
             });
         });
 
-        // Filas vacías con formato predefinido (para que el usuario no pierda el tipo de dato)
         const inicioVacias = 1 + filasDatos.length;
         for (let ri = inicioVacias; ri < inicioVacias + FILAS_EXTRA; ri++) {
             for (let ci = 0; ci < COLS; ci++) {
@@ -231,7 +226,7 @@ export default function Materias() {
                 ws[ref] = {
                     v: '',
                     t: 's',
-                    z: colsTexto.has(ci) ? '@' : '@', // @ = texto para todas
+                    z: colsTexto.has(ci) ? '@' : '@',
                 };
             }
         }
@@ -250,7 +245,6 @@ export default function Materias() {
         toast.success(`${cursos.length} materia${cursos.length !== 1 ? 's' : ''} exportada${cursos.length !== 1 ? 's' : ''}`);
     };
 
-    // Llave de deduplicación: mismo código + grupo + día1 + horaInicio1 + horaFin1
 
     const claveDuplicado = (c) =>
         `${(c.code || '').toUpperCase()}|${(c.groupCode || '').toUpperCase()}|${c.dia || ''}|${c.horaInicio || ''}|${c.horaFin || ''}`;
@@ -267,9 +261,8 @@ export default function Materias() {
                 const ws = wb.Sheets[wb.SheetNames[0]];
                 const filas = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
 
-                // Ignorar fila de encabezado (fila 0)
                 const datos = filas.slice(1)
-                    .filter(f => f[0] || f[1]) // Necesita al menos nombre o código
+                    .filter(f => f[0] || f[1])
                     .map(f => ({
                         name:           String(f[0] || '').trim(),
                         code:           String(f[1] || '').trim().toUpperCase(),
@@ -286,7 +279,6 @@ export default function Materias() {
                         programa:       String(f[12] || '').trim(),
                     }));
 
-                // Marcar duplicados vs nuevas
                 const clavesExistentes = new Set(cursos.map(claveDuplicado));
                 const filasMarcadas = datos.map(fila => ({
                     ...fila,
@@ -329,7 +321,6 @@ export default function Materias() {
 
     return (
         <section className="space-y-6">
-            {/* Modal de importación */}
             {modalImportCursoVisible && (
                 <div
                     className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -448,7 +439,6 @@ export default function Materias() {
                 </div>
             </header>
 
-            {/* Modal Formulario de Nuevo Curso */}
             {modalFormularioVisible && (
                 <div className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(26,26,46,0.6)', backdropFilter: 'blur(2px)' }}>
                     <div className="modal-panel w-full max-w-4xl rounded-[var(--card-radius)] border flex flex-col" style={{ background: 'var(--color-surface)', borderColor: 'var(--color-border)', maxHeight: '90vh' }}>

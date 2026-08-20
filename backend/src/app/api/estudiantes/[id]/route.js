@@ -4,7 +4,6 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { obtenerUsuarioDePeticion } from '@/lib/autenticacion'
 
-// PUT — actualizar datos de un estudiante
 export async function PUT(request, { params }) {
     try {
         const usuario = obtenerUsuarioDePeticion(request)
@@ -27,7 +26,6 @@ export async function PUT(request, { params }) {
 
         if (Object.prototype.hasOwnProperty.call(payload, 'franja')) {
             const franjaLimpia = payload.franja ? payload.franja.trim() : null
-            // Si llega vacio desde UI, conserva el valor actual registrado.
             if (franjaLimpia) {
                 datosActualizacion.franja = franjaLimpia
             }
@@ -35,7 +33,6 @@ export async function PUT(request, { params }) {
 
         if (Object.prototype.hasOwnProperty.call(payload, 'programa')) {
             const programaLimpio = payload.programa ? payload.programa.trim() : null
-            // Si llega vacio desde UI, conserva el valor actual registrado.
             if (programaLimpio) {
                 datosActualizacion.programa = programaLimpio
             }
@@ -51,7 +48,6 @@ export async function PUT(request, { params }) {
     }
 }
 
-// DELETE — eliminar o desconectar un estudiante de un curso
 export async function DELETE(request, { params }) {
     try {
         const usuario = obtenerUsuarioDePeticion(request)
@@ -65,7 +61,6 @@ export async function DELETE(request, { params }) {
             return Response.json({ error: 'courseId es requerido' }, { status: 400 });
         }
 
-        // Primero verificamos el estudiante y sus cursos
         const estudiante = await prisma.estudiante.findUnique({
             where: { documento: params.id },
             include: { matriculas: true }
@@ -76,10 +71,8 @@ export async function DELETE(request, { params }) {
         }
 
         if (estudiante.matriculas.length <= 1) {
-            // Si solo tiene este curso, borramos el estudiante completo
             await prisma.estudiante.delete({ where: { documento: params.id } });
         } else {
-            // Si tiene otros cursos, solo lo desconectamos de este curso
             await prisma.cursoEstudiante.delete({
                 where: {
                     cursoId_estudianteId: {

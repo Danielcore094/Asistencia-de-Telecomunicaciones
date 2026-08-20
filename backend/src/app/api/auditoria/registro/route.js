@@ -2,7 +2,6 @@ export const dynamic = 'force-dynamic';
 
 import { obtenerUsuarioDePeticion } from '@/lib/autenticacion'
 
-// POST /api/auditoria/registro
 export async function POST(request) {
     try {
         const usuario = obtenerUsuarioDePeticion(request)

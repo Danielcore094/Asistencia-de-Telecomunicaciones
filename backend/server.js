@@ -1,20 +1,9 @@
-/**
- * server.js — Servidor personalizado con Node.js para Next.js + node-cron
- *
- * Uso:
- *   node server.js        (producción)
- *   next dev -p 4000      (desarrollo, sin cron)
- *
- * El cron ejecuta el job de notificaciones cada domingo a las 18:00.
- */
 
 import { createServer } from 'http';
 import { parse } from 'url';
 import next from 'next';
 import cron from 'node-cron';
 
-// Importar el job de notificaciones
-// Usamos dynamic import para compatibilidad con el módulo ESM de Next.js
 let ejecutarNotificacionSemanalInasistencias;
 
 const dev = process.env.NODE_ENV !== 'production';
@@ -30,7 +19,6 @@ const app = next({ dev, dir: '.' });
 const handle = app.getRequestHandler();
 
 app.prepare().then(async () => {
-    // Importar el job después de que Next.js esté listo
     const moduloNotificacion = await import('./src/jobs/notificacionSemanalInasistencias.js');
     ejecutarNotificacionSemanalInasistencias = moduloNotificacion.ejecutarNotificacionSemanalInasistencias;
 
@@ -52,7 +40,6 @@ app.prepare().then(async () => {
         console.log('[server] Cron deshabilitado en esta instancia');
     }
 
-    // Crear servidor HTTP
     createServer((req, res) => {
         const parsedUrl = parse(req.url, true);
         handle(req, res, parsedUrl);

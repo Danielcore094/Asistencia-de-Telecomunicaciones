@@ -30,7 +30,6 @@ export async function GET(request) {
             return Response.json({ error: 'No autorizado' }, { status: 401 });
         }
 
-        // Raw query para incluir el campo programa sin depender del cliente generado
         const catalogo = await prisma.$queryRaw`
             SELECT id, codigo, nombre, programa, semestre
             FROM materias_catalogo

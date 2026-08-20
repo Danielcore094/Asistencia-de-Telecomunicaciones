@@ -46,13 +46,11 @@ export default function Perfil() {
             if (respuesta.data.success) {
                 setMensaje({ tipo: 'exito', texto: 'Perfil actualizado correctamente.' });
                 
-                // Si el nombre cambió, actualizamos el contexto (y localStorage si es necesario)
                 if (payload.name) {
                     const token = localStorage.getItem('token');
                     iniciarSesion(token, { ...usuario, name: payload.name });
                 }
 
-                // Limpiar campos de contraseña
                 setPasswordActual('');
                 setNuevaPassword('');
                 setConfirmarPassword('');
@@ -82,7 +80,6 @@ export default function Perfil() {
             <div className="rounded-xl border border-borde bg-superficie shadow-sm overflow-hidden">
                 <form onSubmit={manejarEnvio} className="p-6 md:p-8 space-y-8">
                     
-                    {/* Alerta de mensaje */}
                     {mensaje.texto && (
                         <div className={`p-4 rounded-lg flex items-start gap-3 ${
                             mensaje.tipo === 'error' 
@@ -98,7 +95,6 @@ export default function Perfil() {
                         </div>
                     )}
 
-                    {/* Información Personal */}
                     <div className="space-y-4">
                         <h2 className="text-lg font-semibold text-primario flex items-center gap-2 border-b border-borde pb-2">
                             <User className="w-5 h-5 text-primario/70" />
@@ -135,7 +131,6 @@ export default function Perfil() {
                         </div>
                     </div>
 
-                    {/* Seguridad */}
                     <div className="space-y-4 pt-2">
                         <h2 className="text-lg font-semibold text-primario flex items-center gap-2 border-b border-borde pb-2">
                             <KeyRound className="w-5 h-5 text-primario/70" />

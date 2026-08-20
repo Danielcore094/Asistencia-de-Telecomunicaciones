@@ -15,8 +15,8 @@
     --color-beige: #F8E9D4;
     --color-surface: #FFFFFF;
     --color-border: #E2E6EF;
-    --color-topbar-bg: #FFF8F0; /* tono un poco más claro que el beige */
-    --color-sidebar-bg: #F7F1E6; /* sidebar ligeramente más claro */
+    --color-topbar-bg: #FFF8F0;
+    --color-sidebar-bg: #F7F1E6;
     --color-muted: #8A93A8;
     --color-text-primary: #1A1A2E;
     --color-text-secondary: #4B5563;
@@ -101,7 +101,6 @@
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     }
 
-    /* Sidebar con fondo diferenciado */
     .sidebar-nav {
         background: var(--color-sidebar-bg, #F7F8FA);
     }
@@ -110,7 +109,6 @@
         background: var(--color-topbar-bg);
     }
 
-    /* Badge para mostrar el periodo con salto hasta 2 líneas */
     .periodo-badge {
         display: inline-flex;
         align-items: center;
@@ -138,7 +136,6 @@
         font-weight: 700;
     }
 
-    /* Badge de rol */
     .badge-admin {
         display: inline-flex;
         align-items: center;
@@ -161,7 +158,6 @@
         color: var(--color-accent-dark);
     }
 
-    /* Filas de tabla con hover */
     .tabla-fila {
         border-bottom: 1px solid var(--color-border);
         transition: background-color 0.1s ease;
@@ -171,7 +167,6 @@
         background: var(--color-bg);
     }
 
-    /* Ítem de navegación sidebar */
     .nav-item {
         display: flex;
         align-items: center;
@@ -196,7 +191,6 @@
         border-left-color: var(--color-primary);
     }
 
-    /* Animación de entrada para modales */
     @keyframes modal-fade-in {
         from {
             opacity: 0;

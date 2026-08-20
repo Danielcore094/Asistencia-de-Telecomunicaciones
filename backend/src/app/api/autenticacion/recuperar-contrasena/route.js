@@ -25,10 +25,8 @@ export async function POST(request) {
             return Response.json(respuestaGenerica);
         }
 
-        // Generar token seguro
         const token = crypto.randomBytes(32).toString('hex');
         
-        // Expiración: 15 minutos desde ahora
         const tokenExpiry = new Date(Date.now() + 15 * 60 * 1000);
 
         await prisma.docente.update({
@@ -39,11 +37,9 @@ export async function POST(request) {
             }
         });
 
-        // URL base del frontend
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
         const resetLink = `${frontendUrl}/reset-password?token=${token}`;
 
-        // Plantilla HTML del correo
         const htmlContent = `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
                 <h2 style="color: #6B2D8B;">Recuperación de Contraseña</h2>

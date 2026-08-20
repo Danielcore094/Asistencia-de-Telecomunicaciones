@@ -18,7 +18,6 @@ export async function POST(request) {
             return Response.json({ error: errorContrasena }, { status: 400 });
         }
 
-        // Buscar al usuario que tenga este token
         const teacher = await prisma.docente.findFirst({
             where: {
                 resetToken: token,
@@ -29,20 +28,16 @@ export async function POST(request) {
             return Response.json({ error: 'El enlace de recuperación es inválido' }, { status: 400 });
         }
 
-        // Verificar si expiró
         if (teacher.resetTokenExpiry && new Date() > teacher.resetTokenExpiry) {
             return Response.json({ error: 'El enlace de recuperación ha expirado. Solicita uno nuevo.' }, { status: 400 });
         }
 
-        // Hashear la nueva contraseña
         const passwordHash = await bcrypt.hash(newPassword, 10);
 
-        // Actualizar el profesor
         await prisma.docente.update({
             where: { id: teacher.id },
             data: {
                 passwordHash,
-                // Limpiar el token para que no se pueda volver a usar
                 resetToken: null,
                 resetTokenExpiry: null,
             }

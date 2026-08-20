@@ -71,7 +71,6 @@ const unidadesRegistro = (curso, fecha) => {
     return duracionDia1 > 0 ? duracionDia1 : 1
 }
 
-// GET — endpoint dedicado para generar la data del Excel de reportes con filtros
 export async function GET(request) {
     try {
         const usuario = obtenerUsuarioDePeticion(request)
@@ -89,10 +88,8 @@ export async function GET(request) {
         const anio        = searchParams.get('anio')      || null
         const periodo     = searchParams.get('periodo')   || null
 
-        // Filtro de fechas — si se pasa anio/periodo, derivar fechas automáticamente
         const filtroFecha = {}
         if (anio && periodo && !fechaInicio && !fechaFin) {
-            // Período 1: 01/01 → 30/06 | Período 2: 01/07 → 31/12
             if (periodo === '1') {
                 filtroFecha.gte = `${anio}-01-01`
                 filtroFecha.lte = `${anio}-06-30`
@@ -105,14 +102,12 @@ export async function GET(request) {
             if (fechaFin)    filtroFecha.lte = fechaFin
         }
 
-        // Condición WHERE base
         const condicion = {}
         if (idCurso) condicion.courseId = idCurso
         if (Object.keys(filtroFecha).length > 0) {
             condicion.date = filtroFecha
         }
 
-        // Filtros opcionales sobre la relación Course
         const filtroCurso = {}
         if (codigo)    filtroCurso.code           = codigo
         if (grupo)     filtroCurso.groupCode      = grupo
@@ -132,7 +127,6 @@ export async function GET(request) {
             }
         })
 
-        // Estructuras de datos para las hojas del Excel
         const estadisticasGenerales = {}
         const estadisticasPorAsignatura = {}
         const contactoEstudiantes = {}
@@ -143,7 +137,6 @@ export async function GET(request) {
             const estado = reg.status || (reg.present ? 'Presente' : 'Ausente')
             const unidades = unidadesRegistro(reg.course, reg.date)
 
-            // 1. Resumen General
             if (!estadisticasGenerales[documentoEstudiante]) {
                 estadisticasGenerales[documentoEstudiante] = {
                     documento: documentoEstudiante,
@@ -169,7 +162,6 @@ export async function GET(request) {
                 estadisticasGenerales[documentoEstudiante].absentUnits += unidades
             }
 
-            // 2. Por Asignatura
             const claveAsignatura = `${documentoEstudiante}-${idCursoActual}`
             if (!estadisticasPorAsignatura[claveAsignatura]) {
                 estadisticasPorAsignatura[claveAsignatura] = {
@@ -203,8 +195,6 @@ export async function GET(request) {
                 estadisticasPorAsignatura[claveAsignatura].absentUnits += unidades
             }
 
-            // 3. Directorio de Contacto (incluir si alguna vez falló, no importando si es justificado o no, para asegurar tener su dato en la BD si entra en riesgo)
-            // Se filtrará al final solo los que tengan porcentaje de la asignatura <= 80
             contactoEstudiantes[documentoEstudiante] = {
                 documento: documentoEstudiante,
                 name: reg.student.name,
@@ -262,14 +252,10 @@ export async function GET(request) {
             ...est,
             percentage: calcPorcentaje(est),
             failedByAbsence: estudiantesConPérdidaPorFalta.has(est.documento),
-        })).sort((a, b) => b.percentage - a.percentage) // de mayor a menor asistencia
+        })).sort((a, b) => b.percentage - a.percentage)
 
-        // Filtrar <= 80% o con pérdida por faltas
         const enRiesgo = resumen.filter(est => est.percentage <= 80 || est.failedByAbsence)
 
-        // El directorio solo debe incluir a estudiantes que aparecen en "enRiesgo" o tienen alguna materia perdida (<80)
-        // Pero para ser más exactos, el usuario pidió "la informacion de contacto del estudiante que presenta fallas"
-        // Si presenta al menos 1 falla (ausencia), lo metemos.
         const estudiantesConFallas = new Set(
             Object.values(statsAsignatura).filter(est => est.absent > 0).map(e => e.documento)
         )
@@ -278,17 +264,14 @@ export async function GET(request) {
             .filter(est => estudiantesConFallas.has(est.documento))
             .sort((a, b) => a.name.localeCompare(b.name))
 
-        // Enriquecer detalles con información del docente (si está disponible)
         let informacionDocente = null;
         let nombreCurso = null;
         try {
-            // Solo incluir docente cuando la petición explícita incluya `docenteId`
             if (docenteId) {
                 const d = await prisma.user.findUnique({ where: { id: docenteId } });
                 if (d) informacionDocente = { id: d.id, name: d.name, email: d.email };
             }
 
-            // Obtener nombre del curso cuando se pasó `courseId` (no implica incluir docente)
             if (idCurso) {
                 const curso = await prisma.curso.findUnique({ where: { id: idCurso } });
                 if (curso) {
@@ -296,11 +279,9 @@ export async function GET(request) {
                 }
             }
         } catch (e) {
-            // No bloquear el proceso si falla la búsqueda del docente
             console.error('[Audit] Error al obtener info de docente para auditoría:', e);
         }
 
-        // Registro de auditoría (opcional: puede suprimirse con ?suppressAudit=1)
         const valorSuppressAudit = (searchParams.get('suppressAudit') || '').toString().toLowerCase();
         const valorSuppressAuditHeader = (request.headers.get('x-suppress-audit') || '').toString().toLowerCase();
         const suprimirAuditoria = ['1', 'true', 'yes'].includes(valorSuppressAudit) || ['1', 'true', 'yes'].includes(valorSuppressAuditHeader);

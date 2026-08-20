@@ -28,7 +28,6 @@ const hayCruce = (curso1, curso2) => {
     for (const horario1 of horarios1) {
         for (const horario2 of horarios2) {
             if (horario1.dia === horario2.dia) {
-                // Cruce: empiezan antes de que termine el otro, y terminan después de que empiece el otro
                 if (horario1.inicio < horario2.fin && horario1.fin > horario2.inicio) {
                     return true;
                 }
@@ -41,11 +40,9 @@ const hayCruce = (curso1, curso2) => {
 const obtenerCursosMatriculados = (estudiante) =>
     estudiante.matriculas.map((matricula) => matricula.curso);
 
-// GET - obtener lista de estudiantes de un curso con filtros opcionales
 
 export async function GET(request) {
     try {
-        // Verificar autenticación
         const usuario = obtenerUsuarioDePeticion(request)
         if (!usuario) {
             return Response.json({ error: 'No autorizado' }, { status: 401 })
@@ -61,16 +58,13 @@ export async function GET(request) {
             return Response.json({ error: 'courseId es requerido' }, { status: 400 })
         }
 
-        // Verificar que el docente tenga acceso a esta materia
         const acceso = await verificarAccesoCurso(idCurso, usuario)
         if (!acceso.permitido) {
             return Response.json({ error: acceso.error }, { status: acceso.status })
         }
 
-        // Condición base sobre las matrículas del estudiante.
         const filtroMatricula = { cursoId: idCurso }
 
-        // Filtros adicionales a través de la relación Course
         const filtroCurso = {}
         if (codigo)    filtroCurso.code      = codigo
         if (grupo)     filtroCurso.groupCode = grupo
@@ -93,17 +87,14 @@ export async function GET(request) {
     }
 }
 
-// POST - crear uno o múltiples estudiantes (importación CSV)
 
 export async function POST(request) {
     try {
-        // Verificar autenticación
         const usuario = obtenerUsuarioDePeticion(request)
         if (!usuario) {
             return Response.json({ error: 'No autorizado' }, { status: 401 })
         }
 
-        // El ADMIN solo puede visualizar, no crear estudiantes.
         if (usuario.role === 'ADMIN') {
             return Response.json({ error: 'El administrador no puede crear estudiantes' }, { status: 403 })
         }
@@ -115,7 +106,6 @@ export async function POST(request) {
             return Response.json({ error: 'courseId es requerido' }, { status: 400 })
         }
 
-        // Verificar que el docente tenga acceso a esta materia
         const acceso = await verificarAccesoCurso(idCurso, usuario)
         if (!acceso.permitido) {
             return Response.json({ error: acceso.error }, { status: acceso.status })
@@ -123,8 +113,6 @@ export async function POST(request) {
         const curso = acceso.curso
 
         const cuerpo = await request.json()
-        // Soporte para inserción masiva o individual de CSV no está completamente cubierto aquí con cruces de horarios.
-        // Asumiremos que el CSV requiere lógica similar pero iterativa.
         if (Array.isArray(cuerpo)) {
             let count = 0;
             for (const e of cuerpo) {
@@ -137,7 +125,6 @@ export async function POST(request) {
 
                 const docLimpio = limpiarTexto(e.documento);
                 
-                // Verificar si existe el estudiante con sus cursos actuales
                 const estudianteExistente = await prisma.estudiante.findUnique({
                     where: { documento: docLimpio },
                     include: { matriculas: { include: { curso: true } } }
@@ -145,10 +132,8 @@ export async function POST(request) {
 
                 if (estudianteExistente) {
                     const cursosMatriculados = obtenerCursosMatriculados(estudianteExistente)
-                    // Verificar si ya está en la materia
                     if (cursosMatriculados.some(c => c.id === curso.id)) continue;
 
-                    // Verificar cruce de horarios
                     for (const cActual of cursosMatriculados) {
                         if (hayCruce(cActual, curso)) {
                             throw new Error(`Cruce de horarios para ${e.name} con la materia ${cActual.name}`);
@@ -202,12 +187,10 @@ export async function POST(request) {
 
         if (estudianteExistente) {
             const cursosMatriculados = obtenerCursosMatriculados(estudianteExistente)
-            // Verificar si ya está en esta materia
             if (cursosMatriculados.some(c => c.id === curso.id)) {
                 return Response.json({ error: 'El estudiante ya está inscrito en esta materia' }, { status: 400 });
             }
             
-            // Validar cruce
             for (const cActual of cursosMatriculados) {
                 if (hayCruce(cActual, curso)) {
                     return Response.json({ error: `Cruce de horarios detectado con la materia: ${cActual.name}` }, { status: 400 });
@@ -234,7 +217,6 @@ export async function POST(request) {
             }
         })
 
-        // Registro de auditoría
         const { registrarAccion } = await import('@/lib/servicioAuditoria');
         registrarAccion({
             usuario,
@@ -249,7 +231,6 @@ export async function POST(request) {
     } catch (error) {
         console.error(error)
         
-        // Ya no deberíamos tener P2002 por documento duplicado porque usamos upsert
 
         const msg = error.message || 'Error al crear estudiante'
         return Response.json({ error: msg }, { status: error.message?.includes('franja') ? 400 : 500 })

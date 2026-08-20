@@ -8,11 +8,9 @@ import { useCurso } from '../context/ContextoCurso';
 import { useAutenticacion } from '../context/ContextoAutenticacion';
 import FiltrosGlobales from '../components/FiltrosGlobales';
 
-// Años disponibles
 
 const ANIOS = ['2024', '2025', '2026'];
 
-// Estilo reutilizable para selects locales
 
 const estiloSelectLocal = {
     height: '36px',
@@ -30,7 +28,6 @@ const estiloSelectLocal = {
 };
 
 export default function Historial() {
-    // Filtros globales del topbar
 
     const {
         cursoSeleccionado,
@@ -41,14 +38,12 @@ export default function Historial() {
     const { usuario } = useAutenticacion();
     const isAdmin = usuario?.role === 'ADMIN';
 
-    // Filtros locales de esta página
 
     const [anio, setAnio] = useState('');
     const [periodo, setPeriodo] = useState('');
     const [modalidad, setModalidad] = useState('');
 
 
-    // Estado de datos
 
     const [fechas, setFechas] = useState([]);
     const [cargando, setCargando] = useState(true);
@@ -56,7 +51,6 @@ export default function Historial() {
     const [detallesFecha, setDetallesFecha] = useState([]);
     const [cargandoDetalles, setCargandoDetalles] = useState(false);
 
-    // Filtros combinados (globales + locales)
 
     const filtrosCombinados = {
         codigo:       codigoSeleccionado,
@@ -67,7 +61,6 @@ export default function Historial() {
         modalidad:    modalidad|| null,
     };
 
-    // Recarga cuando cambia cualquier filtro
 
     useEffect(() => {
         setFechaSeleccionada(null);
@@ -114,7 +107,6 @@ export default function Historial() {
         }
     };
 
-    // Render
 
     return (
         <section className="space-y-6">
@@ -122,7 +114,6 @@ export default function Historial() {
                 <FiltrosGlobales />
             </div>
 
-            {/* Encabezado */}
             <header className="tarjeta flex flex-col gap-4">
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                     <div>
@@ -134,7 +125,6 @@ export default function Historial() {
                 </div>
             </header>
 
-            {/* Filtros locales */}
 
             <div
                 className="tarjeta flex flex-wrap items-end gap-4"
@@ -144,7 +134,6 @@ export default function Historial() {
                     Filtros adicionales:
                 </div>
 
-                {/* Año */}
                 <div className="flex flex-col gap-1">
                     <label
                         htmlFor="hist-anio"
@@ -167,7 +156,6 @@ export default function Historial() {
                     </select>
                 </div>
 
-                {/* Período Académico */}
                 <div className="flex flex-col gap-1">
                     <label
                         htmlFor="hist-periodo"
@@ -189,7 +177,6 @@ export default function Historial() {
                     </select>
                 </div>
 
-                {/* Modalidad */}
                 <div className="flex flex-col gap-1">
                     <label
                         htmlFor="hist-modalidad"
@@ -214,7 +201,6 @@ export default function Historial() {
 
             </div>
 
-            {/* Sin materia seleccionada */}
 
             {!cursoSeleccionado ? (
                 <div className="tarjeta text-center py-12">
@@ -222,7 +208,6 @@ export default function Historial() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Panel izquierdo: listado de fechas */}
 
                     <div
                         className="tarjeta p-0 lg:col-span-1 overflow-hidden flex flex-col"
@@ -306,7 +291,6 @@ export default function Historial() {
                         )}
                     </div>
 
-                    {/* Panel derecho: detalle de la fecha */}
 
                     <div
                         className="tarjeta p-0 lg:col-span-2 flex flex-col"

@@ -142,7 +142,6 @@ const Auditoria = () => {
         }
 
         const filasTodas = [...Object.entries(detalles)];
-        // Si ya existe el nombre del curso, ocultar el identificador crudo para evitar repetir información
         const tieneNombreCurso = (Object.prototype.hasOwnProperty.call(detalles, 'nombreCurso') && detalles.nombreCurso)
             || (Object.prototype.hasOwnProperty.call(detalles, 'courseName') && detalles.courseName);
         if (tieneNombreCurso) {
@@ -163,7 +162,6 @@ const Auditoria = () => {
             filasTodas.unshift(['targetId', log.targetId]);
         }
 
-        // Filtrar claves que no aportan información (null, "", [], {})
         const filas = filasTodas.filter(([k, v]) => {
             if (v === null || v === undefined) return false;
             if (typeof v === 'string' && v.trim() === '') return false;
@@ -181,7 +179,6 @@ const Auditoria = () => {
         return (
             <div className="space-y-1 text-sm text-gray-700">
                 {filas.map(([key, value]) => {
-                    // Frases más naturales para claves específicas
                     if (key === 'sent' || key === 'enviados') {
                         return (
                             <div key={key} className="flex items-start gap-2">
@@ -209,7 +206,6 @@ const Auditoria = () => {
                         );
                     }
 
-                    // Valores de tipo objeto se muestran de forma legible
                     return (
                         <div key={key} className="flex items-start gap-2">
                             <span className="min-w-[85px] text-[11px] uppercase tracking-[0.08em] text-gray-400">{etiquetaDetalle(key)}:</span>
@@ -283,7 +279,6 @@ const Auditoria = () => {
                     </div>
                 </div>
 
-                {/* Modal de detalles */}
                 {modalLog && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center">
                         <div className="absolute inset-0 bg-black/40" onClick={() => setModalLog(null)} />

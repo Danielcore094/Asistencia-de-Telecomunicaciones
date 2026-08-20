@@ -1,8 +1,3 @@
-/**
- * probarReporteSemanal.js
- * Script de prueba independiente para ejecutar la notificación semanal.
- * Uso: node backend/probarReporteSemanal.js
- */
 import dotenv from 'dotenv';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';

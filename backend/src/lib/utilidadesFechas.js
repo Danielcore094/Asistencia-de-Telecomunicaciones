@@ -1,12 +1,4 @@
-/**
- * utilidadesFechas.js
- * Utilidades centralizadas para manejo de fechas en formato YYYY-MM-DD
- * usando siempre la zona horaria de Colombia (America/Bogota).
- */
 
-/**
- * Formatea una fecha (Date o string) a YYYY-MM-DD en hora de Colombia.
- */
 export const formatearFechaBogota = (d = new Date()) => {
     const date = d instanceof Date ? d : new Date(d);
     return new Intl.DateTimeFormat('en-CA', {
@@ -15,10 +7,6 @@ export const formatearFechaBogota = (d = new Date()) => {
     }).format(date);
 };
 
-/**
- * Devuelve el lunes de la semana que contiene la fecha dada.
- * @param {string} dateStr - Fecha en formato YYYY-MM-DD
- */
 export const obtenerLunesSemana = (dateStr) => {
     const [year, month, day] = dateStr.split('-').map(Number);
     const d = new Date(year, month - 1, day);
@@ -32,9 +20,6 @@ export const obtenerLunesSemana = (dateStr) => {
     return `${y}-${m}-${dy}`;
 };
 
-/**
- * Obtiene el rango Lunes-Sábado de la semana actual.
- */
 export const obtenerRangoSemanaActual = (referenceDate = new Date()) => {
     const hoyStr = formatearFechaBogota(referenceDate);
     const lunesStr = obtenerLunesSemana(hoyStr);
@@ -51,10 +36,6 @@ export const obtenerRangoSemanaActual = (referenceDate = new Date()) => {
     };
 };
 
-/**
- * Obtiene el rango Lunes-Sábado de la semana ANTERIOR.
- * Cuando el cron corre el domingo, esta función retorna la semana que acaba de terminar.
- */
 export const obtenerRangoSemanaAnterior = (referenceDate = new Date()) => {
     const hoyStr = formatearFechaBogota(referenceDate);
     const lunesActualStr = obtenerLunesSemana(hoyStr);
@@ -62,7 +43,6 @@ export const obtenerRangoSemanaAnterior = (referenceDate = new Date()) => {
     const [y, m, d] = lunesActualStr.split('-').map(Number);
     const lunesActual = new Date(y, m - 1, d);
 
-    // Retroceder 7 días al lunes anterior
     const lunesAnterior = new Date(lunesActual);
     lunesAnterior.setDate(lunesActual.getDate() - 7);
 

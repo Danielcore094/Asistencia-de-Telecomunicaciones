@@ -6,7 +6,6 @@ import bcrypt from 'bcryptjs'
 import { obtenerUsuarioDePeticion } from '@/lib/autenticacion'
 import { obtenerErrorContrasena } from '@/lib/politicaContrasena'
 
-// GET — listar profesores (ADMIN: todos, TEACHER: solo él mismo)
 export async function GET(request) {
     try {
         const usuario = obtenerUsuarioDePeticion(request)
@@ -28,7 +27,6 @@ export async function GET(request) {
     }
 }
 
-// POST — crear un profesor (solo ADMIN)
 export async function POST(request) {
     try {
         const usuario = obtenerUsuarioDePeticion(request)

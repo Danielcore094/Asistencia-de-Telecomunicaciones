@@ -3,8 +3,6 @@ export const dynamic = 'force-dynamic';
 import prisma from '@/lib/prisma'
 import { obtenerUsuarioDePeticion } from '@/lib/autenticacion'
 
-// GET /api/auditoria
-// Devuelve los logs de auditoría. Solo para administradores.
 export async function GET(request) {
     try {
         const usuario = obtenerUsuarioDePeticion(request)

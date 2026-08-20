@@ -4,7 +4,6 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { obtenerUsuarioDePeticion, verificarAccesoCurso } from '@/lib/autenticacion'
 
-// Construye la condición de Prisma para los filtros opcionales.
 const estadosAsistencia = new Set(['Presente', 'Ausente', 'Justificado'])
 
 const esFechaValida = (fecha) => {
@@ -26,7 +25,6 @@ const construirFiltroCursoAutorizado = (filtroCurso, usuario) => {
 function construirFiltro({ nombreMateria, codigo, grupo, docenteId, anio, periodo, modalidad }) {
     const where = {}
 
-    // Filtros sobre la relación de cursos mediante unión implícita de Prisma.
     const filtroCurso = {}
     if (nombreMateria) filtroCurso.name = nombreMateria
     if (modalidad) filtroCurso.programa = { contains: modalidad, mode: 'insensitive' }
@@ -44,11 +42,9 @@ function construirFiltro({ nombreMateria, codigo, grupo, docenteId, anio, period
     return where
 }
 
-// GET: listar u obtener asistencia según parámetros.
 
 export async function GET(request) {
     try {
-        // Verificar autenticación
         const usuario = obtenerUsuarioDePeticion(request)
         if (!usuario) {
             return Response.json({ error: 'No autorizado' }, { status: 401 })
@@ -68,7 +64,6 @@ export async function GET(request) {
             return Response.json({ error: 'courseId es requerido' }, { status: 400 })
         }
 
-        // Verificar acceso al curso
         const acceso = await verificarAccesoCurso(idCurso, usuario)
         if (!acceso.permitido) {
             return Response.json({ error: acceso.error }, { status: acceso.status })
@@ -82,7 +77,6 @@ export async function GET(request) {
         )
 
         if (!fecha) {
-            // Sin fecha: devuelve historial agrupado por día
             const cursosFiltrados = await prisma.curso.findMany({
                 where: filtroCurso,
                 select: { id: true },
@@ -119,7 +113,6 @@ export async function GET(request) {
             return Response.json(historial)
         }
 
-        // Con fecha: registros individuales incluyendo datos del estudiante
         const asistencias = await prisma.asistencia.findMany({
             where: { course: filtroCurso, date: fecha },
             include: { student: true }
@@ -131,18 +124,15 @@ export async function GET(request) {
     }
 }
 
-// POST: guardar asistencia de una clase.
 
 export async function POST(request) {
     try {
-        // Verificar autenticación
         const usuario = obtenerUsuarioDePeticion(request)
         if (!usuario) {
             return Response.json({ error: 'No autorizado' }, { status: 401 })
         }
 
         const { date, courseId, records } = await request.json()
-        // records: Array<{ studentId: string, present: boolean }>
         const sonRegistrosValidos = Array.isArray(records) && records.length > 0 && records.length <= 200 && records.every((registro) => (
             registro &&
             typeof registro.studentId === 'string' &&
@@ -153,15 +143,12 @@ export async function POST(request) {
             return Response.json({ error: 'Datos inválidos en la petición' }, { status: 400 })
         }
 
-        // Verificar acceso al curso antes de guardar
         const acceso = await verificarAccesoCurso(courseId, usuario)
         if (!acceso.permitido) {
             return Response.json({ error: acceso.error }, { status: acceso.status })
         }
 
-        // Guardar múltiples registros en una sola transacción con inserción o actualización.
         const operaciones = records.map(registro => {
-            // La clave `present` es verdadera solo para el estado Presente.
             const estaPresente = registro.status === 'Presente';
             return prisma.asistencia.upsert({
                 where: {
@@ -184,7 +171,6 @@ export async function POST(request) {
 
         await prisma.$transaction(operaciones)
         
-        // Registro de auditoría
         const { registrarAccion } = await import('@/lib/servicioAuditoria');
         registrarAccion({
             usuario,
@@ -195,7 +181,6 @@ export async function POST(request) {
             ip: request.headers.get('x-forwarded-for') || '127.0.0.1'
         });
 
-        // Disparar notificaciones WhatsApp solo para 'Ausente' (no Justificado)
         const ausentes = records.filter(r => r.status === 'Ausente');
         if (ausentes.length > 0) {
             const { ejecutarNotificacionWhatsAppAusencia } = await import('@/jobs/notificacionWhatsAppAusencia');

@@ -2,7 +2,6 @@ import prisma from '../src/lib/prisma.js';
 
 (async () => {
   try {
-    // ID tomado de los registros recientes (ajusta si hace falta)
     const id = 'cmqs9cmko0013tbumg1if9qou';
     const existente = await prisma.auditLog.findUnique({ where: { id } });
     if (!existente) {

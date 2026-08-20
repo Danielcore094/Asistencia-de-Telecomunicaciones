@@ -9,7 +9,6 @@ async function verificar() {
         await cliente.connect();
         console.log("Conexión correcta con la base de datos predeterminada 'postgres'.");
 
-        // Comprueba si existe la base de datos telecom_attendance.
         const resultado = await cliente.query("SELECT datname, pg_get_userbyid(datdba) as owner FROM pg_database WHERE datname='telecom_attendance';");
         if (resultado.rows.length > 0) {
             console.log("La base de datos 'telecom_attendance' existe. Propietario:", resultado.rows[0].owner);
@@ -19,7 +18,6 @@ async function verificar() {
             console.log("Base de datos 'telecom_attendance' creada.");
         }
 
-        // Comprueba si el usuario postgres tiene permisos de superusuario.
         const resultadoRol = await cliente.query("SELECT rolname, rolsuper FROM pg_roles WHERE rolname='postgres';");
         console.log("Estado de superusuario de 'postgres':", resultadoRol.rows[0].rolsuper);
 
