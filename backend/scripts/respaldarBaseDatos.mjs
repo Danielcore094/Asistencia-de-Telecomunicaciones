@@ -11,13 +11,16 @@ if (!urlBaseDatos) {
     throw new Error('DATABASE_URL es requerida para crear el respaldo.');
 }
 
+const urlRespaldo = new URL(urlBaseDatos);
+urlRespaldo.searchParams.delete('schema');
+
 const fecha = new Date().toISOString().replace(/[:.]/g, '-');
 const archivoSalida = resolve(directorioSalida, `asistencia-${fecha}.dump`);
 
 await mkdir(directorioSalida, { recursive: true });
 
 await ejecutarArchivo('pg_dump', [
-    `--dbname=${urlBaseDatos}`,
+    `--dbname=${urlRespaldo.toString()}`,
     '--format=custom',
     '--no-owner',
     '--no-privileges',
