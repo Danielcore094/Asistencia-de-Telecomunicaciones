@@ -7,17 +7,22 @@ export const formatearFechaBogota = (d = new Date()) => {
     }).format(date);
 };
 
+const crearFechaUtc = (year, month, day) => new Date(Date.UTC(year, month - 1, day));
+const formatearFechaUtc = (date) => {
+    const y = date.getUTCFullYear();
+    const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const d = String(date.getUTCDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+};
+
 export const obtenerLunesSemana = (dateStr) => {
     const [year, month, day] = dateStr.split('-').map(Number);
-    const d = new Date(year, month - 1, day);
-    const dow = d.getDay();
+    const d = crearFechaUtc(year, month, day);
+    const dow = d.getUTCDay();
     const diff = dow === 0 ? -6 : 1 - dow;
-    d.setDate(d.getDate() + diff);
-    
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const dy = String(d.getDate()).padStart(2, '0');
-    return `${y}-${m}-${dy}`;
+    d.setUTCDate(d.getUTCDate() + diff);
+
+    return formatearFechaUtc(d);
 };
 
 export const obtenerRangoSemanaActual = (referenceDate = new Date()) => {
@@ -25,14 +30,14 @@ export const obtenerRangoSemanaActual = (referenceDate = new Date()) => {
     const lunesStr = obtenerLunesSemana(hoyStr);
     
     const [y, m, d] = lunesStr.split('-').map(Number);
-    const lunes = new Date(y, m - 1, d);
-    
+    const lunes = crearFechaUtc(y, m, d);
+
     const sabado = new Date(lunes);
-    sabado.setDate(lunes.getDate() + 5);
-    
+    sabado.setUTCDate(lunes.getUTCDate() + 5);
+
     return {
         weekStart: lunesStr,
-        weekEnd: formatearFechaBogota(sabado)
+        weekEnd: formatearFechaUtc(sabado)
     };
 };
 
@@ -41,16 +46,16 @@ export const obtenerRangoSemanaAnterior = (referenceDate = new Date()) => {
     const lunesActualStr = obtenerLunesSemana(hoyStr);
 
     const [y, m, d] = lunesActualStr.split('-').map(Number);
-    const lunesActual = new Date(y, m - 1, d);
+    const lunesActual = crearFechaUtc(y, m, d);
 
     const lunesAnterior = new Date(lunesActual);
-    lunesAnterior.setDate(lunesActual.getDate() - 7);
+    lunesAnterior.setUTCDate(lunesActual.getUTCDate() - 7);
 
     const sabadoAnterior = new Date(lunesAnterior);
-    sabadoAnterior.setDate(lunesAnterior.getDate() + 5);
+    sabadoAnterior.setUTCDate(lunesAnterior.getUTCDate() + 5);
 
     return {
-        weekStart: formatearFechaBogota(lunesAnterior),
-        weekEnd:   formatearFechaBogota(sabadoAnterior),
+        weekStart: formatearFechaUtc(lunesAnterior),
+        weekEnd:   formatearFechaUtc(sabadoAnterior),
     };
 };
