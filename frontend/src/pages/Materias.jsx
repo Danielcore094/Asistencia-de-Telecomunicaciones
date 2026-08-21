@@ -727,9 +727,9 @@ export default function Materias() {
                 {!cargandoCursos &&
                     !cargandoEstadisticas &&
                     estadisticasCursos.map((curso) => (
-                        <article key={curso.id} className="tarjeta relative group pb-14 min-h-[16rem] sm:min-h-[18rem]">
-                            <div className="flex items-start justify-between gap-4">
-                                <div className="flex items-start gap-3">
+                        <article key={curso.id} className="tarjeta group relative min-w-0 overflow-hidden pb-14 min-h-[16rem] sm:min-h-[18rem]">
+                            <div className="flex min-w-0 items-start justify-between gap-3">
+                                <div className="flex min-w-0 flex-1 items-start gap-3">
                                     <div className="p-2 rounded-md bg-primario/10 flex items-center justify-center">
                                         <BookOpen size={18} className="text-primario" />
                                     </div>
@@ -739,15 +739,15 @@ export default function Materias() {
                                     </div>
                                 </div>
 
-                                <div className="flex items-start gap-2">
+                                <div className="flex shrink-0 items-start gap-2">
                                     <div className="periodo-badge" style={{ background: 'var(--color-accent)', color: 'white', borderColor: 'color-mix(in srgb, var(--color-accent) 90%, transparent)' }}>
                                         <span className="periodo-badge__text">P{curso.periodo}-{curso.anio}</span>
                                     </div>
                                 </div>
                             </div>
-                            <div className="mt-4 grid grid-cols-2 gap-3 text-sm text-texto-secundario">
+                            <div className="mt-4 grid min-w-0 grid-cols-1 gap-3 text-sm text-texto-secundario sm:grid-cols-2">
                                 {isAdmin && (
-                                    <div className="col-span-2">
+                                    <div className="sm:col-span-2">
                                         <p className="text-xs text-texto-secundario">Docente</p>
                                         <p className="font-medium text-texto flex items-center gap-1">
                                             <User size={14} className="text-primario" />

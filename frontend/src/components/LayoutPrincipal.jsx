@@ -61,18 +61,18 @@ export default function LayoutPrincipal({ children }) {
                 style={{ minHeight: 'var(--topbar-height)' }}
             >
                 <div
-                    className="mx-auto flex w-full items-center px-4 md:px-8"
+                    className="mx-auto flex w-full min-w-0 items-center px-3 md:px-8"
                     style={{
                         maxWidth: 'var(--content-max-width)',
                         minHeight: 'var(--topbar-height)',
                         gap: 'var(--space-4)',
                     }}
                 >
-                    <div className="flex items-center shrink-0">
+                    <div className="flex shrink-0 items-center">
                         <img
                             src="/logo.png"
                             alt="Logo UTS"
-                            className="h-40 w-auto object-contain -my-10 drop-shadow-md z-30 relative"
+                            className="h-12 w-12 object-contain drop-shadow-sm md:h-16 md:w-16"
                         />
                     </div>
 
@@ -82,16 +82,16 @@ export default function LayoutPrincipal({ children }) {
                         </h1>
                     </div>
 
-                    <div className="xl:hidden flex-1 px-2 text-center">
-                        <h1 className="text-base font-bold text-primario truncate">
+                    <div className="min-w-0 flex-1 px-2 text-center xl:hidden">
+                        <h1 className="truncate text-sm font-bold text-primario sm:text-base">
                             Control de Asistencia
                         </h1>
                     </div>
-                    <div className="ml-auto flex items-center relative" ref={menuRef}>
+                    <div className="relative ml-auto flex shrink-0 items-center" ref={menuRef}>
                         <button
                             type="button"
                             onClick={() => setMenuAbierto(!menuAbierto)}
-                            className="flex items-center gap-2 py-1.5 px-3 text-sm rounded-lg hover:bg-fondo transition-colors"
+                            className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-sm transition-colors hover:bg-fondo sm:gap-2 sm:px-3"
                             aria-haspopup="true"
                             aria-expanded={menuAbierto}
                             aria-label="Menú de usuario"
@@ -160,8 +160,8 @@ export default function LayoutPrincipal({ children }) {
             </aside>
 
 
-            <main className="px-4 pb-24 pt-[calc(var(--topbar-height)+var(--space-8))] md:pl-[calc(var(--sidebar-width)+var(--space-8))] md:pr-8">
-                <div className="mx-auto w-full max-w-[var(--content-max-width)]">
+            <main className="min-w-0 px-3 pb-36 pt-[calc(var(--topbar-height)+var(--space-6))] sm:px-4 md:pb-8 md:pl-[calc(var(--sidebar-width)+var(--space-8))] md:pr-8 md:pt-[calc(var(--topbar-height)+var(--space-8))]">
+                <div className="mx-auto w-full min-w-0 max-w-[var(--content-max-width)]">
                     {children}
                 </div>
             </main>
@@ -170,7 +170,7 @@ export default function LayoutPrincipal({ children }) {
             <nav className="fixed bottom-0 left-0 right-0 z-20 border-t topbar-bg md:hidden">
                 <ul
                     className={`grid ${
-                        usuario?.role === 'ADMIN' ? 'grid-cols-8' : 'grid-cols-6'
+                        usuario?.role === 'ADMIN' ? 'grid-cols-4' : 'grid-cols-3'
                     }`}
                 >
                     {elementosNavegacion
@@ -183,15 +183,15 @@ export default function LayoutPrincipal({ children }) {
                             const Icono = item.icono;
                             const activo = ubicacion.pathname === item.ruta;
                             return (
-                                <li key={item.ruta}>
+                                <li key={item.ruta} className="min-w-0">
                                     <Link
                                         to={item.ruta}
-                                        className={`flex flex-col items-center gap-1 px-1 py-2 text-[11px] ${
+                                        className={`flex min-w-0 flex-col items-center gap-1 px-1 py-2 text-[11px] ${
                                             activo ? 'text-primario' : 'text-texto-secundario'
                                         }`}
                                     >
                                         <Icono size={18} aria-label={item.etiqueta} />
-                                        <span className="truncate">{item.etiqueta}</span>
+                                        <span className="w-full truncate text-center">{item.etiqueta}</span>
                                     </Link>
                                 </li>
                             );

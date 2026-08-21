@@ -780,7 +780,7 @@ export default function Reportes() {
 
             <section className="tarjeta p-0">
                 <div
-                    className="flex items-center gap-1 px-4 pt-4 pb-0 border-b"
+                    className="flex max-w-full items-center gap-1 overflow-x-auto border-b px-4 pt-4 pb-0"
                     style={{ borderColor: 'var(--color-border)' }}
                 >
                     {VISTAS.map(({ id, label, Icono }) => {
@@ -790,7 +790,7 @@ export default function Reportes() {
                                 key={id}
                                 type="button"
                                 onClick={() => setVistaActiva(id)}
-                                className="inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors relative"
+                                className="relative inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-4 py-2.5 text-sm font-medium transition-colors"
                                 style={{
                                     color: activo ? 'var(--color-primary)' : 'var(--color-text-secondary)',
                                     borderBottom: activo ? '2px solid var(--color-primary)' : '2px solid transparent',

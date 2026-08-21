@@ -34,14 +34,14 @@ export default function InicioSesion() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-beige p-4">
-            <div className="w-full max-w-md -mt-16">
-                <div className="text-center mb-8">
+        <div className="flex min-h-screen items-center justify-center bg-beige p-4">
+            <div className="w-full max-w-md">
+                <div className="mb-6 text-center sm:mb-8">
                     <div className="flex justify-center mb-4">
                         <img 
                             src="/logo.png" 
                             alt="Logo UTS" 
-                            className="h-80 w-auto object-contain drop-shadow-sm" 
+                            className="h-40 w-auto max-w-full object-contain drop-shadow-sm sm:h-56"
                         />
                     </div>
                     <h1 className="text-2xl sm:text-3xl font-extrabold text-texto tracking-tight mt-0">

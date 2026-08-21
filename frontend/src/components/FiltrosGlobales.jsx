@@ -58,12 +58,12 @@ function ChevronAbajo() {
 
 function SelectorFiltro({ label, id, value, onChange, children }) {
     return (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <div className="filtro-global">
             <label htmlFor={id} style={estiloLabel}>
                 {label}
             </label>
 
-            <div style={{ position: 'relative' }}>
+            <div className="filtro-global__control">
                 <select
                     id={id}
                     value={value ?? ''}

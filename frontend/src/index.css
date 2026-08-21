@@ -65,7 +65,19 @@
 
 @layer base {
     * {
+        box-sizing: border-box;
         border-color: var(--color-border);
+    }
+
+    html,
+    body,
+    #root {
+        min-width: 0;
+        width: 100%;
+    }
+
+    body {
+        overflow-x: hidden;
     }
 
     body {
@@ -107,6 +119,34 @@
 
     .topbar-bg {
         background: var(--color-topbar-bg);
+    }
+
+    .filtro-global {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+    }
+
+    .filtro-global__control {
+        position: relative;
+        min-width: 0;
+    }
+
+    @media (max-width: 639px) {
+        .filtro-global {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            width: 100%;
+            gap: 4px;
+        }
+
+        .filtro-global__control,
+        .filtro-global select {
+            width: 100% !important;
+            min-width: 0 !important;
+            max-width: none !important;
+        }
     }
 
     .periodo-badge {

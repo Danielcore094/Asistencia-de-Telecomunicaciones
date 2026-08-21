@@ -642,11 +642,11 @@ export default function Estudiantes() {
                             <p className="mt-1 text-sm text-texto-secundario">Listado y porcentaje de asistencia por estudiante.</p>
                         </div>
                         {!isAdmin && cursoSeleccionado && (
-                            <div className="flex items-center gap-2 shrink-0">
+                            <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto sm:shrink-0">
                                 <button
                                     type="button"
                                     onClick={() => setModalFormularioVisible(true)}
-                                    className="boton-primario inline-flex items-center gap-2 h-[38px]"
+                                    className="boton-primario inline-flex h-[38px] items-center justify-center gap-2"
                                 >
                                     <Plus size={16} />
                                     Nuevo Estudiante
@@ -662,7 +662,7 @@ export default function Estudiantes() {
                                 <button
                                     type="button"
                                     onClick={() => inputArchivoRef.current?.click()}
-                                    className="boton-secundario inline-flex items-center gap-2 h-[38px]"
+                                    className="boton-secundario inline-flex h-[38px] items-center justify-center gap-2"
                                 >
                                     <Upload size={16} />
                                     Importar Excel
@@ -670,7 +670,7 @@ export default function Estudiantes() {
                                 <button
                                     type="button"
                                     onClick={descargarPlantilla}
-                                    className="boton-secundario inline-flex items-center gap-2 h-[38px]"
+                                    className="boton-secundario inline-flex h-[38px] items-center justify-center gap-2"
                                     title="Descargar plantilla Excel para importar estudiantes"
                                 >
                                     <FileDown size={16} />
