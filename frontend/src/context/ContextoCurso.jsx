@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { obtenerCursos } from '../services/api';
 import { useAutenticacion } from './ContextoAutenticacion';
 import toast from 'react-hot-toast';
@@ -48,7 +48,7 @@ export const ProveedorCurso = ({ children }) => {
     }, [docenteSeleccionado]);
 
 
-    const cargarCursos = async () => {
+    const cargarCursos = useCallback(async () => {
         if (!usuario) return;
         setCargandoCursos(true);
         try {
@@ -61,6 +61,8 @@ export const ProveedorCurso = ({ children }) => {
             
             setCursos(datosOrdenados);
             const idCursoGuardado = localStorage.getItem('selectedCourseId');
+            const grupoGuardado = localStorage.getItem('selectedGroup');
+            const codigoGuardado = localStorage.getItem('selectedCode');
 
             if (idCursoGuardado === 'TODAS' && usuario?.role === 'ADMIN') {
                 setCursoSeleccionado(null);
@@ -68,18 +70,23 @@ export const ProveedorCurso = ({ children }) => {
                 const encontrado = datosOrdenados.find(c => c.id === idCursoGuardado);
                 if (encontrado) {
                     setCursoSeleccionado(encontrado);
-                    if (!grupoSeleccionado) {
+                    if (!grupoGuardado) {
                         setGrupoSeleccionado(encontrado.groupCode || encontrado.grupo || null);
                     }
-                } else if (!cursoSeleccionado) {
+                    if (!codigoGuardado) {
+                        setCodigoSeleccionado(encontrado.code || encontrado.codigo || null);
+                    }
+                } else {
                     const primero = datosOrdenados[0];
                     setCursoSeleccionado(primero);
                     setGrupoSeleccionado(primero.groupCode || primero.grupo || null);
+                    setCodigoSeleccionado(primero.code || primero.codigo || null);
                     localStorage.setItem('selectedCourseId', primero.id);
                 }
             } else {
                 setCursoSeleccionado(null);
                 setGrupoSeleccionado(null);
+                setCodigoSeleccionado(null);
                 localStorage.removeItem('selectedCourseId');
             }
         } catch (error) {
@@ -88,12 +95,11 @@ export const ProveedorCurso = ({ children }) => {
         } finally {
             setCargandoCursos(false);
         }
-    };
+    }, [usuario, docenteSeleccionado]);
 
     useEffect(() => {
         cargarCursos();
-        // eslint-disable-next-line
-    }, [usuario, docenteSeleccionado]);
+    }, [cargarCursos]);
 
 
     const seleccionarCurso = (curso) => {

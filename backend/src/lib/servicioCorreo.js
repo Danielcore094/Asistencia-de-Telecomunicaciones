@@ -62,7 +62,6 @@ export function construirCorreoInasistenciasHTML({ studentName, totalAbsences, c
 <body style="font-family: Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px;">
   <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
     
-    <!-- Header -->
     <div style="background: linear-gradient(135deg, #1e3a8a, #2563eb); padding: 32px 24px; text-align: center;">
       <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 700;">
         📋 Reporte Semanal de Inasistencias
@@ -72,7 +71,6 @@ export function construirCorreoInasistenciasHTML({ studentName, totalAbsences, c
       </p>
     </div>
 
-    <!-- Body -->
     <div style="padding: 32px 24px;">
       <p style="color: #374151; font-size: 16px; margin: 0 0 16px;">
         Estimado/a <strong>${studentName}</strong>,
@@ -81,7 +79,6 @@ export function construirCorreoInasistenciasHTML({ studentName, totalAbsences, c
         El sistema de control de asistencia ha registrado inasistencias durante la semana académica.
       </p>
 
-      <!-- Summary box -->
       <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
         <h2 style="color: #1e40af; font-size: 16px; margin: 0 0 12px;">📊 Resumen de la semana</h2>
         <p style="color: #1e3a8a; font-size: 28px; font-weight: 700; margin: 0 0 12px;">
@@ -98,7 +95,6 @@ export function construirCorreoInasistenciasHTML({ studentName, totalAbsences, c
       </p>
     </div>
 
-    <!-- Footer -->
     <div style="background: #f9fafb; border-top: 1px solid #e5e7eb; padding: 20px 24px; text-align: center;">
       <p style="color: #9ca3af; font-size: 12px; margin: 0;">
         Este mensaje es una notificación automática del sistema de control de asistencia.<br>

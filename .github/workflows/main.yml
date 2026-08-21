@@ -2,7 +2,7 @@ name: Calidad
 
 on:
   push:
-    branches: [ main ] # Se activa al subir cambios a la rama principal
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
