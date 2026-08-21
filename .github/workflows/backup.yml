@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   respaldo:
-    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - name: Obtener código
@@ -30,6 +29,9 @@ jobs:
         run: sudo apt-get update && sudo apt-get install --yes postgresql-client
 
       - name: Crear respaldo cifrado
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          BACKUP_ENCRYPTION_PASSWORD: ${{ secrets.BACKUP_ENCRYPTION_PASSWORD }}
         run: |
           test -n "$DATABASE_URL"
           test -n "$BACKUP_ENCRYPTION_PASSWORD"

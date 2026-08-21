@@ -106,17 +106,17 @@ El archivo se crea en `backups/` con formato personalizado de PostgreSQL. Para r
 pg_restore --clean --if-exists --no-owner --dbname="postgresql://usuario:contrasena@host:5432/base" backups/asistencia-AAAA-MM-DDTHH-MM-SS-SSSZ.dump
 ```
 
-El flujo `.github/workflows/backup.yml` crea un respaldo diario a las 00:15 de Colombia, lo cifra con AES-256 y lo conserva como artefacto durante 30 días. Antes de habilitarlo, configura estos secretos del repositorio:
+El flujo `.github/workflows/backup.yml` crea un respaldo diario a las 00:15 de Colombia, lo cifra con AES-256 y lo conserva como artefacto durante 30 días. Configura estos secretos del repositorio:
 
 - `DATABASE_URL`: conexión de la base de datos que se respaldará.
 - `BACKUP_ENCRYPTION_PASSWORD`: contraseña fuerte guardada fuera de GitHub; es necesaria para descifrar el archivo `.dump.gpg`.
 
-El flujo está desactivado provisionalmente con `if: ${{ false }}`. Después de configurar ambos secretos en producción, elimina esa condición y agrega al paso `Crear respaldo cifrado`:
+El paso `Crear respaldo cifrado` usa estos secretos directamente:
 
 ```yaml
 env:
-	DATABASE_URL: ${{ secrets.DATABASE_URL }}
-	BACKUP_ENCRYPTION_PASSWORD: ${{ secrets.BACKUP_ENCRYPTION_PASSWORD }}
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  BACKUP_ENCRYPTION_PASSWORD: ${{ secrets.BACKUP_ENCRYPTION_PASSWORD }}
 ```
 
 Para descifrar un artefacto descargado:
