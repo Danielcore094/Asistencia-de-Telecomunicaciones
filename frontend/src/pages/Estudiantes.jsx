@@ -96,19 +96,20 @@ function ModalEdicion({ estudiante, onGuardar, onCancelar, guardando }) {
 }
 
 
-function ModalImportacion({ filas, onConfirmar, onCancelar, importando }) {
+function ModalImportacion({ filas, onConfirmar, onCancelar, onToggleForzar, importando }) {
     return (
         <div
             className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4"
             style={{ background: 'rgba(26,26,46,0.5)', backdropFilter: 'blur(2px)' }}
         >
             <div
-                className="modal-panel w-full max-w-2xl rounded-[var(--card-radius)] border flex flex-col"
+                className="modal-panel w-full max-w-[1200px] rounded-[var(--card-radius)] border flex flex-col"
                 style={{
                     background: 'var(--color-surface)',
                     borderColor: 'var(--color-border)',
                     boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
                     maxHeight: '80vh',
+                    width: 'min(98vw, 1200px)',
                 }}
             >
                 <div
@@ -120,9 +121,9 @@ function ModalImportacion({ filas, onConfirmar, onCancelar, importando }) {
                             Vista previa — Importación
                         </h3>
                         <p className="mt-0.5 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                            {filas.filter(f => !f.esDuplicado && !f.programaInvalido).length} nueva{filas.filter(f => !f.esDuplicado && !f.programaInvalido).length !== 1 ? 's' : ''}
+                            {filas.filter(f => !f.esDuplicado && (!f.programaInvalido && !f.franjaInvalida || f.forzar)).length} nueva{filas.filter(f => !f.esDuplicado && (!f.programaInvalido && !f.franjaInvalida || f.forzar)).length !== 1 ? 's' : ''}
                             {filas.filter(f => f.esDuplicado).length > 0 && ` · ${filas.filter(f => f.esDuplicado).length} ya existente${filas.filter(f => f.esDuplicado).length !== 1 ? 's' : ''}`}
-                            {filas.filter(f => f.programaInvalido).length > 0 && ` · ${filas.filter(f => f.programaInvalido).length} programa incorrecto`}
+                            {filas.filter(f => f.programaInvalido || f.franjaInvalida).length > 0 && ` · ${filas.filter(f => f.programaInvalido || f.franjaInvalida).length} con franja/programa diferentes`}
                         </p>
                     </div>
                     <button
@@ -138,7 +139,7 @@ function ModalImportacion({ filas, onConfirmar, onCancelar, importando }) {
                 </div>
 
                 <div className="overflow-auto flex-1">
-                    <table className="w-full text-sm">
+                    <table className="w-full text-sm" style={{ borderCollapse: 'collapse' }}>
                         <thead style={{ background: 'color-mix(in srgb, var(--color-border) 50%, transparent)' }}>
                             <tr className="text-left" style={{ color: 'var(--color-text-secondary)' }}>
                                 <th className="px-4 py-3 font-medium">#</th>
@@ -160,7 +161,7 @@ function ModalImportacion({ filas, onConfirmar, onCancelar, importando }) {
                                     className="border-b"
                                     style={{
                                         borderColor: 'var(--color-border)',
-                                        opacity: (fila.esDuplicado || fila.programaInvalido) ? 0.45 : 1,
+                                        backgroundColor: (fila.esDuplicado || fila.programaInvalido || fila.franjaInvalida) ? 'rgba(233, 236, 239, 0.5)' : undefined,
                                     }}
                                 >
                                     <td className="px-4 py-2.5 font-mono text-xs" style={{ color: 'var(--color-muted)' }}>{i + 1}</td>
@@ -175,11 +176,22 @@ function ModalImportacion({ filas, onConfirmar, onCancelar, importando }) {
                                     <td className="px-4 py-2.5" style={{ color: 'var(--color-text-secondary)' }}>{fila.whatsapp || '—'}</td>
                                     <td className="px-4 py-2.5" style={{ color: 'var(--color-text-secondary)' }}>{fila.telefono2 || '—'}</td>
                                     <td className="px-4 py-2.5">
-                                        {fila.programaInvalido ? (
-                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[var(--badge-radius)] text-xs font-semibold"
-                                                style={{ background: 'var(--color-absent-bg)', color: 'var(--color-absent)' }}>
-                                                {fila.razonInvalido || 'No permitido'}
-                                            </span>
+                                        {fila.programaInvalido || fila.franjaInvalida ? (
+                                            <div className="flex flex-col gap-2">
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[var(--badge-radius)] text-xs font-semibold"
+                                                    style={{ background: 'var(--color-absent-bg)', color: 'var(--color-absent)' }}>
+                                                    {fila.razonInvalido || 'Franja o programa inválido'}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => onToggleForzar(i)}
+                                                    disabled={importando}
+                                                    className="boton-primario inline-flex items-center justify-center rounded-[var(--badge-radius)] px-2 py-1 text-xs font-semibold"
+                                                    style={{ minWidth: '110px' }}
+                                                >
+                                                    {fila.forzar ? 'Cargar igual' : 'Permitir carga'}
+                                                </button>
+                                            </div>
                                         ) : fila.esDuplicado ? (
                                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[var(--badge-radius)] text-xs font-semibold"
                                                 style={{ background: 'var(--color-warning-bg)', color: 'var(--color-warning)' }}>
@@ -234,12 +246,12 @@ function ModalImportacion({ filas, onConfirmar, onCancelar, importando }) {
                     <button
                         type="button"
                         onClick={onConfirmar}
-                        disabled={importando || filas.filter(f => !f.esDuplicado && !f.programaInvalido).length === 0}
+                        disabled={importando || filas.filter(f => !f.esDuplicado && (!f.programaInvalido && !f.franjaInvalida || f.forzar)).length === 0}
                         className="boton-primario inline-flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {importando
                             ? <><Loader2 size={16} className="animate-spin" /> Importando...</>
-                            : <><Upload size={16} /> Importar {filas.filter(f => !f.esDuplicado && !f.programaInvalido).length} nueva{filas.filter(f => !f.esDuplicado && !f.programaInvalido).length !== 1 ? 's' : ''}</>}
+                            : <><Upload size={16} /> Importar {filas.filter(f => !f.esDuplicado && (!f.programaInvalido && !f.franjaInvalida || f.forzar)).length} nueva{filas.filter(f => !f.esDuplicado && (!f.programaInvalido && !f.franjaInvalida || f.forzar)).length !== 1 ? 's' : ''}</>}
                     </button>
                 </div>
             </div>
@@ -441,16 +453,93 @@ export default function Estudiantes() {
     };
 
 
-    const normalizarColumnas = (fila) => ({
-        documento: fila['Documento'] || fila['documento'] || fila['N Documento'] || fila['N° Documento'] || '',
-        name: fila['Nombre'] || fila['nombre'] || fila['Name'] || '',
-        franja: fila['Franja'] || fila['franja'] || '',
-        programa: fila['Nombre del Programa'] || fila['nombre del programa'] || fila['Programa'] || fila['programa'] || '',
-        email: fila['Correo'] || fila['correo'] || fila['Email'] || fila['email'] || '',
-        correo2: fila['Correo 2'] || fila['correo 2'] || fila['Correo2'] || fila['correo2'] || '',
-        whatsapp: fila['Telefono'] || fila['telefono'] || fila['Teléfono'] || fila['teléfono'] || fila['WhatsApp'] || fila['whatsapp'] || fila['Whatsapp'] || '',
-        telefono2: fila['Telefono 2'] || fila['telefono 2'] || fila['Teléfono 2'] || fila['teléfono 2'] || fila['Telefono2'] || fila['telefono2'] || '',
-    });
+    const normalizarValor = (valor) => String(valor || '').toString().trim();
+
+    const normalizarClave = (texto) =>
+        String(texto || '')
+            .normalize('NFD')
+            .replace(/[^a-zA-Z0-9 ]+/g, ' ')
+            .toLowerCase()
+            .replace(/\s+/g, ' ')
+            .trim();
+
+    const obtenerCampoNormalizado = (nombre) => {
+        const key = normalizarClave(nombre);
+
+        switch (key) {
+            case 'documento':
+            case 'doc':
+            case 'identificacion':
+            case 'id':
+                return 'documento';
+            case 'nombre':
+            case 'name':
+            case 'nombre completo':
+                return 'name';
+            case 'franja':
+            case 'turno':
+                return 'franja';
+            case 'programa':
+            case 'nombre del programa':
+            case 'nombre programa':
+            case 'programa nombre':
+                return 'programa';
+            case 'correo':
+            case 'email':
+            case 'correo electronico':
+            case 'correo electronico 1':
+            case 'email 1':
+                return 'email';
+            case 'correo 2':
+            case 'correo2':
+            case 'email 2':
+            case 'email2':
+                return 'correo2';
+            case 'telefono':
+            case 'telefono 1':
+            case 'telefono celular':
+            case 'celular':
+            case 'whatsapp':
+                return 'whatsapp';
+            case 'telefono 2':
+            case 'telefono2':
+            case 'celular 2':
+            case 'celular2':
+                return 'telefono2';
+            default:
+                return null;
+        }
+    };
+
+    const normalizarColumnas = (fila) => {
+        const normalizada = {
+            documento: '',
+            name: '',
+            franja: '',
+            programa: '',
+            email: '',
+            correo2: '',
+            whatsapp: '',
+            telefono2: '',
+        };
+
+        Object.entries(fila).forEach(([clave, valor]) => {
+            const campo = obtenerCampoNormalizado(clave);
+            if (!campo) return;
+            normalizada[campo] = normalizarValor(valor);
+        });
+
+        return normalizada;
+    };
+
+    const toggleForzarFila = (index) => {
+        setFilasImport((fichas) => {
+            const next = [...fichas];
+            if (!next[index]) return fichas;
+            next[index] = { ...next[index], forzar: !next[index].forzar };
+            return next;
+        });
+    };
 
     const manejarArchivoSeleccionado = (e) => {
         const archivo = e.target.files?.[0];
@@ -485,8 +574,10 @@ export default function Estudiantes() {
             return {
                 ...fila,
                 esDuplicado:     !!(fila.documento && documentosExistentes.has(fila.documento)),
-                programaInvalido: !!razonInvalido,
+                programaInvalido: progMal,
+                franjaInvalida:   franjaMal,
                 razonInvalido,
+                forzar:          false,
             };
         });
 
@@ -539,7 +630,8 @@ export default function Estudiantes() {
 
                 for (let i = 0; i < filasActualizadas.length; i++) {
                     const fila = filasActualizadas[i];
-                    if (fila.esDuplicado || fila.programaInvalido) {
+                    const estaBloqueada = fila.esDuplicado || (!(fila.forzar || (!fila.programaInvalido && !fila.franjaInvalida)));
+                    if (estaBloqueada) {
                         filasActualizadas[i] = { ...fila, importado: false, error: false };
                         continue;
                     }
@@ -626,6 +718,7 @@ export default function Estudiantes() {
                     filas={filasImport}
                     onConfirmar={confirmarImportacion}
                     onCancelar={cancelarImportacion}
+                    onToggleForzar={toggleForzarFila}
                     importando={importando}
                 />
             )}
@@ -688,7 +781,7 @@ export default function Estudiantes() {
                                 <p className="text-lg font-semibold">{cursoSeleccionado.name || cursoSeleccionado.nombre}</p>
                                 <div className="mt-1 text-xs text-texto-secundario">{cursoSeleccionado.code || cursoSeleccionado.codigo} · Grupo {grupoSeleccionado || cursoSeleccionado.groupCode || cursoSeleccionado.grupo}</div>
                             </div>
-                            <div className="periodo-badge" style={{ background: 'var(--color-accent)', color: 'white', borderColor: 'color-mix(in srgb, var(--color-accent) 90%, transparent)' }}>
+                            <div className="periodo-badge" style={{ background: 'var(--color-accent-light)', color: 'var(--color-accent-dark)', borderColor: 'color-mix(in srgb, var(--color-accent-dark) 20%, transparent)' }}>
                                 <span className="periodo-badge__text">Periodo {cursoSeleccionado.academicPeriod || cursoSeleccionado.periodo || cursoSeleccionado.period} ({cursoSeleccionado.academicYear || cursoSeleccionado.anio || new Date().getFullYear()})</span>
                             </div>
                         </div>

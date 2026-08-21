@@ -67,6 +67,9 @@ export default function Docentes() {
                 setProfesores(prev => [...prev, nuevoProfesor]);
                 setFormulario({ documento: '', nombre: '', correo: '', password: '', role: 'TEACHER' });
                 toast.success('Docente creado correctamente');
+                if (nuevoProfesor.warning) {
+                    toast.error(nuevoProfesor.warning, { duration: 6000 });
+                }
             }
         } catch (err) {
             toast.error(err.response?.data?.error || `Error al ${editandoId ? 'actualizar' : 'crear'} docente`);

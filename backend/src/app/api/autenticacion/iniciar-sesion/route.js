@@ -69,9 +69,13 @@ export async function POST(request) {
             ip
         });
 
+        const forcePasswordChange = typeof docente.resetToken === 'string' && docente.resetToken.startsWith('FORCE_CHANGE_PASSWORD:')
+
         return Response.json({ 
             token, 
-            teacher: { id: docente.id, email: docente.email, name: docente.name, role: docente.role } 
+            teacher: { id: docente.id, email: docente.email, name: docente.name, role: docente.role },
+            forcePasswordChange,
+            forcePasswordChangeToken: forcePasswordChange ? docente.resetToken : null,
         })
     } catch (error) {
         console.error('[Login Error]', error)

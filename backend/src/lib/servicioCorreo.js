@@ -49,6 +49,41 @@ export async function enviarCorreo({ to, toName, subject, htmlContent, attachmen
     }
 }
 
+export function construirCorreoBienvenidaHTML({ userName, email, password, loginUrl }) {
+    return `
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px;">
+  <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <div style="background: #6B2D8B; padding: 28px 24px; text-align: center; color: #ffffff;">
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700;">Bienvenido al Sistema de Asistencia</h1>
+    </div>
+    <div style="padding: 28px 24px; color: #334155;">
+      <p>Hola <strong>${userName}</strong>,</p>
+      <p>Se ha creado tu acceso al Sistema de Control de Asistencia de Telecomunicaciones.</p>
+      <p style="margin: 24px 0 12px;">Tus credenciales son:</p>
+      <ul style="list-style: none; padding: 0; margin: 0 0 24px;">
+        <li><strong>Correo:</strong> ${email}</li>
+        <li><strong>Contraseña temporal:</strong> ${password}</li>
+      </ul>
+      <p>Al ingresar por primera vez, el sistema te solicitará cambiar esta contraseña por una nueva.</p>
+      <div style="text-align: center; margin: 28px 0;">
+        <a href="${loginUrl}" style="background-color: #8DC63F; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; display: inline-block; font-weight: 700;">Ir a iniciar sesión</a>
+      </div>
+      <p style="font-size: 14px; color: #64748b; line-height: 1.7; margin: 0;">Si tienes problemas para iniciar sesión, contacta al administrador del sistema.</p>
+    </div>
+    <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 24px; color: #94a3b8; font-size: 12px; text-align: center;">
+      <p style="margin: 0;">UTS - Sistema de Asistencia de Telecomunicaciones</p>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
 export function construirCorreoInasistenciasHTML({ studentName, totalAbsences, courses, weekStart, weekEnd }) {
     const courseList = courses.map(c => `<li style="margin: 4px 0;">${c}</li>`).join('');
 

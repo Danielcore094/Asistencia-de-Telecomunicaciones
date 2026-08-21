@@ -88,6 +88,9 @@ export default function Configuracion() {
                 setFormulario({ documento: '', name: '', email: '', password: '', role: 'TEACHER' });
                 setModalFormularioVisible(false);
                 toast.success('Usuario creado exitosamente');
+                if (nuevoProfesor.warning) {
+                    toast.error(nuevoProfesor.warning, { duration: 7000 });
+                }
             }
         } catch (err) {
             toast.error(err.response?.data?.error || `Error al ${editandoId ? 'actualizar' : 'crear'} usuario`);

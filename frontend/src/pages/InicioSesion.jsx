@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAutenticacion } from '../context/ContextoAutenticacion';
 import api from '../services/api';
+import toast from 'react-hot-toast';
 import { Loader2, LogIn } from 'lucide-react';
 
 export default function InicioSesion() {
@@ -20,6 +21,13 @@ export default function InicioSesion() {
         setCargando(true);
         try {
             const res = await api.post('/autenticacion/iniciar-sesion', { email: correo, password: contrasena });
+
+            if (res.data.forcePasswordChange && res.data.forcePasswordChangeToken) {
+                toast.success('Debes cambiar tu contraseña inicial antes de continuar');
+                navegar(`/reset-password?token=${encodeURIComponent(res.data.forcePasswordChangeToken)}`);
+                return;
+            }
+
             iniciarSesion(res.data.token, res.data.teacher);
             navegar('/');
         } catch (err) {
