@@ -68,11 +68,11 @@ export default function LayoutPrincipal({ children }) {
                         gap: 'var(--space-4)',
                     }}
                 >
-                    <div className="relative h-14 w-36 shrink-0 overflow-hidden sm:w-44 md:w-52">
+                    <div className="relative h-14 w-36 shrink-0 overflow-hidden sm:w-44">
                         <img
                             src="/logo.png"
                             alt="Logo UTS"
-                            className="absolute left-1/2 top-1/2 h-auto w-36 max-w-none -translate-x-1/2 -translate-y-1/2 object-contain drop-shadow-sm sm:w-44 md:w-52"
+                            className="absolute left-1/2 top-1/2 h-auto w-36 max-w-none -translate-x-1/2 -translate-y-1/2 object-contain drop-shadow-sm sm:w-44"
                         />
                     </div>
 
