@@ -25,11 +25,11 @@ function v(variable) {
 
 const getColoresLineas = () => [
     v('--color-primary'),
-    v('--color-accent'),
-    v('--color-primary-dark'),
     v('--color-accent-dark'),
+    v('--color-primary-dark'),
     v('--color-text-secondary'),
     v('--color-muted'),
+    v('--color-border'),
 ];
 
 const MODOS_GRUPO = [
@@ -77,10 +77,10 @@ function TooltipSemanal({ active, payload, label }) {
 }
 
 const getColoresBrackets = () => [
-    v('--color-accent'),
     v('--color-accent-dark'),
     v('--color-primary'),
-    v('--color-primary-dark'),
+    v('--color-text-secondary'),
+    v('--color-muted'),
 ];
 
 const ETIQUETAS_BRACKETS = ['90% o más', '80 - 89%', '70 - 79%', 'Menos de 70%'];
@@ -642,8 +642,9 @@ export default function Reportes() {
         setExportandoResumen(true);
         try {
             const params = {};
-            if (cursoSeleccionado?.academicYear)   params.anio    = cursoSeleccionado.academicYear;
-            if (cursoSeleccionado?.academicPeriod) params.periodo = cursoSeleccionado.academicPeriod;
+            if (cursoSeleccionado?.academicYear)   params.anio      = cursoSeleccionado.academicYear;
+            if (cursoSeleccionado?.academicPeriod) params.periodo   = cursoSeleccionado.academicPeriod;
+            if (docenteSeleccionado)               params.docenteId = docenteSeleccionado;
 
             const respuesta = await descargarResumenSemestral(params);
             const contentDisposition = respuesta.headers['content-disposition'] || '';

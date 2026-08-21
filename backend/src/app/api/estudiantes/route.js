@@ -117,11 +117,6 @@ export async function POST(request) {
             let count = 0;
             for (const e of cuerpo) {
                 if (!limpiarTexto(e.name) || !limpiarTexto(e.documento)) continue;
-                
-                const franjaEstudiante = limpiarTexto(e.franja);
-                if (curso.franja && franjaEstudiante && curso.franja !== franjaEstudiante) {
-                    throw new Error(`El estudiante ${e.name} es de franja ${franjaEstudiante} pero la materia es ${curso.franja}`);
-                }
 
                 const docLimpio = limpiarTexto(e.documento);
                 
@@ -141,6 +136,7 @@ export async function POST(request) {
                     }
                 }
 
+                const franjaEstudiante = limpiarTexto(e.franja);
                 await prisma.estudiante.upsert({
                     where: { documento: docLimpio },
                     update: {
@@ -174,10 +170,6 @@ export async function POST(request) {
         }
         if (!nombreLimpio) {
             return Response.json({ error: 'El nombre es requerido' }, { status: 400 })
-        }
-
-        if (curso.franja && franjaLimpia && curso.franja !== franjaLimpia) {
-            return Response.json({ error: `La materia es de franja ${curso.franja} pero el estudiante es de franja ${franjaLimpia}` }, { status: 400 })
         }
 
         const estudianteExistente = await prisma.estudiante.findUnique({

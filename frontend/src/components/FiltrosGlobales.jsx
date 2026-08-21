@@ -114,12 +114,9 @@ export default function FiltrosGlobales({
         if (isAdmin) {
             obtenerDocentes().then(lista => {
                 setDocentes(lista);
-                if (!docenteSeleccionado && lista.length > 0) {
-                    setDocenteSeleccionado(lista[0].id);
-                }
             }).catch(console.error);
         }
-    }, [isAdmin, docenteSeleccionado, setDocenteSeleccionado]);
+    }, [isAdmin]);
 
     const cursosFiltrados = useMemo(() => {
         if (!filtroDia) return cursos;
@@ -278,11 +275,12 @@ export default function FiltrosGlobales({
                     id="selector-docente"
                     value={docenteSeleccionado || ''}
                     onChange={(e) => {
-                        const val = e.target.value;
+                        const val = e.target.value || null;
                         setDocenteSeleccionado(val);
                         seleccionarCurso(null);
                     }}
                 >
+                    <option value="">Todos los docentes</option>
                     {docentes.map((d) => (
                         <option key={d.id} value={d.id}>
                             {d.name}
@@ -291,7 +289,7 @@ export default function FiltrosGlobales({
                 </SelectorFiltro>
             )}
 
-            {!soloDocente && (
+            {!soloDocente && (!isAdmin || docenteSeleccionado) && (
                 <>
                     {cargandoCursos ? (
                         <span
@@ -315,7 +313,7 @@ export default function FiltrosGlobales({
                             }
                             onChange={handleCambioMateria}
                         >
-                                            {mostrarTodas && (
+                            {mostrarTodas && (
                                 <option value="TODAS">
                                     Todas las materias
                                 </option>

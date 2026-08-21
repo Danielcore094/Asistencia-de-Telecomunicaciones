@@ -14,10 +14,11 @@ export async function GET(request) {
         }
 
         const { searchParams } = new URL(request.url);
-        const anio    = searchParams.get('anio')    || undefined;
-        const periodo = searchParams.get('periodo') || undefined;
+        const anio      = searchParams.get('anio')      || undefined;
+        const periodo   = searchParams.get('periodo')   || undefined;
+        const docenteId = searchParams.get('docenteId') || undefined;
 
-        const buffer = await crearExcelResumenSemestral({ anio, periodo });
+        const buffer = await crearExcelResumenSemestral({ anio, periodo, docenteId });
         if (!buffer) {
             return Response.json({ error: 'No hay datos de asistencia para generar el reporte' }, { status: 404 });
         }

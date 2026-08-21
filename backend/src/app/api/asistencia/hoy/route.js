@@ -22,7 +22,11 @@ export async function GET(request) {
         const cursosWhere = docenteId ? { teacherId: docenteId } : {};
         const cursos = await prisma.curso.findMany({
             where: cursosWhere,
-            select: { id: true, name: true },
+            select: {
+                id: true,
+                name: true,
+                teacher: { select: { name: true } },
+            },
             orderBy: { name: 'asc' },
         });
 
@@ -54,7 +58,14 @@ export async function GET(request) {
             .map(c => {
                 const { presentes, total } = agrupado[c.id];
                 const porcentaje = total > 0 ? Math.round((presentes / total) * 100) : 0;
-                return { id: c.id, nombre: c.name, porcentaje, presentes, total };
+                return {
+                    id: c.id,
+                    nombre: c.name,
+                    teacher: c.teacher?.name || null,
+                    porcentaje,
+                    presentes,
+                    total,
+                };
             });
 
         return Response.json({ cursos: resultado });

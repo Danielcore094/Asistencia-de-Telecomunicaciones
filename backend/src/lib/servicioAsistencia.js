@@ -88,16 +88,16 @@ function crearEstilos() {
         right:  { style: 'thin', color: { rgb: 'E2E6EF' } },
     };
     const baseFont = { name: 'Arial', sz: 10 };
-    const fillAlt = { fill: { fgColor: { rgb: 'F7F4FB' } } };
+    const fillAlt = { fill: { fgColor: { rgb: 'F4F4F5' } } };
     return {
-        sTitulo:      { fill: { fgColor: { rgb: '6B2D8B' } }, font: { name: 'Arial', sz: 14, bold: true, color: { rgb: 'FFFFFF' } }, alignment: { horizontal: 'center', vertical: 'center' }, border },
-        sSubtitulo:   { fill: { fgColor: { rgb: '8DC63F' } }, font: { name: 'Arial', sz: 11, bold: true, color: { rgb: 'FFFFFF' } }, alignment: { horizontal: 'center', vertical: 'center' }, border },
-        sSeccion:     { fill: { fgColor: { rgb: 'F3EBF8' } }, font: { ...baseFont, bold: true, color: { rgb: '6B2D8B' } }, alignment: { horizontal: 'left', vertical: 'center' }, border },
-        sLabel:       { fill: { fgColor: { rgb: '6B2D8B' } }, font: { ...baseFont, bold: true, color: { rgb: 'FFFFFF' } }, alignment: { horizontal: 'left', vertical: 'center' }, border },
-        sPerfil:      { fill: { fgColor: { rgb: 'F3EBF8' } }, font: baseFont, alignment: { horizontal: 'left', vertical: 'center' }, border },
+        sTitulo:      { fill: { fgColor: { rgb: 'E5E9EE' } }, font: { name: 'Arial', sz: 14, bold: true, color: { rgb: '2F3A45' } }, alignment: { horizontal: 'center', vertical: 'center' }, border },
+        sSubtitulo:   { fill: { fgColor: { rgb: 'E7EDE0' } }, font: { name: 'Arial', sz: 11, bold: true, color: { rgb: '5A6B35' } }, alignment: { horizontal: 'center', vertical: 'center' }, border },
+        sSeccion:     { fill: { fgColor: { rgb: 'E7EDE0' } }, font: { ...baseFont, bold: true, color: { rgb: '4C3A6B' } }, alignment: { horizontal: 'left', vertical: 'center' }, border },
+        sLabel:       { fill: { fgColor: { rgb: 'E5E9EE' } }, font: { ...baseFont, bold: true, color: { rgb: '4C3A6B' } }, alignment: { horizontal: 'left', vertical: 'center' }, border },
+        sPerfil:      { fill: { fgColor: { rgb: 'F4F4F5' } }, font: baseFont, alignment: { horizontal: 'left', vertical: 'center' }, border },
         sValor:       { font: baseFont, alignment: { horizontal: 'left', vertical: 'center' }, border },
-        sEnc:         { fill: { fgColor: { rgb: '6B2D8B' } }, font: { ...baseFont, bold: true, color: { rgb: 'FFFFFF' } }, alignment: { horizontal: 'center', vertical: 'center' }, border },
-        sEncLeft:     { fill: { fgColor: { rgb: '6B2D8B' } }, font: { ...baseFont, bold: true, color: { rgb: 'FFFFFF' } }, alignment: { horizontal: 'left', vertical: 'center' }, border },
+        sEnc:         { fill: { fgColor: { rgb: 'E5E9EE' } }, font: { ...baseFont, bold: true, color: { rgb: '2F3A45' } }, alignment: { horizontal: 'center', vertical: 'center' }, border },
+        sEncLeft:     { fill: { fgColor: { rgb: 'E5E9EE' } }, font: { ...baseFont, bold: true, color: { rgb: '2F3A45' } }, alignment: { horizontal: 'left', vertical: 'center' }, border },
         sNormal:      { font: baseFont, alignment: { horizontal: 'left', vertical: 'center' }, border },
         sNormalAlt:   { ...fillAlt, font: baseFont, alignment: { horizontal: 'left', vertical: 'center' }, border },
         sCentrado:    { font: baseFont, alignment: { horizontal: 'center', vertical: 'center' }, border },
@@ -105,7 +105,7 @@ function crearEstilos() {
         sNota:        { font: { name: 'Arial', sz: 9, italic: true, color: { rgb: '4B5563' } }, alignment: { horizontal: 'left', vertical: 'center' }, border },
         sP:           { fill: { fgColor: { rgb: 'F2F9E7' } }, font: { ...baseFont, bold: true, color: { rgb: '8DC63F' } }, alignment: { horizontal: 'center', vertical: 'center' }, border },
         sA:           { fill: { fgColor: { rgb: 'FEF2F2' } }, font: { ...baseFont, bold: true, color: { rgb: 'DC2626' } }, alignment: { horizontal: 'center', vertical: 'center' }, border },
-        sJ:           { fill: { fgColor: { rgb: 'F3EBF8' } }, font: { ...baseFont, bold: true, color: { rgb: '6B2D8B' } }, alignment: { horizontal: 'center', vertical: 'center' }, border },
+        sJ:           { fill: { fgColor: { rgb: 'E7EDE0' } }, font: { ...baseFont, bold: true, color: { rgb: '466935' } }, alignment: { horizontal: 'center', vertical: 'center' }, border },
         sSin:         { font: baseFont, alignment: { horizontal: 'center', vertical: 'center' }, border },
         sSinAlt:      { ...fillAlt, font: baseFont, alignment: { horizontal: 'center', vertical: 'center' }, border },
     };
@@ -395,10 +395,11 @@ export async function crearReporteExcelSemanalCurso({ referenceDate } = {}) {
     return { buffer: r.buffer, weekStart: r.weekStart, weekEnd: r.weekEnd, courseCount: r.courseCount, totalRecords: 0 };
 }
 
-export async function crearExcelResumenSemestral({ anio, periodo } = {}) {
+export async function crearExcelResumenSemestral({ anio, periodo, docenteId } = {}) {
     const filtroCurso = {};
-    if (anio)    filtroCurso.academicYear   = anio;
-    if (periodo) filtroCurso.academicPeriod = periodo;
+    if (anio)      filtroCurso.academicYear   = anio;
+    if (periodo)   filtroCurso.academicPeriod = periodo;
+    if (docenteId) filtroCurso.teacherId      = docenteId;
 
     const courses = await prisma.curso.findMany({
         where: filtroCurso,
@@ -446,16 +447,16 @@ export async function crearExcelResumenSemestral({ anio, periodo } = {}) {
         right:  { style: 'thin', color: { rgb: 'D1D5DB' } },
     };
     const baseFont = { name: 'Arial', sz: 10 };
-    const sTitulo  = { fill: { fgColor: { rgb: '6B2D8B' } }, font: { name: 'Arial', sz: 14, bold: true, color: { rgb: 'FFFFFF' } }, alignment: { horizontal: 'center', vertical: 'center' }, border };
-    const sEncPurp = { fill: { fgColor: { rgb: '6B2D8B' } }, font: { ...baseFont, bold: true, color: { rgb: 'FFFFFF' } }, alignment: { horizontal: 'center', vertical: 'center' }, border };
-    const sEncLeft = { fill: { fgColor: { rgb: '6B2D8B' } }, font: { ...baseFont, bold: true, color: { rgb: 'FFFFFF' } }, alignment: { horizontal: 'left', vertical: 'center' }, border };
-    const sEncVerde= { fill: { fgColor: { rgb: '8DC63F' } }, font: { ...baseFont, bold: true, color: { rgb: 'FFFFFF' } }, alignment: { horizontal: 'center', vertical: 'center' }, border };
+    const sTitulo  = { fill: { fgColor: { rgb: 'E5E9EE' } }, font: { name: 'Arial', sz: 14, bold: true, color: { rgb: '2F3A45' } }, alignment: { horizontal: 'center', vertical: 'center' }, border };
+    const sEncPurp = { fill: { fgColor: { rgb: 'E5E9EE' } }, font: { ...baseFont, bold: true, color: { rgb: '2F3A45' } }, alignment: { horizontal: 'center', vertical: 'center' }, border };
+    const sEncLeft = { fill: { fgColor: { rgb: 'E5E9EE' } }, font: { ...baseFont, bold: true, color: { rgb: '2F3A45' } }, alignment: { horizontal: 'left', vertical: 'center' }, border };
+    const sEncVerde= { fill: { fgColor: { rgb: 'DCE5C6' } }, font: { ...baseFont, bold: true, color: { rgb: '466935' } }, alignment: { horizontal: 'center', vertical: 'center' }, border };
     const sNormal  = { font: baseFont, alignment: { horizontal: 'left', vertical: 'center' }, border };
-    const sAlt     = { fill: { fgColor: { rgb: 'F7F4FB' } }, font: baseFont, alignment: { horizontal: 'left', vertical: 'center' }, border };
+    const sAlt     = { fill: { fgColor: { rgb: 'F4F4F5' } }, font: baseFont, alignment: { horizontal: 'left', vertical: 'center' }, border };
     const sNum     = { font: { ...baseFont, name: 'Courier New' }, alignment: { horizontal: 'center', vertical: 'center' }, border };
-    const sNumAlt  = { fill: { fgColor: { rgb: 'F7F4FB' } }, font: { ...baseFont, name: 'Courier New' }, alignment: { horizontal: 'center', vertical: 'center' }, border };
-    const sTotal   = { fill: { fgColor: { rgb: 'F3EBF8' } }, font: { ...baseFont, bold: true, color: { rgb: '6B2D8B' } }, alignment: { horizontal: 'center', vertical: 'center' }, border };
-    const sAprobado= { fill: { fgColor: { rgb: 'F2F9E7' } }, font: { ...baseFont, bold: true, color: { rgb: '3D7A00' } }, alignment: { horizontal: 'center', vertical: 'center' }, border };
+    const sNumAlt  = { fill: { fgColor: { rgb: 'F4F4F5' } }, font: { ...baseFont, name: 'Courier New' }, alignment: { horizontal: 'center', vertical: 'center' }, border };
+    const sTotal   = { fill: { fgColor: { rgb: 'E5E9EE' } }, font: { ...baseFont, bold: true, color: { rgb: '2F3A45' } }, alignment: { horizontal: 'center', vertical: 'center' }, border };
+    const sAprobado= { fill: { fgColor: { rgb: 'E7EDE0' } }, font: { ...baseFont, bold: true, color: { rgb: '3D7A00' } }, alignment: { horizontal: 'center', vertical: 'center' }, border };
     const sNota    = { font: { name: 'Arial', sz: 9, italic: true, color: { rgb: '6B7280' } }, alignment: { horizontal: 'left', vertical: 'center' } };
 
     const ws  = {};
@@ -528,7 +529,7 @@ export async function crearExcelResumenSemestral({ anio, periodo } = {}) {
     addC(r, lastCol, totalesAprobaron.total, sTotal);
     rowsMeta.push({ hpt: 22 }); r++;
 
-    const sPct = { fill: { fgColor: { rgb: 'EDE9F7' } }, font: { name: 'Courier New', sz: 9, color: { rgb: '6B2D8B' } }, alignment: { horizontal: 'center', vertical: 'center' }, border };
+    const sPct = { fill: { fgColor: { rgb: 'F0F2F5' } }, font: { name: 'Courier New', sz: 9, color: { rgb: '2F3A45' } }, alignment: { horizontal: 'center', vertical: 'center' }, border };
     addC(r, 0, '% asistencia', sPct);
     for (let c = 1; c <= 4; c++) addC(r, c, '', sPct);
     semanas.forEach((_, i) => {

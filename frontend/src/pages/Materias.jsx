@@ -740,7 +740,7 @@ export default function Materias() {
                                 </div>
 
                                 <div className="flex shrink-0 items-start gap-2">
-                                    <div className="periodo-badge" style={{ background: 'var(--color-accent)', color: 'white', borderColor: 'color-mix(in srgb, var(--color-accent) 90%, transparent)' }}>
+                                    <div className="periodo-badge" style={{ background: 'var(--color-accent-light)', color: 'var(--color-accent-dark)', borderColor: 'color-mix(in srgb, var(--color-accent-dark) 20%, transparent)' }}>
                                         <span className="periodo-badge__text">P{curso.periodo}-{curso.anio}</span>
                                     </div>
                                 </div>
@@ -793,8 +793,8 @@ export default function Materias() {
                             )}
 
                             <div className="absolute right-3 bottom-3 z-10">
-                                <div className="rounded-md px-3 py-1 bg-acento/10 border border-acento/20">
-                                    <span className="font-mono font-semibold text-lg text-acento">{curso.porcentaje.toLocaleString('es-CO')}%</span>
+                                <div className="rounded-md px-3 py-1" style={{ background: 'var(--color-accent-light)', border: '1px solid color-mix(in srgb, var(--color-accent-dark) 20%, transparent)' }}>
+                                    <span className="font-mono font-semibold text-lg" style={{ color: 'var(--color-accent-dark)' }}>{curso.porcentaje.toLocaleString('es-CO')}%</span>
                                 </div>
                             </div>
                         </article>
