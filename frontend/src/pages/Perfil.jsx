@@ -47,7 +47,7 @@ export default function Perfil() {
                 setMensaje({ tipo: 'exito', texto: 'Perfil actualizado correctamente.' });
                 
                 if (payload.name) {
-                    const token = localStorage.getItem('token');
+                    const token = sessionStorage.getItem('token');
                     iniciarSesion(token, { ...usuario, name: payload.name });
                 }
 

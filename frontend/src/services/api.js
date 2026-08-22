@@ -5,7 +5,7 @@ const clienteApi = axios.create({
 });
 
 clienteApi.interceptors.request.use(configuracion => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (token) {
         configuracion.headers.Authorization = `Bearer ${token}`;
     }
@@ -18,7 +18,11 @@ clienteApi.interceptors.response.use(
         const estado = error.response?.status;
         
         if (estado === 401 && error.config?.url !== '/autenticacion/iniciar-sesion') {
-            localStorage.clear();
+            sessionStorage.removeItem('token');
+            localStorage.removeItem('selectedCourseId');
+            localStorage.removeItem('selectedGroup');
+            localStorage.removeItem('selectedCode');
+            localStorage.removeItem('selectedDocente');
             window.location.href = '/login';
         }
         

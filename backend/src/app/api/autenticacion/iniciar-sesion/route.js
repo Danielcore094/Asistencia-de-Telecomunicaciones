@@ -56,7 +56,7 @@ export async function POST(request) {
         const token = jwt.sign(
             { id: docente.id, email: docente.email, name: docente.name, role: docente.role },
             SECRETO,
-            { expiresIn: '7d' }
+            { expiresIn: process.env.JWT_EXPIRACION || '8h' }
         )
 
         console.log(`[Login] Sesión iniciada: ${email} (${docente.role})`)
