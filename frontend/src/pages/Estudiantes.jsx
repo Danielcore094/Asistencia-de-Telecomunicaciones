@@ -966,10 +966,10 @@ export default function Estudiantes() {
                             <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
                                 <colgroup>
                                     {!isAdmin && <col style={{ width: '48px' }} />}
-                                    <col style={{ width: '10%' }} />
-                                    <col style={{ width: isAdmin ? '22%' : '24%' }} />
-                                    <col style={{ width: isAdmin ? '28%' : '24%' }} />
-                                    <col style={{ width: isAdmin ? '22%' : '22%' }} />
+                                    <col style={{ width: isAdmin ? '12%' : '12%' }} />
+                                    <col style={{ width: isAdmin ? '30%' : '30%' }} />
+                                    <col style={{ width: isAdmin ? '24%' : '20%' }} />
+                                    <col style={{ width: isAdmin ? '24%' : '20%' }} />
                                     <col style={{ width: '10%' }} />
                                     {!isAdmin && <col style={{ width: '8%' }} />}
                                 </colgroup>
@@ -984,11 +984,11 @@ export default function Estudiantes() {
                                                 </button>
                                             </th>
                                         )}
-                                        <th className="px-4 py-3 font-medium">Documento</th>
-                                        <th className="px-4 py-3 font-medium">Nombre</th>
-                                        <th className="px-4 py-3 font-medium">Programa</th>
-                                        <th className="px-4 py-3 font-medium">Materia</th>
-                                        <th className="px-4 py-3 text-right font-medium">% asistencia</th>
+                                        <th className="px-2 py-3 font-medium">Documento</th>
+                                        <th className="px-2 py-3 font-medium">Nombre</th>
+                                        <th className="px-2 py-3 font-medium">Programa</th>
+                                        <th className="px-2 py-3 font-medium">Materia</th>
+                                        <th className="px-2 py-3 text-right font-medium">% asistencia</th>
                                         {!isAdmin && <th className="px-4 py-3 font-medium text-right">Acciones</th>}
                                     </tr>
                                 </thead>
@@ -1005,11 +1005,11 @@ export default function Estudiantes() {
                                                     </button>
                                                 </td>
                                             )}
-                                            <td className="px-4 py-3 font-mono text-xs text-texto-secundario">{est.documento}</td>
-                                            <td className="px-4 py-3 font-medium text-texto" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{est.nombreFormateado}</td>
-                                            <td className="px-4 py-3 text-texto-secundario" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{est.programa || '—'}</td>
-                                            <td className="px-4 py-3 text-texto-secundario" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{est.curso}</td>
-                                            <td className="px-4 py-3 text-right font-mono">
+                                            <td className="px-2 py-3 font-mono text-xs text-texto-secundario">{est.documento}</td>
+                                            <td className="px-2 py-3 font-medium text-texto" title={est.nombreFormateado}>{est.nombreFormateado}</td>
+                                            <td className="px-2 py-3 text-texto-secundario" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{est.programa || '—'}</td>
+                                            <td className="px-2 py-3 text-texto-secundario" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{est.curso}</td>
+                                            <td className="px-2 py-3 text-right font-mono">
                                                 {Number(est.porcentaje).toLocaleString('es-CO')}%
                                             </td>
                                             {!isAdmin && (
