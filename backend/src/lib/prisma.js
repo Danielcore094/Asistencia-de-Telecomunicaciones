@@ -1,7 +1,8 @@
 import { PrismaClient } from '@prisma/client'
 
 const construirUrlBD = () => {
-    const urlOriginal = (process.env.DATABASE_URL || '').replace('localhost', '127.0.0.1')
+    const urlConexion = process.env.DIRECT_URL || process.env.DATABASE_URL || ''
+    const urlOriginal = urlConexion.replace('localhost', '127.0.0.1')
     if (!urlOriginal) return urlOriginal
 
     const limiteConexiones = Number(process.env.PRISMA_CONNECTION_LIMIT || '2')
