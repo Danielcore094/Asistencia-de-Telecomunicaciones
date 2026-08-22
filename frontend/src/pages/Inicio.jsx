@@ -6,6 +6,11 @@ import { useAutenticacion } from '../context/ContextoAutenticacion';
 import FiltrosGlobales from '../components/FiltrosGlobales';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
+const formatearFechaAsistencia = (fecha) => {
+    const [anio, mes, dia] = String(fecha).split('-').map(Number);
+    return new Date(anio, mes - 1, dia).toLocaleDateString('es-CO');
+};
+
 const cssCache = new Map();
 function v(variable) {
     if (typeof window === 'undefined') return '#000';
@@ -396,7 +401,7 @@ export default function Inicio() {
                                                 const porcentajeFila = item.total > 0 ? Math.round((item.presentCount / item.total) * 100) : 0;
                                                 return (
                                                     <tr key={item.date} className="border-b">
-                                                        <td className="px-4 py-3">{new Date(item.date).toLocaleDateString('es-CO')}</td>
+                                                        <td className="px-4 py-3">{formatearFechaAsistencia(item.date)}</td>
                                                         <td className="px-4 py-3">{Number(item.presentCount).toLocaleString('es-CO')}</td>
                                                         <td className="px-4 py-3">{Number(item.total).toLocaleString('es-CO')}</td>
                                                         <td className="px-4 py-3 text-right font-mono">{porcentajeFila.toLocaleString('es-CO')}%</td>
