@@ -277,6 +277,8 @@ export default function FiltrosGlobales({
                     onChange={(e) => {
                         const val = e.target.value || null;
                         setDocenteSeleccionado(val);
+                        setGrupoSeleccionado(null);
+                        setCodigoSeleccionado(null);
                         seleccionarCurso(null);
                     }}
                 >

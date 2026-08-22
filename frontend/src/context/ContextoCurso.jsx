@@ -65,17 +65,25 @@ export const ProveedorCurso = ({ children }) => {
             const codigoGuardado = localStorage.getItem('selectedCode');
 
             if (idCursoGuardado === 'TODAS' && usuario?.role === 'ADMIN') {
-                setCursoSeleccionado(null);
+                if (docenteSeleccionado) {
+                    const primero = datosOrdenados[0];
+                    if (primero) {
+                        setCursoSeleccionado(primero);
+                        setGrupoSeleccionado(primero.groupCode || primero.grupo || null);
+                        setCodigoSeleccionado(primero.code || primero.codigo || null);
+                        localStorage.setItem('selectedCourseId', primero.id);
+                    } else {
+                        setCursoSeleccionado(null);
+                    }
+                } else {
+                    setCursoSeleccionado(null);
+                }
             } else if (datosOrdenados.length > 0) {
                 const encontrado = datosOrdenados.find(c => c.id === idCursoGuardado);
                 if (encontrado) {
                     setCursoSeleccionado(encontrado);
-                    if (!grupoGuardado) {
-                        setGrupoSeleccionado(encontrado.groupCode || encontrado.grupo || null);
-                    }
-                    if (!codigoGuardado) {
-                        setCodigoSeleccionado(encontrado.code || encontrado.codigo || null);
-                    }
+                    setGrupoSeleccionado(encontrado.groupCode || encontrado.grupo || null);
+                    setCodigoSeleccionado(encontrado.code || encontrado.codigo || null);
                 } else {
                     const primero = datosOrdenados[0];
                     setCursoSeleccionado(primero);
@@ -104,23 +112,28 @@ export const ProveedorCurso = ({ children }) => {
 
     const seleccionarCurso = (curso) => {
         if (curso === undefined) return;
-        
-        const nombreAnterior = (cursoSeleccionado?.name || cursoSeleccionado?.nombre || '').trim().toLowerCase();
-        const nombreNuevo = (curso?.name || curso?.nombre || '').trim().toLowerCase();
-        const esMateriaDistinta = nombreAnterior !== nombreNuevo;
+
+        const cursoAnteriorId = cursoSeleccionado?.id;
+        const esCursoDistinto = curso?.id !== cursoAnteriorId;
 
         setCursoSeleccionado(curso);
 
         if (curso) {
             localStorage.setItem('selectedCourseId', curso.id);
+            const nuevoGrupo = curso.groupCode || curso.grupo || null;
+            const nuevoCodigo = curso.code || curso.codigo || null;
+            if (grupoSeleccionado !== nuevoGrupo) setGrupoSeleccionado(nuevoGrupo);
+            if (codigoSeleccionado !== nuevoCodigo) setCodigoSeleccionado(nuevoCodigo);
         } else {
             localStorage.setItem('selectedCourseId', 'TODAS');
         }
 
-        if (esMateriaDistinta) {
-            setGrupoSeleccionado(null);
-            setCodigoSeleccionado(null);
-            
+        if (esCursoDistinto) {
+            if (!curso) {
+                setGrupoSeleccionado(null);
+                setCodigoSeleccionado(null);
+            }
+
             if (usuario?.role !== 'ADMIN') {
                 setDocenteSeleccionado(null);
             }

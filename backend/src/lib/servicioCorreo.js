@@ -156,7 +156,7 @@ export function construirCorreoRiesgoPerdidaHTML({ studentName, courseName, perc
     </div>
     <div style="padding: 32px 24px;">
       <p style="color: #374151; font-size: 16px; margin: 0 0 16px;">Estimado/a <strong>${studentName}</strong>,</p>
-      <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px;">Durante las primeras dos semanas de <strong>${courseName}</strong>, el sistema identificó inasistencias que podrían indicar riesgo de pérdida de la materia.</p>
+      <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 20px;">Durante la semana actual el sistema identificó inasistencia(s) en la materia <strong>${courseName}</strong>, lo cual podría indicar riesgo en la pérdida de la materia.</p>
       <div style="background: #fff7ed; border: 1px solid #fdba74; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
         <p style="color: #9a3412; font-size: 16px; margin: 0 0 10px;"><strong>Resumen actual</strong></p>
         <p style="color: #4b5563; font-size: 14px; margin: 0 0 8px;">Asistencia registrada: <strong>${percentage}%</strong></p>
