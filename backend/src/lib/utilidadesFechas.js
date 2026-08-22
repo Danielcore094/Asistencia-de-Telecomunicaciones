@@ -7,7 +7,12 @@ export const formatearFechaBogota = (d = new Date()) => {
     }).format(date);
 };
 
-const crearFechaUtc = (year, month, day) => new Date(Date.UTC(year, month - 1, day));
+export const crearFechaUtc = (year, month, day) => new Date(Date.UTC(year, month - 1, day));
+
+export const parseFechaUtc = (dateStr) => {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    return crearFechaUtc(y, m, d);
+};
 const formatearFechaUtc = (date) => {
     const y = date.getUTCFullYear();
     const m = String(date.getUTCMonth() + 1).padStart(2, '0');
