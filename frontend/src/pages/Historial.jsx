@@ -193,8 +193,8 @@ export default function Historial() {
                         onBlur={(e) => { e.target.style.borderColor = 'var(--color-border)'; }}
                     >
                         <option value="">Todas</option>
-                        <option value="Tecnología">Tecnología</option>
-                        <option value="Ingeniería">Ingeniería</option>
+                        <option value="Tecnologia">Tecnología</option>
+                        <option value="Ingenieria">Ingeniería</option>
                     </select>
                 </div>
 
