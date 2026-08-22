@@ -1,5 +1,5 @@
 import prisma from './prisma.js';
-import { formatearFechaBogota, obtenerRangoSemanaAnterior, obtenerLunesSemana } from './utilidadesFechas.js';
+import { formatearFechaBogota, obtenerRangoSemanaAnterior, obtenerLunesSemana, parseFechaUtc } from './utilidadesFechas.js';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const XLSX = require('xlsx-js-style');
@@ -10,12 +10,13 @@ export async function obtenerInasistenciasSemanales({ referenceDate } = {}) {
     console.log(`[servicioAsistencia] Consultando inasistencias del ${weekStart} al ${weekEnd}`);
 
     const dates = [];
-    const [sy, sm, sd] = weekStart.split('-').map(Number);
-    const [ey, em, ed] = weekEnd.split('-').map(Number);
-    const start = new Date(sy, sm - 1, sd);
-    const end   = new Date(ey, em - 1, ed);
-    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        dates.push(formatearFechaBogota(d));
+    const start = parseFechaUtc(weekStart);
+    const end   = parseFechaUtc(weekEnd);
+    for (let d = new Date(start); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
+        const y = d.getUTCFullYear();
+        const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(d.getUTCDate()).padStart(2, '0');
+        dates.push(`${y}-${m}-${day}`);
     }
 
     const absences = await prisma.asistencia.findMany({
@@ -304,12 +305,13 @@ export async function crearReportesSemanalesPorDocente({ referenceDate } = {}) {
     console.log(`[servicioAsistencia] Generando reportes por docente: ${weekStart} → ${weekEnd}`);
 
     const dates = [];
-    const [sy, sm, sd] = weekStart.split('-').map(Number);
-    const [ey, em, ed] = weekEnd.split('-').map(Number);
-    const start = new Date(sy, sm - 1, sd);
-    const end   = new Date(ey, em - 1, ed);
-    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-        dates.push(formatearFechaBogota(d));
+    const start = parseFechaUtc(weekStart);
+    const end   = parseFechaUtc(weekEnd);
+    for (let d = new Date(start); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
+        const y = d.getUTCFullYear();
+        const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(d.getUTCDate()).padStart(2, '0');
+        dates.push(`${y}-${m}-${day}`);
     }
 
     const teachers = await prisma.docente.findMany({
