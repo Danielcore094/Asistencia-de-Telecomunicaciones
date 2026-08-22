@@ -381,8 +381,8 @@ export default function Inicio() {
                             {actividadReciente.length === 0 ? (
                                 <p className="text-sm text-texto-secundario">No hay actividad reciente</p>
                             ) : (
-                                <div className="overflow-x-auto">
-                                    <table className="w-full min-w-[560px] text-sm">
+                                <div>
+                                    <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
                                         <thead style={{ background: 'color-mix(in srgb, var(--color-border) 50%, transparent)' }}>
                                             <tr className="text-left text-texto-secundario">
                                                 <th className="px-4 py-3 font-medium">Fecha</th>
