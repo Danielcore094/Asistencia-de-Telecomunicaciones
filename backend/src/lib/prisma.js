@@ -4,12 +4,15 @@ const construirUrlBD = () => {
     const urlOriginal = (process.env.DATABASE_URL || '').replace('localhost', '127.0.0.1')
     if (!urlOriginal) return urlOriginal
 
-    const limiteConexiones = Number(process.env.PRISMA_CONNECTION_LIMIT || '5')
-    const connectionLimit = Number.isFinite(limiteConexiones) && limiteConexiones > 0 ? limiteConexiones : 5
+    const limiteConexiones = Number(process.env.PRISMA_CONNECTION_LIMIT || '2')
+    const connectionLimit = Number.isFinite(limiteConexiones) && limiteConexiones > 0
+        ? Math.min(limiteConexiones, 2)
+        : 2
 
     try {
         const url = new URL(urlOriginal)
         url.searchParams.set('connection_limit', String(connectionLimit))
+        url.searchParams.set('pool_timeout', '10')
         return url.toString()
     } catch (error) {
         return urlOriginal
