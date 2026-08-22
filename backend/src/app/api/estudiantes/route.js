@@ -160,7 +160,7 @@ export async function POST(request) {
             return Response.json({ count }, { status: 201 })
         }
 
-        const { documento, name, email, whatsapp, franja, programa } = cuerpo
+        const { documento, name, email, whatsapp, franja, programa, masivo } = cuerpo
         const documentoLimpio = limpiarTexto(documento)
         const nombreLimpio = limpiarTexto(name)
         const franjaLimpia = limpiarTexto(franja)
@@ -215,7 +215,13 @@ export async function POST(request) {
             accion: 'CREAR_ESTUDIANTE',
             target: 'STUDENT',
             targetId: documentoLimpio,
-            detalles: { cursoId: idCurso, masivo: Array.isArray(cuerpo) },
+            detalles: {
+                nombreEstudiante: nombreLimpio,
+                cursoId: idCurso,
+                nombreMateria: curso.name,
+                codigoMateria: curso.code,
+                masivo: Boolean(masivo),
+            },
             ip: request.headers.get('x-forwarded-for') || '127.0.0.1'
         });
 

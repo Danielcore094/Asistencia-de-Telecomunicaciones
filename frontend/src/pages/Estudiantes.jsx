@@ -639,6 +639,7 @@ export default function Estudiantes() {
                 await crearEstudiante(cursoSeleccionado.id, {
                     documento: fila.documento || null,
                     name: fila.name,
+                    masivo: true,
                     franja: fila.franja || null,
                     programa: fila.programa || null,
                     email: fila.email || fila.correo2 || null,

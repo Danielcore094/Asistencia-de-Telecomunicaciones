@@ -76,8 +76,10 @@ const Auditoria = () => {
 
     const etiquetaDetalle = (key) => {
         const mapeo = {
-            courseId: 'Materia',
+            courseId: 'Identificador interno de la materia',
             courseName: 'Materia',
+            nombreMateria: 'Materia',
+            codigoMateria: 'Código de la materia',
             courseNames: 'Materias',
             courseCount: 'Cantidad de materias',
             cursoId: 'Materia',
@@ -88,7 +90,7 @@ const Auditoria = () => {
             code: 'Código',
             grupo: 'Grupo',
             group: 'Grupo',
-            targetId: 'ID de entidad',
+            targetId: 'Identificador de entidad',
             identificadorEntidad: 'ID de materia',
             userId: 'ID de usuario',
             name: 'Nombre',
@@ -121,6 +123,11 @@ const Auditoria = () => {
         if (Array.isArray(value)) return value.length === 0 ? '—' : value.join(', ');
         if (typeof value === 'object') return <pre className="whitespace-pre-wrap text-xs text-gray-600">{JSON.stringify(value, null, 2)}</pre>;
         return String(value);
+    };
+
+    const renderValorAuditoria = (key, value) => {
+        if (key === 'masivo') return value ? 'Carga masiva (varios estudiantes)' : 'Registro individual';
+        return renderDetailValue(value);
     };
 
     const renderDetalles = (log) => {
@@ -157,6 +164,10 @@ const Auditoria = () => {
             }
             if (log.identificadorEntidad && !Object.prototype.hasOwnProperty.call(detalles, 'identificadorEntidad')) {
                 filasTodas.unshift(['identificadorEntidad', log.identificadorEntidad]);
+            }
+        } else if (log.target === 'STUDENT' && detalles.nombreEstudiante) {
+            for (let i = filasTodas.length - 1; i >= 0; i--) {
+                if (filasTodas[i][0] === 'targetId') filasTodas.splice(i, 1);
             }
         } else if (log.targetId && !Object.prototype.hasOwnProperty.call(detalles, 'targetId')) {
             filasTodas.unshift(['targetId', log.targetId]);
@@ -208,8 +219,8 @@ const Auditoria = () => {
 
                     return (
                         <div key={key} className="flex items-start gap-2">
-                            <span className="min-w-[85px] text-[11px] uppercase tracking-[0.08em] text-gray-400">{etiquetaDetalle(key)}:</span>
-                            <span className="break-words">{renderDetailValue(value)}</span>
+                            <span className="min-w-[85px] text-[11px] uppercase tracking-[0.08em] text-gray-400">{log.target === 'STUDENT' && key === 'targetId' ? 'Documento del estudiante' : etiquetaDetalle(key)}:</span>
+                            <span className="break-words">{renderValorAuditoria(key, value)}</span>
                         </div>
                     );
                 })}

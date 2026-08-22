@@ -243,26 +243,26 @@ export default function CatalogoMaterias() {
                                 <table className="w-full min-w-[680px] text-sm">
                                     <thead style={{ background: 'var(--color-bg)' }}>
                                         <tr className="text-left text-texto-secundario">
-                                            <th className="px-4 py-3 font-medium">Código</th>
-                                            <th className="px-4 py-3 font-medium">Materia</th>
-                                            <th className="px-4 py-3 font-medium">Programa</th>
-                                            <th className="px-4 py-3 text-center font-medium">Semestre</th>
-                                            <th className="px-4 py-3 text-right font-medium">Acciones</th>
+                                            <th className="px-4 py-2 font-medium">Código</th>
+                                            <th className="px-4 py-2 font-medium">Materia</th>
+                                            <th className="px-4 py-2 font-medium">Programa</th>
+                                            <th className="px-4 py-2 text-center font-medium">Semestre</th>
+                                            <th className="px-4 py-2 text-right font-medium">Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {materiasFiltradas.map((materia) => (
                                             <tr key={materia.id} className="border-t" style={{ borderColor: 'var(--color-border)' }}>
-                                                <td className="px-4 py-3 font-mono font-medium">{materia.codigo}</td>
-                                                <td className="px-4 py-3 font-medium">{materia.nombre}</td>
-                                                <td className="px-4 py-3 text-texto-secundario">{materia.programa}</td>
-                                                <td className="px-4 py-3 text-center font-mono">{materia.semestre ?? '—'}</td>
-                                                <td className="px-4 py-3">
+                                                <td className="px-4 py-2 font-mono font-medium">{materia.codigo}</td>
+                                                <td className="px-4 py-2 font-medium">{materia.nombre}</td>
+                                                <td className="px-4 py-2 text-texto-secundario">{materia.programa}</td>
+                                                <td className="px-4 py-2 text-center font-mono">{materia.semestre ?? '—'}</td>
+                                                <td className="px-4 py-2">
                                                     <div className="flex justify-end gap-1">
                                                         <button
                                                             type="button"
                                                             onClick={() => iniciarEdicion(materia)}
-                                                            className="rounded-md p-2 focus-visible:outline-none focus-visible:ring-2"
+                                                            className="rounded-md p-1.5 focus-visible:outline-none focus-visible:ring-2"
                                                             style={{ color: 'var(--color-primary)' }}
                                                             aria-label={`Editar ${materia.nombre}`}
                                                             title="Editar materia"
@@ -273,7 +273,7 @@ export default function CatalogoMaterias() {
                                                             type="button"
                                                             onClick={() => manejarEliminacion(materia)}
                                                             disabled={eliminandoId === materia.id}
-                                                            className="rounded-md p-2 focus-visible:outline-none focus-visible:ring-2 disabled:opacity-50"
+                                                            className="rounded-md p-1.5 focus-visible:outline-none focus-visible:ring-2 disabled:opacity-50"
                                                             style={{ color: 'var(--color-primary-dark)' }}
                                                             aria-label={`Eliminar ${materia.nombre}`}
                                                             title="Eliminar materia"
