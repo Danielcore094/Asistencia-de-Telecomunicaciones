@@ -755,7 +755,7 @@ export default function Materias() {
                                         <BookOpen size={18} className="text-primario" />
                                     </div>
                                     <div className="min-w-0">
-                                        <p className="text-sm font-medium truncate">{curso.nombre}</p>
+                                        <p className="text-sm font-medium line-clamp-2 min-h-[2.5rem]" title={curso.nombre}>{curso.nombre}</p>
                                         <div className="mt-1 text-xs text-texto-secundario">{curso.codigo} · Grupo {curso.grupo}</div>
                                     </div>
                                 </div>
