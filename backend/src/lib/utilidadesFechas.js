@@ -20,37 +20,32 @@ export const obtenerLunesSemana = (dateStr) => {
     return `${y}-${m}-${dy}`;
 };
 
+const sumarDiasAFechaStr = (dateStr, dias) => {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    const fecha = new Date(y, m - 1, d + dias);
+    const yr = fecha.getFullYear();
+    const mo = String(fecha.getMonth() + 1).padStart(2, '0');
+    const dy = String(fecha.getDate()).padStart(2, '0');
+    return `${yr}-${mo}-${dy}`;
+};
+
 export const obtenerRangoSemanaActual = (referenceDate = new Date()) => {
     const hoyStr = formatearFechaBogota(referenceDate);
     const lunesStr = obtenerLunesSemana(hoyStr);
-    
-    const [y, m, d] = lunesStr.split('-').map(Number);
-    const lunes = new Date(y, m - 1, d);
-    
-    const sabado = new Date(lunes);
-    sabado.setDate(lunes.getDate() + 5);
-    
+
     return {
         weekStart: lunesStr,
-        weekEnd: formatearFechaBogota(sabado)
+        weekEnd: sumarDiasAFechaStr(lunesStr, 5),
     };
 };
 
 export const obtenerRangoSemanaAnterior = (referenceDate = new Date()) => {
     const hoyStr = formatearFechaBogota(referenceDate);
     const lunesActualStr = obtenerLunesSemana(hoyStr);
-
-    const [y, m, d] = lunesActualStr.split('-').map(Number);
-    const lunesActual = new Date(y, m - 1, d);
-
-    const lunesAnterior = new Date(lunesActual);
-    lunesAnterior.setDate(lunesActual.getDate() - 7);
-
-    const sabadoAnterior = new Date(lunesAnterior);
-    sabadoAnterior.setDate(lunesAnterior.getDate() + 5);
+    const lunesAnteriorStr = sumarDiasAFechaStr(lunesActualStr, -7);
 
     return {
-        weekStart: formatearFechaBogota(lunesAnterior),
-        weekEnd:   formatearFechaBogota(sabadoAnterior),
+        weekStart: lunesAnteriorStr,
+        weekEnd: sumarDiasAFechaStr(lunesAnteriorStr, 5),
     };
 };
