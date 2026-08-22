@@ -928,8 +928,11 @@ export default function Estudiantes() {
 
                 <section className="tarjeta p-0">
                     {!isAdmin && (
-                    <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
-                        <div className="flex items-center gap-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
+                        <div className="flex items-center gap-3 text-sm font-medium text-texto-secundario">
+                            <span>{filtrados.length} estudiante{filtrados.length !== 1 ? 's' : ''} registrados</span>
+                        </div>
+                        <div className="flex items-center gap-3 mt-3 sm:mt-0">
                             {seleccionados.size > 0 && (
                                 <button type="button" onClick={eliminarSeleccionados} disabled={eliminandoMultiple}
                                     className="inline-flex items-center gap-2 rounded-[var(--input-radius)] px-3 h-8 text-sm font-semibold transition-colors disabled:opacity-50"
@@ -941,18 +944,18 @@ export default function Estudiantes() {
                                     Eliminar {seleccionados.size} seleccionado{seleccionados.size !== 1 ? 's' : ''}
                                 </button>
                             )}
+                            {estudiantes.length > 0 && (
+                                <button type="button" onClick={borrarTodosLosEstudiantes} disabled={borrandoTodo}
+                                    className="inline-flex items-center gap-2 rounded-[var(--input-radius)] px-3 h-8 text-sm font-semibold transition-colors disabled:opacity-50"
+                                    style={{ border: '1px solid var(--color-absent)', color: 'var(--color-absent)', background: 'transparent' }}
+                                    onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-absent-bg)'}
+                                    onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                >
+                                    {borrandoTodo ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                    Borrar todo
+                                </button>
+                            )}
                         </div>
-                        {estudiantes.length > 0 && (
-                            <button type="button" onClick={borrarTodosLosEstudiantes} disabled={borrandoTodo}
-                                className="inline-flex items-center gap-2 rounded-[var(--input-radius)] px-3 h-8 text-sm font-semibold transition-colors disabled:opacity-50"
-                                style={{ border: '1px solid var(--color-absent)', color: 'var(--color-absent)', background: 'transparent' }}
-                                onMouseEnter={(e) => e.currentTarget.style.background = 'var(--color-absent-bg)'}
-                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-                            >
-                                {borrandoTodo ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
-                                Borrar todo
-                            </button>
-                        )}
                     </div>
                 )}
 
@@ -960,7 +963,16 @@ export default function Estudiantes() {
                         <p className="p-6 text-sm text-texto-secundario">Cargando...</p>
                     ) : (
                         <div className="overflow-x-auto">
-                            <table className="w-full min-w-[700px] text-sm">
+                            <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
+                                <colgroup>
+                                    {!isAdmin && <col style={{ width: '48px' }} />}
+                                    <col style={{ width: '10%' }} />
+                                    <col style={{ width: '22%' }} />
+                                    <col style={{ width: '24%' }} />
+                                    <col style={{ width: '32%' }} />
+                                    <col style={{ width: '12%' }} />
+                                    {!isAdmin && <col style={{ width: '8%' }} />}
+                                </colgroup>
                                 <thead style={{ background: 'color-mix(in srgb, var(--color-border) 50%, transparent)' }}>
                                     <tr className="text-left text-texto-secundario">
                                         {!isAdmin && (
@@ -974,6 +986,7 @@ export default function Estudiantes() {
                                         )}
                                         <th className="px-4 py-3 font-medium">Documento</th>
                                         <th className="px-4 py-3 font-medium">Nombre</th>
+                                        <th className="px-4 py-3 font-medium">Programa</th>
                                         <th className="px-4 py-3 font-medium">Materia</th>
                                         <th className="px-4 py-3 text-right font-medium">% asistencia</th>
                                         {!isAdmin && <th className="px-4 py-3 font-medium text-right">Acciones</th>}
@@ -994,36 +1007,39 @@ export default function Estudiantes() {
                                             )}
                                             <td className="px-4 py-3 font-mono text-xs text-texto-secundario">{est.documento}</td>
                                             <td className="px-4 py-3 font-medium text-texto">{est.nombreFormateado}</td>
-                                            <td className="px-4 py-3 text-texto-secundario">{est.curso}</td>
+                                            <td className="px-4 py-3 text-texto-secundario" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{est.programa || '—'}</td>
+                                            <td className="px-4 py-3 text-texto-secundario" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{est.curso}</td>
                                             <td className="px-4 py-3 text-right font-mono">
                                                 {Number(est.porcentaje).toLocaleString('es-CO')}%
                                             </td>
                                             {!isAdmin && (
                                                 <td className="px-4 py-3 text-right">
-                                                    <button
-                                                        onClick={() => setEstudianteEnEdicion(est)}
-                                                        disabled={editandoId === est.id || eliminandoId === est.id}
-                                                        className="mr-2 p-1.5 rounded-md transition-colors disabled:opacity-50"
-                                                        style={{ color: 'var(--color-muted)' }}
-                                                        title="Editar estudiante"
-                                                        onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-primary)'; e.currentTarget.style.background = 'var(--color-primary-light)'; }}
-                                                        onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-muted)'; e.currentTarget.style.background = 'transparent'; }}
-                                                    >
-                                                        <Pencil size={16} />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => manejarEliminacionEstudiante(est.id, est.nombre)}
-                                                        disabled={eliminandoId === est.id || editandoId === est.id}
-                                                        className="p-1.5 rounded-md transition-colors disabled:opacity-50"
-                                                        style={{ color: 'var(--color-muted)' }}
-                                                        title="Eliminar estudiante"
-                                                        onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-absent)'; e.currentTarget.style.background = 'var(--color-absent-bg)'; }}
-                                                        onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-muted)'; e.currentTarget.style.background = 'transparent'; }}
-                                                    >
-                                                        {eliminandoId === est.id
-                                                            ? <Loader2 size={16} className="animate-spin" />
-                                                            : <Trash2 size={16} />}
-                                                    </button>
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button
+                                                            onClick={() => setEstudianteEnEdicion(est)}
+                                                            disabled={editandoId === est.id || eliminandoId === est.id}
+                                                            className="p-1.5 rounded-md transition-colors disabled:opacity-50"
+                                                            style={{ color: 'var(--color-muted)' }}
+                                                            title="Editar estudiante"
+                                                            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-primary)'; e.currentTarget.style.background = 'var(--color-primary-light)'; }}
+                                                            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-muted)'; e.currentTarget.style.background = 'transparent'; }}
+                                                        >
+                                                            <Pencil size={16} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => manejarEliminacionEstudiante(est.id, est.nombre)}
+                                                            disabled={eliminandoId === est.id || editandoId === est.id}
+                                                            className="p-1.5 rounded-md transition-colors disabled:opacity-50"
+                                                            style={{ color: 'var(--color-muted)' }}
+                                                            title="Eliminar estudiante"
+                                                            onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--color-absent)'; e.currentTarget.style.background = 'var(--color-absent-bg)'; }}
+                                                            onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--color-muted)'; e.currentTarget.style.background = 'transparent'; }}
+                                                        >
+                                                            {eliminandoId === est.id
+                                                                ? <Loader2 size={16} className="animate-spin" />
+                                                                : <Trash2 size={16} />}
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             )}
                                         </tr>
