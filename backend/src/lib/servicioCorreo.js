@@ -5,6 +5,10 @@ export async function enviarCorreo({ to, toName, subject, htmlContent, attachmen
     const apiKey = process.env.BREVO_API_KEY;
     const senderEmail = process.env.BREVO_SENDER_EMAIL;
     const senderName = process.env.BREVO_SENDER_NAME || 'Sistema de Asistencia';
+  const destinatarios = (Array.isArray(to) ? to : String(to).split(/[;,]/))
+    .map(destinatario => typeof destinatario === 'string' ? destinatario.trim() : destinatario?.email)
+    .filter(Boolean)
+    .map(email => ({ email, name: toName }));
 
     if (!apiKey || !senderEmail) {
         const msg = 'BREVO_API_KEY y BREVO_SENDER_EMAIL son requeridas en el .env';
@@ -14,7 +18,7 @@ export async function enviarCorreo({ to, toName, subject, htmlContent, attachmen
 
     const payload = {
         sender: { name: senderName, email: senderEmail },
-        to: [{ email: to, name: toName }],
+      to: destinatarios,
         subject,
         htmlContent,
     };
@@ -40,7 +44,7 @@ export async function enviarCorreo({ to, toName, subject, htmlContent, attachmen
         }
 
         const data = await response.json();
-        console.log(`[servicioCorreo] Correo enviado a ${to} — messageId: ${data.messageId}`);
+        console.log(`[servicioCorreo] Correo enviado a ${destinatarios.map(destinatario => destinatario.email).join(', ')} — messageId: ${data.messageId}`);
         return { success: true, messageId: data.messageId };
 
     } catch (err) {
