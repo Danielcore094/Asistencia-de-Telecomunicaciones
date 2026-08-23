@@ -21,7 +21,7 @@ export async function enviarMensajeWhatsApp({ phone, message }) {
     if (!baseUrl || !instance) {
         const msg = 'EVOLUTION_API_URL y EVOLUTION_INSTANCE son requeridas en el .env';
         console.error('[servicioWhatsapp]', msg);
-        return { success: false, error: msg };
+        return { success: false, error: 'El servicio de WhatsApp no está configurado. Contacte al administrador.' };
     }
 
     const number = normalizarNumeroTelefono(phone);
@@ -30,7 +30,7 @@ export async function enviarMensajeWhatsApp({ phone, message }) {
     if (!textoLimpio) {
         const msg = 'El mensaje de WhatsApp está vacío';
         console.error('[servicioWhatsapp]', msg);
-        return { success: false, error: msg };
+        return { success: false, error: 'No se pudo enviar la notificación porque el mensaje está vacío.' };
     }
 
     const url = `${baseUrl}/message/sendText/${instance}`;
@@ -56,7 +56,18 @@ export async function enviarMensajeWhatsApp({ phone, message }) {
         if (!response.ok) {
             const errorBody = await response.text();
             console.error(`[servicioWhatsapp] Error Evolution API (${response.status}):`, errorBody);
-            return { success: false, error: `Evolution ${response.status}: ${errorBody}` };
+            const mensajesPorEstado = {
+                401: 'La conexión con WhatsApp fue rechazada. Verifique la clave de la API.',
+                403: 'La conexión con WhatsApp no tiene autorización para enviar mensajes.',
+                404: 'La instancia de WhatsApp no fue encontrada o no está disponible.',
+                408: 'WhatsApp tardó demasiado en responder. Intente nuevamente.',
+                429: 'WhatsApp está limitando los envíos temporalmente. Intente nuevamente más tarde.',
+            };
+            return {
+                success: false,
+                error: mensajesPorEstado[response.status]
+                    || `El servicio de WhatsApp rechazó el envío (código ${response.status}). Intente nuevamente.`,
+            };
         }
 
         const data = await response.json();
@@ -65,6 +76,9 @@ export async function enviarMensajeWhatsApp({ phone, message }) {
 
     } catch (err) {
         console.error('[servicioWhatsapp] Error de red:', err.message);
-        return { success: false, error: err.message };
+        return {
+            success: false,
+            error: 'No fue posible conectarse con el servicio de WhatsApp. Verifique que esté disponible e intente nuevamente.',
+        };
     }
 }

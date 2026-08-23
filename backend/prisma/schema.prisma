@@ -97,6 +97,7 @@ model Docente {
 model RegistroNotificacion {
   id        String      @id @default(cuid()) @map("id")
   studentId String      @map("estudiante_id")
+  email     String?     @map("correo")
   weekStart String      @map("semana_inicio")
   sentAt    DateTime    @default(now()) @map("enviado_en")
   status    String      @default("SUCCESS") @map("estado")
@@ -112,12 +113,13 @@ model RegistroNotificacionWhatsapp {
   studentId String      @map("estudiante_id")
   courseId  String      @map("curso_id")
   date      String      @map("fecha")
+  schedule  String      @default("") @map("horario")
   sentAt    DateTime    @default(now()) @map("enviado_en")
   status    String      @default("SUCCESS") @map("estado")
   error     String?     @map("error")
   student   Estudiante  @relation(fields: [studentId], references: [documento], onDelete: Cascade)
 
-  @@unique([studentId, courseId, date])
+  @@unique([studentId, courseId, date, schedule])
   @@map("registro_notificaciones_whatsapp")
 }
 

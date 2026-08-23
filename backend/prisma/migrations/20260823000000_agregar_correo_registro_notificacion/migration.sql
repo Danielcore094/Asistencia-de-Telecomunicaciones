@@ -1,0 +1,1 @@
+ALTER TABLE "registro_notificaciones" ADD COLUMN "correo" TEXT;

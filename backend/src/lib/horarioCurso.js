@@ -11,6 +11,10 @@ const obtenerSesiones = (curso) => [
     },
 ].filter(({ dia, horaInicio, horaFin }) => dia && horaInicio && horaFin);
 
+export const obtenerIdentificadorHorario = (curso) => obtenerSesiones(curso)
+    .map(({ dia, horaInicio, horaFin }) => `${dia}:${horaInicio}-${horaFin}`)
+    .join('|');
+
 export const encontrarConflictoHorario = (curso, cursosExistentes) => {
     const sesionesCurso = obtenerSesiones(curso);
 

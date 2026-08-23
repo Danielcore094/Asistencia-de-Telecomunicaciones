@@ -7,6 +7,19 @@ import { enviarNotificacionesSemanal, obtenerEstadoNotificaciones, obtenerEstado
 import toast from 'react-hot-toast';
 import { UserPlus, Eye, EyeOff, Trash2, Loader2, X, Mail, Send, CheckCircle2, AlertCircle, Clock, MessageSquare, Smartphone, Pencil, Key } from 'lucide-react';
 
+const renderizarHorario = (horario) => {
+    if (!horario) return 'No registrado';
+
+    return horario.split('|').map((sesion, indice) => {
+        const [dia, ...horas] = sesion.split(':');
+        return (
+            <span key={`${sesion}-${indice}`} className="block whitespace-nowrap">
+                {dia}: {horas.join(':')}
+            </span>
+        );
+    });
+};
+
 export default function Configuracion() {
     const { usuario } = useAutenticacion();
     const { cursos } = useCurso();
@@ -24,6 +37,7 @@ export default function Configuracion() {
     const [enviandoNotificaciones, setEnviandoNotificaciones] = useState(false);
     const [resultadoNotificaciones, setResultadoNotificaciones] = useState(null);
     const [estadoCron, setEstadoCron] = useState(null);
+    const [modalCorreoVisible, setModalCorreoVisible] = useState(false);
 
 
     const [estadoWhatsApp, setEstadoWhatsApp] = useState(null);
@@ -59,7 +73,6 @@ export default function Configuracion() {
                 setCargando(false);
             }
         };
-
         const cargarEstadoCron = async () => {
             try {
                 const estado = await obtenerEstadoNotificaciones();
@@ -268,6 +281,8 @@ export default function Configuracion() {
                                 try {
                                     const resultado = await enviarNotificacionesSemanal();
                                     setResultadoNotificaciones(resultado.results);
+                                    const estadoActualizado = await obtenerEstadoNotificaciones();
+                                    setEstadoCron(estadoActualizado);
                                     toast.success(`Proceso completado: ${resultado.results.sent} correos enviados`);
                                 } catch (err) {
                                     const msg = err?.response?.data?.error || 'Error al enviar notificaciones';
@@ -282,6 +297,14 @@ export default function Configuracion() {
                             {enviandoNotificaciones
                                 ? <><Loader2 size={16} className="animate-spin" aria-label="Enviando" /> Enviando...</>
                                 : <><Send size={16} aria-label="Enviar" /> Enviar notificaciones semanales</>}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setModalCorreoVisible(true)}
+                            className="boton-secundario inline-flex items-center gap-2 shrink-0"
+                            aria-label="Ver historial de correos"
+                        >
+                            <Mail size={16} aria-label="Ver historial de correos" /> Ver historial
                         </button>
                     </div>
 
@@ -340,6 +363,66 @@ export default function Configuracion() {
                         </div>
                     )}
                 </section>
+
+                {modalCorreoVisible && estadoCron && (
+                    <div
+                        className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4"
+                        style={{ background: 'rgba(51, 51, 71, 0.65)', backdropFilter: 'blur(3px)' }}
+                        onClick={(e) => { if (e.target === e.currentTarget) setModalCorreoVisible(false); }}
+                    >
+                        <div
+                            className="modal-panel w-full flex flex-col"
+                            style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--card-radius)', width: 'calc(100vw - 24px)', maxWidth: '1200px', maxHeight: '88vh' }}
+                        >
+                            <div className="flex items-center justify-between px-6 py-4 border-b shrink-0" style={{ borderColor: 'var(--color-border)' }}>
+                                <h3 className="text-lg font-semibold flex items-center gap-2">
+                                    <Mail size={20} className="text-primario" /> Historial de correos de inasistencia
+                                </h3>
+                                <button type="button" onClick={() => setModalCorreoVisible(false)} className="p-1.5 rounded-md" style={{ color: 'var(--color-muted)' }} aria-label="Cerrar historial de correos">
+                                    <X size={20} aria-label="Cerrar" />
+                                </button>
+                            </div>
+                            <div className="overflow-y-auto flex-1 overflow-x-auto">
+                                {!estadoCron.historial?.length ? (
+                                    <p className="py-12 text-center text-texto-secundario text-sm">No hay notificaciones de correo registradas aún.</p>
+                                ) : (
+                                    <table className="w-full table-fixed text-sm">
+                                        <thead className="sticky top-0" style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', zIndex: 1 }}>
+                                            <tr className="text-left text-texto-secundario">
+                                                <th className="px-5 py-3 font-medium">Estudiante</th>
+                                                <th className="px-5 py-3 font-medium">Documento</th>
+                                                <th className="px-5 py-3 font-medium">Correo utilizado</th>
+                                                <th className="px-5 py-3 font-medium">Semana</th>
+                                                <th className="px-5 py-3 font-medium">Fecha</th>
+                                                <th className="px-5 py-3 font-medium text-center">Estado</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {estadoCron.historial.map((registro) => (
+                                                <tr key={registro.id} className="tabla-fila">
+                                                    <td className="px-5 py-2.5 font-medium">{registro.estudiante}</td>
+                                                    <td className="px-5 py-2.5 font-mono text-xs text-texto-secundario">{registro.documento}</td>
+                                                    <td className="px-5 py-2.5 text-texto-secundario">{registro.correo || 'No registrado'}</td>
+                                                    <td className="px-5 py-2.5 text-texto-secundario">{registro.semana}</td>
+                                                    <td className="px-5 py-2.5 text-xs text-texto-secundario">{new Date(registro.fecha).toLocaleString('es-CO')}</td>
+                                                    <td className="px-5 py-2.5 text-center">
+                                                        {registro.estado === 'SUCCESS' && <span className="badge-docente">Enviado</span>}
+                                                        {registro.estado === 'SKIPPED' && <span className="text-xs text-texto-secundario">Omitido</span>}
+                                                        {registro.estado === 'ERROR' && <span className="badge-admin" title={registro.error || 'Error de envío'}>Error</span>}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
+                            </div>
+                            <div className="px-6 py-3 border-t shrink-0 flex items-center justify-between" style={{ borderColor: 'var(--color-border)' }}>
+                                <p className="text-xs text-texto-secundario">Mostrando {estadoCron.historial?.length || 0} registros más recientes</p>
+                                <button type="button" onClick={() => setModalCorreoVisible(false)} className="boton-secundario text-sm px-4 py-1.5">Cerrar</button>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 <section className="tarjeta">
                     <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -635,7 +718,8 @@ export default function Configuracion() {
                                 background: 'var(--color-surface)',
                                 border: '1px solid var(--color-border)',
                                 borderRadius: 'var(--card-radius)',
-                                maxWidth: '860px',
+                                width: 'calc(100vw - 24px)',
+                                maxWidth: '1200px',
                                 maxHeight: '88vh',
                             }}
                         >
@@ -679,30 +763,32 @@ export default function Configuracion() {
                                 </div>
                             </div>
 
-                            <div className="overflow-y-auto flex-1 overflow-x-auto">
+                            <div className="overflow-y-auto flex-1">
                                 {estadoWhatsApp.logs.length === 0 ? (
                                     <p className="py-12 text-center text-texto-secundario text-sm">
                                         No hay notificaciones de WhatsApp registradas aún.
                                     </p>
                                 ) : (
-                                    <table className="w-full min-w-[620px] text-sm">
+                                    <table className="w-full table-fixed text-sm">
                                         <thead className="sticky top-0" style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', zIndex: 1 }}>
                                             <tr className="text-left text-texto-secundario">
-                                                <th className="px-5 py-3 font-medium">Estudiante</th>
-                                                <th className="px-5 py-3 font-medium">WhatsApp</th>
-                                                <th className="px-5 py-3 font-medium">Materia</th>
-                                                <th className="px-5 py-3 font-medium">Fecha clase</th>
-                                                <th className="px-5 py-3 font-medium text-center">Estado</th>
+                                                <th className="w-[22%] px-3 py-3 font-medium">Estudiante</th>
+                                                <th className="w-[14%] pl-6 pr-3 py-3 font-medium">WhatsApp</th>
+                                                <th className="w-[22%] px-3 py-3 font-medium">Materia</th>
+                                                <th className="w-[25%] px-3 py-3 font-medium">Horario</th>
+                                                <th className="w-[10%] px-3 py-3 font-medium relative -left-6">Fecha clase</th>
+                                                <th className="w-[7%] px-3 py-3 font-medium text-center relative -left-6">Estado</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {estadoWhatsApp.logs.map((log) => (
                                                 <tr key={log.id} className="tabla-fila">
-                                                    <td className="px-5 py-2.5 font-medium">{log.estudiante}</td>
-                                                    <td className="px-5 py-2.5 font-mono text-xs text-texto-secundario">{log.whatsapp}</td>
-                                                    <td className="px-5 py-2.5 text-texto-secundario">{log.materia}</td>
-                                                    <td className="px-5 py-2.5 text-texto-secundario text-xs">{log.fecha}</td>
-                                                    <td className="px-5 py-2.5 text-center">
+                                                    <td className="px-3 py-2.5 font-medium break-words">{log.estudiante}</td>
+                                                    <td className="pl-6 pr-3 py-2.5 font-mono text-xs text-texto-secundario break-words">{log.whatsapp}</td>
+                                                    <td className="px-3 py-2.5 text-texto-secundario break-words">{log.materia}</td>
+                                                    <td className="px-3 py-2.5 text-texto-secundario text-xs leading-5">{renderizarHorario(log.horario)}</td>
+                                                    <td className="px-3 py-2.5 text-texto-secundario text-xs break-words relative -left-6">{log.fecha}</td>
+                                                    <td className="px-3 py-2.5 text-center relative -left-6">
                                                         {log.status === 'SUCCESS' && <span className="badge-docente">Enviado</span>}
                                                         {log.status === 'SKIPPED' && <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 'var(--badge-radius)', fontSize: '0.75rem', fontWeight: 600, background: 'color-mix(in srgb, var(--color-muted) 15%, transparent)', color: 'var(--color-muted)' }}>Omitido</span>}
                                                         {log.status === 'ERROR' && <span className="badge-admin" title={log.error}>Error</span>}

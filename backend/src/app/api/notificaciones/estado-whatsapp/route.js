@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic';
 
 import { obtenerUsuarioDePeticion } from '@/lib/autenticacion';
+import { verificarAccesoCurso } from '@/lib/autenticacion';
 import prisma from '@/lib/prisma';
 
 export async function GET(request) {
@@ -8,14 +9,29 @@ export async function GET(request) {
     if (!usuario) {
         return Response.json({ error: 'No autorizado' }, { status: 401 });
     }
-    if (usuario.role !== 'ADMIN') {
-        return Response.json({ error: 'Acceso restringido a administradores' }, { status: 403 });
-    }
-
     const { searchParams } = new URL(request.url);
     const limite = Math.min(parseInt(searchParams.get('limite') || '50'), 100);
+    const cursoId = searchParams.get('cursoId');
+    const soloErrores = searchParams.get('soloErrores') === 'true';
+
+    if (usuario.role !== 'ADMIN' && !cursoId) {
+        return Response.json({ error: 'cursoId es requerido para docentes' }, { status: 400 });
+    }
+
+    if (cursoId) {
+        const acceso = await verificarAccesoCurso(cursoId, usuario);
+        if (!acceso.permitido) {
+            return Response.json({ error: acceso.error }, { status: acceso.status });
+        }
+    }
+
+    const where = {
+        ...(cursoId ? { courseId: cursoId } : {}),
+        ...(soloErrores ? { status: 'ERROR' } : {}),
+    };
 
     const logs = await prisma.registroNotificacionWhatsapp.findMany({
+        where,
         take: limite,
         orderBy: { sentAt: 'desc' },
         include: {
@@ -50,9 +66,11 @@ export async function GET(request) {
             enviadoEl:  l.sentAt,
             status:     l.status,
             error:      l.error,
+            horario:    l.schedule,
             estudiante: l.student?.name    ?? '—',
             whatsapp:   l.student?.whatsapp ?? '—',
             materia:    cursoMap[l.courseId] ?? '—',
+            cursoId:    l.courseId,
         })),
     });
 }

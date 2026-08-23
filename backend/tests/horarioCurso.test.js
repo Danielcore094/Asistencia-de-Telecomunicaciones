@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { encontrarConflictoHorario } from '../src/lib/horarioCurso.js';
+import { encontrarConflictoHorario, obtenerIdentificadorHorario } from '../src/lib/horarioCurso.js';
 
 const cursoExistente = {
     id: 'curso-existente',
@@ -50,4 +50,15 @@ test('permite sesiones con hora, día o duración diferentes', () => {
     }, [cursoExistente]);
 
     assert.equal(conflicto, null);
+});
+
+test('genera una clave distinta para horarios diferentes del mismo día', () => {
+    const horarioManana = obtenerIdentificadorHorario({
+        dia: 'Martes', horaInicio: '09:00', horaFin: '11:00',
+    });
+    const horarioTarde = obtenerIdentificadorHorario({
+        dia: 'Martes', horaInicio: '14:00', horaFin: '16:00',
+    });
+
+    assert.notEqual(horarioManana, horarioTarde);
 });

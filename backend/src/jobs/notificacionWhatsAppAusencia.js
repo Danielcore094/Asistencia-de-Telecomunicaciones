@@ -1,6 +1,7 @@
 
 import prisma from '../lib/prisma.js';
 import { enviarMensajeWhatsApp } from '../lib/servicioWhatsapp.js';
+import { obtenerIdentificadorHorario } from '../lib/horarioCurso.js';
 
 const esperar = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -45,7 +46,15 @@ export async function ejecutarNotificacionWhatsAppAusencia(registros, idCurso, f
             }),
             prisma.curso.findUnique({
                 where: { id: idCurso },
-                select: { name: true },
+                select: {
+                    name: true,
+                    dia: true,
+                    horaInicio: true,
+                    horaFin: true,
+                    dia2: true,
+                    horaInicio2: true,
+                    horaFin2: true,
+                },
             }),
         ]);
 
@@ -55,21 +64,26 @@ export async function ejecutarNotificacionWhatsAppAusencia(registros, idCurso, f
         }
 
         for (const estudiante of estudiantes) {
-            const claveLog = { studentId: estudiante.documento, courseId: idCurso, date: fecha };
+            const claveLog = {
+                studentId: estudiante.documento,
+                courseId: idCurso,
+                date: fecha,
+                schedule: obtenerIdentificadorHorario(curso),
+            };
 
             if (!estudiante.whatsapp) {
                 console.warn(`[whatsapp-job] Sin WhatsApp: ${estudiante.name} (${estudiante.documento})`);
                 await prisma.registroNotificacionWhatsapp.upsert({
-                    where: { studentId_courseId_date: claveLog },
-                    update: { status: 'SKIPPED', error: 'Sin número de WhatsApp', sentAt: new Date() },
-                    create: { ...claveLog, status: 'SKIPPED', error: 'Sin número de WhatsApp' },
+                    where: { studentId_courseId_date_schedule: claveLog },
+                    update: { status: 'ERROR', error: 'Sin número de WhatsApp', sentAt: new Date() },
+                    create: { ...claveLog, status: 'ERROR', error: 'Sin número de WhatsApp' },
                 });
-                estadisticas.omitidos++;
+                estadisticas.errores++;
                 continue;
             }
 
             const existente = await prisma.registroNotificacionWhatsapp.findUnique({
-                where: { studentId_courseId_date: claveLog },
+                where: { studentId_courseId_date_schedule: claveLog },
             });
 
             if (existente?.status === 'SUCCESS') {
@@ -90,7 +104,7 @@ export async function ejecutarNotificacionWhatsAppAusencia(registros, idCurso, f
             });
 
             await prisma.registroNotificacionWhatsapp.upsert({
-                where: { studentId_courseId_date: claveLog },
+                where: { studentId_courseId_date_schedule: claveLog },
                 update: {
                     status: resultado.success ? 'SUCCESS' : 'ERROR',
                     error: resultado.success ? null : resultado.error,

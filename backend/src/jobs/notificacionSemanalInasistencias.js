@@ -9,14 +9,16 @@ import {
     obtenerInasistenciasSemanales,
     crearReportesSemanalesPorDocente,
 } from '../lib/servicioAsistencia.js';
+import { registrarAccion } from '../lib/servicioAuditoria.js';
 
-export async function ejecutarNotificacionSemanalInasistencias() {
+export async function ejecutarNotificacionSemanalInasistencias({ usuario = null, origen = 'AUTOMATICO' } = {}) {
     console.log('\n========================================');
     console.log('[notification-job] Iniciando envío de notificaciones semanales...');
     console.log(`[notification-job] Hora: ${new Date().toISOString()}`);
     console.log('========================================\n');
 
     const resultados = { sent: 0, skipped: 0, errors: 0, details: [] };
+    const usuarioAuditoria = usuario || { id: 'SISTEMA_AUTOMATICO', name: 'Sistema automático', role: 'SYSTEM' };
     const destinatario = process.env.WEEKLY_REPORT_RECIPIENT_EMAIL;
 
     if (destinatario) {
@@ -88,15 +90,6 @@ export async function ejecutarNotificacionSemanalInasistencias() {
                 reason:      null,
             };
 
-            if (!estudiante.email) {
-                console.warn(`[notification-job] Sin email: ${estudiante.studentName} (${estudiante.studentId})`);
-                entradaLog.status = 'SKIPPED';
-                entradaLog.reason = 'Sin email registrado';
-                resultados.skipped++;
-                resultados.details.push(entradaLog);
-                continue;
-            }
-
             const existente = await prisma.registroNotificacion.findUnique({
                 where: {
                     studentId_weekStart: {
@@ -106,10 +99,35 @@ export async function ejecutarNotificacionSemanalInasistencias() {
                 },
             });
 
-            if (existente) {
+            if (existente?.status === 'SUCCESS') {
                 console.log(`[notification-job] Duplicado omitido: ${estudiante.studentName}`);
                 entradaLog.status = 'SKIPPED';
                 entradaLog.reason = 'Ya se envió correo esta semana';
+                resultados.skipped++;
+                resultados.details.push(entradaLog);
+                continue;
+            }
+
+            if (!estudiante.email) {
+                console.warn(`[notification-job] Sin email: ${estudiante.studentName} (${estudiante.studentId})`);
+                entradaLog.status = 'SKIPPED';
+                entradaLog.reason = 'Sin email registrado';
+                await prisma.registroNotificacion.upsert({
+                    where: {
+                        studentId_weekStart: {
+                            studentId: estudiante.studentId,
+                            weekStart: estudiante.weekStart,
+                        },
+                    },
+                    update: { email: null, status: 'SKIPPED', error: entradaLog.reason },
+                    create: {
+                        studentId: estudiante.studentId,
+                        email: null,
+                        weekStart: estudiante.weekStart,
+                        status: 'SKIPPED',
+                        error: entradaLog.reason,
+                    },
+                });
                 resultados.skipped++;
                 resultados.details.push(entradaLog);
                 continue;
@@ -131,9 +149,16 @@ export async function ejecutarNotificacionSemanalInasistencias() {
             });
 
             if (resultadoCorreo.success) {
-                await prisma.registroNotificacion.create({
-                    data: {
+                await prisma.registroNotificacion.upsert({
+                    where: { studentId_weekStart: { studentId: estudiante.studentId, weekStart: estudiante.weekStart } },
+                    update: {
+                        email: estudiante.email,
+                        status: 'SUCCESS',
+                        error: null,
+                    },
+                    create: {
                         studentId: estudiante.studentId,
+                        email: estudiante.email,
                         weekStart: estudiante.weekStart,
                         status:    'SUCCESS',
                     },
@@ -142,9 +167,16 @@ export async function ejecutarNotificacionSemanalInasistencias() {
                 entradaLog.status = 'SUCCESS';
                 resultados.sent++;
             } else {
-                await prisma.registroNotificacion.create({
-                    data: {
+                await prisma.registroNotificacion.upsert({
+                    where: { studentId_weekStart: { studentId: estudiante.studentId, weekStart: estudiante.weekStart } },
+                    update: {
+                        email: estudiante.email,
+                        status: 'ERROR',
+                        error: resultadoCorreo.error,
+                    },
+                    create: {
                         studentId: estudiante.studentId,
+                        email: estudiante.email,
                         weekStart: estudiante.weekStart,
                         status:    'ERROR',
                         error:     resultadoCorreo.error,
@@ -162,6 +194,19 @@ export async function ejecutarNotificacionSemanalInasistencias() {
         console.error('[notification-job] Error en notificaciones de estudiantes:', err.message);
         resultados.errors++;
     }
+
+    await registrarAccion({
+        usuario: usuarioAuditoria,
+        accion: 'ENVIAR_NOTIFICACIONES_INASISTENCIA',
+        target: 'NOTIFICATION',
+        detalles: {
+            origen,
+            sent: resultados.sent,
+            skipped: resultados.skipped,
+            errors: resultados.errors,
+            destinatarios: resultados.details,
+        },
+    });
 
     console.log('\n========================================');
     console.log('[notification-job] Resumen final:');

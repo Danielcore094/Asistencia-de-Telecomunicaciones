@@ -26,7 +26,7 @@ app.prepare().then(async () => {
         cron.schedule('0 9 * * 0', async () => {
             console.log('\n[cron] Tarea semanal ejecutada - Domingo 09:00');
             try {
-                await ejecutarNotificacionSemanalInasistencias();
+                await ejecutarNotificacionSemanalInasistencias({ origen: 'AUTOMATICO' });
             } catch (err) {
                 console.error('[cron] Error en tarea programada:', err.message);
             }

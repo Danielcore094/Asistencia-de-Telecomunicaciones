@@ -356,7 +356,18 @@ export default function Historial() {
                                                         </span>
                                                     </div>
                                                     <div>
-                                                        {item.present ? (
+                                                        {item.status === 'Justificado' ? (
+                                                            <span
+                                                                className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold"
+                                                                style={{
+                                                                    borderRadius: 'var(--badge-radius)',
+                                                                    background: 'var(--color-excused-bg)',
+                                                                    color: 'var(--color-excused)',
+                                                                }}
+                                                            >
+                                                                <CheckCircle2 size={13} /> Ausencia justificada
+                                                            </span>
+                                                        ) : item.present ? (
                                                             <span
                                                                 className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold"
                                                                 style={{

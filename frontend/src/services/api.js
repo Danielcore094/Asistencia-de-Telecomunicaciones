@@ -131,6 +131,12 @@ export const obtenerEstadoNotificaciones = () =>
 export const obtenerEstadoWhatsApp = (limite = 50) =>
     clienteApi.get('/notificaciones/estado-whatsapp', { params: { limite } }).then(respuesta => respuesta.data);
 
+export const obtenerErroresWhatsApp = (cursoId, limite = 50) =>
+    clienteApi.get('/notificaciones/estado-whatsapp', { params: { cursoId, limite, soloErrores: true } }).then(respuesta => respuesta.data);
+
+export const reintentarNotificacionWhatsApp = (id) =>
+    clienteApi.post('/notificaciones/estado-whatsapp/reintentar', { id }).then(respuesta => respuesta.data);
+
 export const descargarResumenSemestral = (params = {}) =>
     clienteApi.get('/reportes/resumen-semestral', { params, responseType: 'blob' });
 

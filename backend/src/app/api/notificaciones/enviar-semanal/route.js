@@ -16,7 +16,7 @@ export async function POST(request) {
     console.log(`[send-weekly] Ejecución manual por: ${usuario.email} a las ${new Date().toISOString()}`);
 
     try {
-        const resultados = await ejecutarNotificacionSemanalInasistencias();
+        const resultados = await ejecutarNotificacionSemanalInasistencias({ usuario, origen: 'MANUAL' });
         return Response.json({
             success: true,
             message: 'Proceso de notificación completado',
@@ -55,6 +55,12 @@ export async function GET(request) {
         where: { weekStart, status: 'SUCCESS' },
     });
 
+    const historial = await prisma.registroNotificacion.findMany({
+        take: 100,
+        orderBy: { sentAt: 'desc' },
+        include: { student: { select: { documento: true, name: true } } },
+    });
+
     return Response.json({
         servicio: 'notificador-semanal-inasistencias',
         estado: 'activo',
@@ -72,6 +78,16 @@ export async function GET(request) {
             weekStart,
             correosEnviados: totalEstaSemana,
         },
+        historial: historial.map((registro) => ({
+            id: registro.id,
+            estudiante: registro.student.name,
+            documento: registro.student.documento,
+            correo: registro.email,
+            semana: registro.weekStart,
+            fecha: registro.sentAt,
+            estado: registro.status,
+            error: registro.error,
+        })),
     });
 }
 

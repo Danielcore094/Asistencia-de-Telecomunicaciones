@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2, FileText, Loader2, Save, XCircle } from 'lucide-react';
+import { CheckCircle2, FileText, Loader2, RefreshCw, Save, Smartphone, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { obtenerAsistencia, obtenerEstudiantes, guardarAsistencia } from '../services/api';
+import { obtenerAsistencia, obtenerEstudiantes, guardarAsistencia, obtenerErroresWhatsApp, reintentarNotificacionWhatsApp } from '../services/api';
 import { useCurso } from '../context/ContextoCurso';
 import FiltrosGlobales from '../components/FiltrosGlobales';
 import { Navigate } from 'react-router-dom';
@@ -31,6 +31,35 @@ const formatearFechaLocal = (fechaDate) => {
     return `${year}-${month}-${day}`;
 };
 
+const explicarMotivoWhatsApp = (motivo) => {
+    if (!motivo) return 'No fue posible enviar la notificación.';
+
+    const motivoNormalizado = String(motivo).toLowerCase();
+    if (motivoNormalizado === 'fetch failed' || motivoNormalizado.includes('network')) {
+        return 'No se pudo conectar con WhatsApp. Verifique que el servicio esté disponible y reintente.';
+    }
+    if (motivoNormalizado.includes('sin número')) {
+        return 'El estudiante no tiene un número de WhatsApp registrado.';
+    }
+    if (motivoNormalizado.includes('evolution 401')) {
+        return 'La conexión con WhatsApp fue rechazada. Verifique la clave de la API.';
+    }
+    if (motivoNormalizado.includes('evolution 403')) {
+        return 'La conexión con WhatsApp no tiene autorización para enviar mensajes.';
+    }
+    if (motivoNormalizado.includes('evolution 404')) {
+        return 'La instancia de WhatsApp no fue encontrada o no está disponible.';
+    }
+    if (motivoNormalizado.includes('evolution 408')) {
+        return 'WhatsApp tardó demasiado en responder. Intente nuevamente.';
+    }
+    if (motivoNormalizado.includes('evolution 429')) {
+        return 'WhatsApp está limitando los envíos temporalmente. Intente nuevamente más tarde.';
+    }
+
+    return motivo;
+};
+
 export default function Asistencia() {
     const { usuario } = useAutenticacion();
     
@@ -50,6 +79,9 @@ export default function Asistencia() {
     const [asistencia, setAsistencia] = useState({});
     const [cargando, setCargando] = useState(true);
     const [guardando, setGuardando] = useState(false);
+    const [erroresWhatsApp, setErroresWhatsApp] = useState([]);
+    const [cargandoErroresWhatsApp, setCargandoErroresWhatsApp] = useState(false);
+    const [reintentandoWhatsApp, setReintentandoWhatsApp] = useState(null);
 
     const filtros = {
         codigo: codigoSeleccionado,
@@ -107,6 +139,44 @@ export default function Asistencia() {
             isCurrent = false;
         };
     }, [fecha, cursoSeleccionado, codigoSeleccionado, grupoSeleccionado, docenteSeleccionado, sinMateriaParaElDia]);
+
+    const cargarErroresWhatsApp = async () => {
+        if (!cursoSeleccionado) {
+            setErroresWhatsApp([]);
+            return;
+        }
+
+        setCargandoErroresWhatsApp(true);
+        try {
+            const respuesta = await obtenerErroresWhatsApp(cursoSeleccionado.id, 50);
+            setErroresWhatsApp(respuesta.logs || []);
+        } catch (_error) {
+            setErroresWhatsApp([]);
+        } finally {
+            setCargandoErroresWhatsApp(false);
+        }
+    };
+
+    useEffect(() => {
+        cargarErroresWhatsApp();
+    }, [cursoSeleccionado]);
+
+    const manejarReintentoWhatsApp = async (registro) => {
+        setReintentandoWhatsApp(registro.id);
+        try {
+            const resultado = await reintentarNotificacionWhatsApp(registro.id);
+            if (resultado.success) {
+                toast.success(`Notificación enviada a ${registro.estudiante}`);
+            } else {
+                toast.error(resultado.error || 'El envío volvió a fallar');
+            }
+            await cargarErroresWhatsApp();
+        } catch (error) {
+            toast.error(error.response?.data?.error || 'No se pudo reintentar la notificación');
+        } finally {
+            setReintentandoWhatsApp(null);
+        }
+    };
 
     const cambiarEstado = (studentId, estado) => {
         setAsistencia((previo) => ({ ...previo, [studentId]: estado }));
@@ -213,6 +283,72 @@ export default function Asistencia() {
                     </div>
                 </div>
             </header>
+
+            {(erroresWhatsApp.length > 0 || cargandoErroresWhatsApp) && (
+                <section className="tarjeta p-0">
+                    <div className="flex items-center justify-between gap-4 border-b px-6 py-4">
+                        <div>
+                            <h3 className="text-lg font-medium flex items-center gap-2">
+                                <Smartphone size={20} className="text-ausente" /> Errores de WhatsApp
+                            </h3>
+                            <p className="mt-1 text-sm text-texto-secundario">
+                                Estas notificaciones no pudieron enviarse. Solo los errores pueden reintentarse.
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={cargarErroresWhatsApp}
+                            disabled={cargandoErroresWhatsApp}
+                            className="boton-secundario inline-flex items-center gap-2 shrink-0 disabled:opacity-60"
+                            aria-label="Actualizar errores de WhatsApp"
+                        >
+                            <RefreshCw size={16} className={cargandoErroresWhatsApp ? 'animate-spin' : ''} aria-label="Actualizar" />
+                            Actualizar
+                        </button>
+                    </div>
+                    {cargandoErroresWhatsApp ? (
+                        <p className="p-6 text-sm text-texto-secundario">Cargando errores...</p>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="w-full min-w-[760px] text-sm">
+                                <thead style={{ background: 'color-mix(in srgb, var(--color-border) 50%, transparent)' }}>
+                                    <tr className="text-left text-texto-secundario">
+                                        <th className="px-4 py-3 font-medium">Estudiante</th>
+                                        <th className="px-4 py-3 font-medium">WhatsApp</th>
+                                        <th className="px-4 py-3 font-medium">Fecha</th>
+                                        <th className="px-4 py-3 font-medium">Motivo</th>
+                                        <th className="px-4 py-3 font-medium text-right">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {erroresWhatsApp.map((registro) => (
+                                        <tr key={registro.id} className="tabla-fila">
+                                            <td className="px-4 py-3 font-medium">{registro.estudiante}</td>
+                                            <td className="px-4 py-3 font-mono text-xs text-texto-secundario">{registro.whatsapp}</td>
+                                            <td className="px-4 py-3 text-texto-secundario whitespace-nowrap">{registro.fecha}</td>
+                                            <td className="px-4 py-3 text-xs text-ausente">{explicarMotivoWhatsApp(registro.error)}</td>
+                                            <td className="px-4 py-3 text-right">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => manejarReintentoWhatsApp(registro)}
+                                                    disabled={reintentandoWhatsApp === registro.id}
+                                                    className="boton-secundario inline-flex items-center gap-2 text-xs disabled:opacity-60"
+                                                    aria-label={`Reintentar envío a ${registro.estudiante}`}
+                                                >
+                                                    {reintentandoWhatsApp === registro.id
+                                                        ? <Loader2 size={14} className="animate-spin" aria-label="Reintentando" />
+                                                        : <RefreshCw size={14} aria-label="Reintentar" />}
+                                                    Reintentar
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </section>
+            )}
 
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {estadosAsistencia.map((estado) => (
