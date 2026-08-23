@@ -57,6 +57,7 @@ export async function enviarMensajeWhatsApp({ phone, message }) {
             const errorBody = await response.text();
             console.error(`[servicioWhatsapp] Error Evolution API (${response.status}):`, errorBody);
             const mensajesPorEstado = {
+                400: 'WhatsApp rechazó el número o los datos del mensaje. Verifique el número registrado y reintente.',
                 401: 'La conexión con WhatsApp fue rechazada. Verifique la clave de la API.',
                 403: 'La conexión con WhatsApp no tiene autorización para enviar mensajes.',
                 404: 'La instancia de WhatsApp no fue encontrada o no está disponible.',

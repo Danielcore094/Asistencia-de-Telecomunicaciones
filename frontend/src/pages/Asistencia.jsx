@@ -41,6 +41,12 @@ const explicarMotivoWhatsApp = (motivo) => {
     if (motivoNormalizado.includes('sin número')) {
         return 'El estudiante no tiene un número de WhatsApp registrado.';
     }
+    if (motivoNormalizado.includes('exists') && motivoNormalizado.includes('false')) {
+        return 'El número de WhatsApp no está registrado en WhatsApp o no está disponible. Verifique el número y reintente.';
+    }
+    if (motivoNormalizado.includes('evolution 400') || motivoNormalizado.includes('bad request')) {
+        return 'WhatsApp rechazó el número o los datos del mensaje. Verifique el número registrado y reintente.';
+    }
     if (motivoNormalizado.includes('evolution 401')) {
         return 'La conexión con WhatsApp fue rechazada. Verifique la clave de la API.';
     }
