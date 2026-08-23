@@ -127,8 +127,40 @@ const Auditoria = () => {
         return String(value);
     };
 
+    const renderDestinatarios = (destinatarios) => {
+        if (!Array.isArray(destinatarios) || destinatarios.length === 0) return '—';
+
+        const etiquetasEstado = {
+            SUCCESS: 'Enviado',
+            SKIPPED: 'Omitido',
+            ERROR: 'Error',
+        };
+
+        return (
+            <div className="space-y-1.5">
+                <div>{destinatarios.length} destinatario{destinatarios.length !== 1 ? 's' : ''}</div>
+                <ul className="max-h-40 space-y-1 overflow-y-auto rounded border border-gray-100 bg-gray-50 px-2 py-1.5 text-xs">
+                    {destinatarios.map((destinatario, indice) => {
+                        const nombre = destinatario.studentName || destinatario.destinatario || destinatario.email || 'Destinatario sin identificar';
+                        const correo = destinatario.email && destinatario.email !== nombre ? ` (${destinatario.email})` : '';
+                        const estado = etiquetasEstado[destinatario.status] || destinatario.status || 'Sin estado';
+                        const motivo = destinatario.status === 'ERROR' && destinatario.reason ? `: ${destinatario.reason}` : '';
+
+                        return (
+                            <li key={`${nombre}-${indice}`} className="break-words">
+                                <span className="font-medium">{nombre}{correo}</span>
+                                <span className={destinatario.status === 'ERROR' ? 'text-red-600' : 'text-gray-500'}> · {estado}{motivo}</span>
+                            </li>
+                        );
+                    })}
+                </ul>
+            </div>
+        );
+    };
+
     const renderValorAuditoria = (key, value) => {
         if (key === 'masivo') return value ? 'Carga masiva (varios estudiantes)' : 'Registro individual';
+        if (key === 'destinatarios') return renderDestinatarios(value);
         return renderDetailValue(value);
     };
 
