@@ -38,11 +38,42 @@ export default function Configuracion() {
     const [resultadoNotificaciones, setResultadoNotificaciones] = useState(null);
     const [estadoCron, setEstadoCron] = useState(null);
     const [modalCorreoVisible, setModalCorreoVisible] = useState(false);
+    const [cargandoCorreo, setCargandoCorreo] = useState(false);
+    const [errorCorreo, setErrorCorreo] = useState(false);
 
 
     const [estadoWhatsApp, setEstadoWhatsApp] = useState(null);
     const [cargandoWa, setCargandoWa] = useState(false);
     const [modalWaVisible, setModalWaVisible] = useState(false);
+    const [errorWa, setErrorWa] = useState(false);
+
+    const cargarHistorialCorreo = async () => {
+        setModalCorreoVisible(true);
+        setCargandoCorreo(true);
+        setErrorCorreo(false);
+        try {
+            const estado = await obtenerEstadoNotificaciones();
+            setEstadoCron(estado);
+        } catch (_) {
+            setErrorCorreo(true);
+        } finally {
+            setCargandoCorreo(false);
+        }
+    };
+
+    const cargarHistorialWhatsApp = async () => {
+        setModalWaVisible(true);
+        setCargandoWa(true);
+        setErrorWa(false);
+        try {
+            const data = await obtenerEstadoWhatsApp(200);
+            setEstadoWhatsApp(data);
+        } catch (_) {
+            setErrorWa(true);
+        } finally {
+            setCargandoWa(false);
+        }
+    };
 
     const isPasswordValid = useMemo(() => {
         const p = formulario.password;
@@ -300,7 +331,7 @@ export default function Configuracion() {
                         </button>
                         <button
                             type="button"
-                            onClick={() => setModalCorreoVisible(true)}
+                            onClick={cargarHistorialCorreo}
                             className="boton-secundario inline-flex items-center gap-2 shrink-0"
                             aria-label="Ver historial de correos"
                         >
@@ -364,7 +395,7 @@ export default function Configuracion() {
                     )}
                 </section>
 
-                {modalCorreoVisible && estadoCron && (
+                {modalCorreoVisible && (
                     <div
                         className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4"
                         style={{ background: 'rgba(51, 51, 71, 0.65)', backdropFilter: 'blur(3px)' }}
@@ -383,7 +414,11 @@ export default function Configuracion() {
                                 </button>
                             </div>
                             <div className="overflow-y-auto flex-1 overflow-x-auto">
-                                {!estadoCron.historial?.length ? (
+                                {cargandoCorreo ? (
+                                    <p className="py-12 text-center text-texto-secundario text-sm">Cargando historial...</p>
+                                ) : errorCorreo ? (
+                                    <p className="py-12 text-center text-texto-secundario text-sm">No se pudo cargar el historial de correos.</p>
+                                ) : !estadoCron?.historial?.length ? (
                                     <p className="py-12 text-center text-texto-secundario text-sm">No hay notificaciones de correo registradas aún.</p>
                                 ) : (
                                     <table className="w-full table-fixed text-sm">
@@ -417,7 +452,7 @@ export default function Configuracion() {
                                 )}
                             </div>
                             <div className="px-6 py-3 border-t shrink-0 flex items-center justify-between" style={{ borderColor: 'var(--color-border)' }}>
-                                <p className="text-xs text-texto-secundario">Mostrando {estadoCron.historial?.length || 0} registros más recientes</p>
+                                <p className="text-xs text-texto-secundario">Mostrando {estadoCron?.historial?.length || 0} registros más recientes</p>
                                 <button type="button" onClick={() => setModalCorreoVisible(false)} className="boton-secundario text-sm px-4 py-1.5">Cerrar</button>
                             </div>
                         </div>
@@ -451,18 +486,7 @@ export default function Configuracion() {
                         <button
                             type="button"
                             disabled={cargandoWa}
-                            onClick={async () => {
-                                setCargandoWa(true);
-                                try {
-                                    const data = await obtenerEstadoWhatsApp(200);
-                                    setEstadoWhatsApp(data);
-                                    setModalWaVisible(true);
-                                } catch (_) {
-                                    toast.error('No se pudo cargar el historial de WhatsApp');
-                                } finally {
-                                    setCargandoWa(false);
-                                }
-                            }}
+                            onClick={cargarHistorialWhatsApp}
                             className="boton-secundario inline-flex items-center gap-2 shrink-0"
                             aria-label="Ver historial WhatsApp"
                         >
@@ -706,7 +730,7 @@ export default function Configuracion() {
 
 
             {
-                modalWaVisible && estadoWhatsApp && (
+                modalWaVisible && (
                     <div
                         className="modal-overlay fixed inset-0 z-50 flex items-center justify-center p-4"
                         style={{ background: 'rgba(51, 51, 71, 0.65)', backdropFilter: 'blur(3px)' }}
@@ -743,28 +767,32 @@ export default function Configuracion() {
                                 <div className="flex items-center gap-3 rounded-lg p-3" style={{ background: 'color-mix(in srgb, var(--color-present) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--color-present) 25%, transparent)' }}>
                                     <CheckCircle2 size={20} style={{ color: 'var(--color-present)', flexShrink: 0 }} />
                                     <div>
-                                        <p className="font-mono text-2xl font-semibold" style={{ color: 'var(--color-present)' }}>{estadoWhatsApp.resumen.enviados}</p>
+                                        <p className="font-mono text-2xl font-semibold" style={{ color: 'var(--color-present)' }}>{estadoWhatsApp?.resumen?.enviados || 0}</p>
                                         <p className="text-xs text-texto-secundario">Enviados</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3 rounded-lg p-3" style={{ background: 'color-mix(in srgb, var(--color-muted) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--color-muted) 25%, transparent)' }}>
                                     <Clock size={20} style={{ color: 'var(--color-muted)', flexShrink: 0 }} />
                                     <div>
-                                        <p className="font-mono text-2xl font-semibold text-texto-secundario">{estadoWhatsApp.resumen.omitidos}</p>
+                                        <p className="font-mono text-2xl font-semibold text-texto-secundario">{estadoWhatsApp?.resumen?.omitidos || 0}</p>
                                         <p className="text-xs text-texto-secundario">Omitidos</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3 rounded-lg p-3" style={{ background: 'color-mix(in srgb, var(--color-absent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--color-absent) 25%, transparent)' }}>
                                     <AlertCircle size={20} style={{ color: 'var(--color-absent)', flexShrink: 0 }} />
                                     <div>
-                                        <p className="font-mono text-2xl font-semibold" style={{ color: 'var(--color-absent)' }}>{estadoWhatsApp.resumen.errores}</p>
+                                        <p className="font-mono text-2xl font-semibold" style={{ color: 'var(--color-absent)' }}>{estadoWhatsApp?.resumen?.errores || 0}</p>
                                         <p className="text-xs text-texto-secundario">Errores</p>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="overflow-y-auto flex-1">
-                                {estadoWhatsApp.logs.length === 0 ? (
+                                {cargandoWa ? (
+                                    <p className="py-12 text-center text-texto-secundario text-sm">Cargando historial...</p>
+                                ) : errorWa ? (
+                                    <p className="py-12 text-center text-texto-secundario text-sm">No se pudo cargar el historial de WhatsApp.</p>
+                                ) : !estadoWhatsApp?.logs?.length ? (
                                     <p className="py-12 text-center text-texto-secundario text-sm">
                                         No hay notificaciones de WhatsApp registradas aún.
                                     </p>
@@ -802,7 +830,7 @@ export default function Configuracion() {
 
                             <div className="px-6 py-3 border-t shrink-0 flex items-center justify-between" style={{ borderColor: 'var(--color-border)' }}>
                                 <p className="text-xs text-texto-secundario">
-                                    Mostrando {estadoWhatsApp.logs.length} registro{estadoWhatsApp.logs.length !== 1 ? 's' : ''} más recientes
+                                    Mostrando {estadoWhatsApp?.logs?.length || 0} registro{estadoWhatsApp?.logs?.length !== 1 ? 's' : ''} más recientes
                                 </p>
                                 <button
                                     type="button"
