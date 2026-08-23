@@ -25,8 +25,46 @@ jobs:
       - name: Instalar dependencias del backend
         run: npm ci --prefix backend
 
-      - name: Instalar cliente PostgreSQL
-        run: sudo apt-get update && sudo apt-get install --yes postgresql-client
+      - name: Detectar versión de PostgreSQL
+        id: version-postgresql
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          test -n "$DATABASE_URL"
+          version_mayor=$(node --input-type=module <<'NODE'
+          import pg from 'pg';
+
+          const cliente = new pg.Client({
+              connectionString: process.env.DATABASE_URL,
+          });
+
+          try {
+              await cliente.connect();
+              const { rows } = await cliente.query('SHOW server_version_num');
+              const numeroVersion = Number.parseInt(rows[0]?.server_version_num, 10);
+              if (!Number.isInteger(numeroVersion) || numeroVersion < 10000) {
+                  throw new Error(`No se pudo interpretar server_version_num: ${rows[0]?.server_version_num ?? 'desconocido'}`);
+              }
+
+              console.log(Math.trunc(numeroVersion / 10000));
+          } finally {
+              await cliente.end().catch(() => {});
+          }
+          NODE
+          )
+          echo "major=$version_mayor" >> "$GITHUB_OUTPUT"
+
+      - name: Instalar cliente PostgreSQL compatible
+        run: |
+          distribucion="$(. /etc/os-release && echo "$VERSION_CODENAME")"
+          archivo_clave="/tmp/apt.postgresql.org.gpg"
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor > "$archivo_clave"
+          sudo install -D -m 644 "$archivo_clave" /usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.gpg] https://apt.postgresql.org/pub/repos/apt ${distribucion}-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install --yes "postgresql-client-${{ steps.version-postgresql.outputs.major }}"
+          echo "/usr/lib/postgresql/${{ steps.version-postgresql.outputs.major }}/bin" >> "$GITHUB_PATH"
 
       - name: Crear respaldo cifrado
         env:
