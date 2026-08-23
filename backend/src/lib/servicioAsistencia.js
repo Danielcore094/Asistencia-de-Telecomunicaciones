@@ -1,11 +1,11 @@
 import prisma from './prisma.js';
-import { formatearFechaBogota, obtenerRangoSemanaAnterior, obtenerLunesSemana, parseFechaUtc } from './utilidadesFechas.js';
+import { formatearFechaBogota, obtenerRangoSemanaActual, obtenerRangoSemanaAnterior, obtenerLunesSemana, parseFechaUtc } from './utilidadesFechas.js';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const XLSX = require('xlsx-js-style');
 
 export async function obtenerInasistenciasSemanales({ referenceDate } = {}) {
-    const { weekStart, weekEnd } = obtenerRangoSemanaAnterior(referenceDate);
+    const { weekStart, weekEnd } = obtenerRangoSemanaActual(referenceDate);
 
     console.log(`[servicioAsistencia] Consultando inasistencias del ${weekStart} al ${weekEnd}`);
 
