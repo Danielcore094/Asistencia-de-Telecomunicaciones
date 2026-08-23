@@ -403,7 +403,7 @@ export default function Configuracion() {
                     >
                         <div
                             className="modal-panel w-full flex flex-col"
-                            style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--card-radius)', width: 'calc(100vw - 24px)', maxWidth: '1200px', maxHeight: '88vh' }}
+                            style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--card-radius)', width: 'calc(100vw - 24px)', maxWidth: '1400px', maxHeight: '88vh' }}
                         >
                             <div className="flex items-center justify-between px-6 py-4 border-b shrink-0" style={{ borderColor: 'var(--color-border)' }}>
                                 <h3 className="text-lg font-semibold flex items-center gap-2">
@@ -421,7 +421,7 @@ export default function Configuracion() {
                                 ) : !estadoCron?.historial?.length ? (
                                     <p className="py-12 text-center text-texto-secundario text-sm">No hay notificaciones de correo registradas aún.</p>
                                 ) : (
-                                    <table className="w-full table-fixed text-sm">
+                                    <table className="min-w-[1100px] w-full table-auto whitespace-nowrap text-sm">
                                         <thead className="sticky top-0" style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', zIndex: 1 }}>
                                             <tr className="text-left text-texto-secundario">
                                                 <th className="px-5 py-3 font-medium">Estudiante</th>
@@ -437,7 +437,7 @@ export default function Configuracion() {
                                                 <tr key={registro.id} className="tabla-fila">
                                                     <td className="px-5 py-2.5 font-medium">{registro.estudiante}</td>
                                                     <td className="px-5 py-2.5 font-mono text-xs text-texto-secundario">{registro.documento}</td>
-                                                    <td className="px-3 py-2.5 text-texto-secundario break-all">{registro.correo || 'No registrado'}</td>
+                                                    <td className="px-3 py-2.5 text-texto-secundario">{registro.correo || 'No registrado'}</td>
                                                     <td className="px-5 py-2.5 text-texto-secundario">{registro.semana}</td>
                                                     <td className="px-5 py-2.5 text-xs text-texto-secundario">{new Date(registro.fecha).toLocaleString('es-CO')}</td>
                                                     <td className="px-5 py-2.5 text-center">
