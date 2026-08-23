@@ -177,7 +177,13 @@ export async function POST(request) {
             accion: 'GUARDAR_ASISTENCIA',
             target: 'ATTENDANCE',
             targetId: courseId,
-            detalles: { fecha: date, total_registros: records.length },
+            detalles: {
+                fecha: date,
+                totalRegistros: records.length,
+                nombreMateria: acceso.curso.name,
+                codigoMateria: acceso.curso.code,
+                grupo: acceso.curso.groupCode,
+            },
             ip: request.headers.get('x-forwarded-for') || '127.0.0.1'
         });
 

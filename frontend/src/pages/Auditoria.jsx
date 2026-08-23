@@ -91,6 +91,7 @@ const Auditoria = () => {
             grupo: 'Grupo',
             group: 'Grupo',
             targetId: 'Identificador de entidad',
+            fecha: 'Fecha de asistencia',
             identificadorEntidad: 'ID de materia',
             userId: 'ID de usuario',
             name: 'Nombre',
@@ -103,6 +104,7 @@ const Auditoria = () => {
             cantidadMaterias: 'Cantidad de materias',
             totalEstudiantes: 'Total de estudiantes',
             totalRegistros: 'Total de registros',
+            total_registros: 'Total de registros',
             semanaInicio: 'Inicio de semana',
             semanaFin: 'Fin de semana',
             fechaInicio: 'Fecha de inicio',
@@ -166,6 +168,10 @@ const Auditoria = () => {
                 filasTodas.unshift(['identificadorEntidad', log.identificadorEntidad]);
             }
         } else if (log.target === 'STUDENT' && detalles.nombreEstudiante) {
+            for (let i = filasTodas.length - 1; i >= 0; i--) {
+                if (filasTodas[i][0] === 'targetId') filasTodas.splice(i, 1);
+            }
+        } else if (log.target === 'ATTENDANCE' && detalles.nombreMateria) {
             for (let i = filasTodas.length - 1; i >= 0; i--) {
                 if (filasTodas[i][0] === 'targetId') filasTodas.splice(i, 1);
             }

@@ -131,9 +131,12 @@ export default function FiltrosGlobales({
 
         return cursosFiltrados.filter((c) => {
             const nombre = (c.name || c.nombre || '').trim();
-            if (!nombre || vistos.has(nombre)) return false;
+            const codigo = (c.code || c.codigo || '').trim();
+            const claveNombre = nombre.toLowerCase();
+            const esNombreCodigo = codigo && claveNombre === codigo.toLowerCase();
+            if (!nombre || esNombreCodigo || vistos.has(claveNombre)) return false;
 
-            vistos.add(nombre);
+            vistos.add(claveNombre);
             return true;
         });
     }, [cursosFiltrados]);

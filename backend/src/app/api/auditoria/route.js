@@ -21,22 +21,29 @@ export async function GET(request) {
         })
 
         const idsCursos = [...new Set(logs
-            .filter((log) => log.target === 'COURSE' && log.targetId)
+            .filter((log) => ['COURSE', 'ATTENDANCE'].includes(log.target) && log.targetId)
             .map((log) => log.targetId))]
         const cursos = idsCursos.length > 0
             ? await prisma.curso.findMany({
                 where: { id: { in: idsCursos } },
-                select: { id: true, numero: true },
+                select: { id: true, numero: true, name: true, code: true, groupCode: true },
             })
             : []
-        const numerosPorCurso = new Map(cursos.map((curso) => [
-            curso.id,
-            String(curso.numero).padStart(6, '0'),
-        ]))
+        const cursosPorId = new Map(cursos.map((curso) => [curso.id, curso]))
         const logsConIdentificador = logs.map((log) => ({
             ...log,
+            details: log.target === 'ATTENDANCE' && cursosPorId.has(log.targetId)
+                ? {
+                    ...(log.details || {}),
+                    nombreMateria: log.details?.nombreMateria || cursosPorId.get(log.targetId).name,
+                    codigoMateria: log.details?.codigoMateria || cursosPorId.get(log.targetId).code,
+                    grupo: log.details?.grupo || cursosPorId.get(log.targetId).groupCode,
+                }
+                : log.details,
             identificadorEntidad: log.target === 'COURSE'
-                ? numerosPorCurso.get(log.targetId) || log.details?.identificadorEntidad || null
+                ? (cursosPorId.get(log.targetId)
+                    ? String(cursosPorId.get(log.targetId).numero).padStart(6, '0')
+                    : log.details?.identificadorEntidad || null)
                 : null,
         }))
 
