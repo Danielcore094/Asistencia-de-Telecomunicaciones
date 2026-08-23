@@ -299,8 +299,10 @@ async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
     return Buffer.from(XLSX.write(wb, { type: 'array', bookType: 'xlsx' }));
 }
 
-export async function crearReportesSemanalesPorDocente({ referenceDate } = {}) {
-    const { weekStart, weekEnd } = obtenerRangoSemanaAnterior(referenceDate);
+export async function crearReportesSemanalesPorDocente({ referenceDate, semanaActual = false } = {}) {
+    const { weekStart, weekEnd } = semanaActual
+        ? obtenerRangoSemanaActual(referenceDate)
+        : obtenerRangoSemanaAnterior(referenceDate);
 
     console.log(`[servicioAsistencia] Generando reportes por docente: ${weekStart} → ${weekEnd}`);
 
