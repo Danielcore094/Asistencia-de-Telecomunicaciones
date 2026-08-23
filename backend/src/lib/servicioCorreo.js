@@ -90,6 +90,7 @@ export function construirCorreoBienvenidaHTML({ userName, email, password, login
 
 export function construirCorreoInasistenciasHTML({ studentName, totalAbsences, courses, weekStart, weekEnd }) {
     const courseList = courses.map(c => `<li style="margin: 4px 0;">${c}</li>`).join('');
+    const textoFaltas = totalAbsences === 1 ? 'falta registrada' : 'faltas registradas';
 
     return `
 <!DOCTYPE html>
@@ -97,50 +98,45 @@ export function construirCorreoInasistenciasHTML({ studentName, totalAbsences, c
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resumen semanal de asistencia</title>
 </head>
-<body style="font-family: Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px;">
-  <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-    
-    <div style="background: linear-gradient(135deg, #1e3a8a, #2563eb); padding: 32px 24px; text-align: center;">
-      <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 700;">
-        📋 Reporte Semanal de Inasistencias
-      </h1>
-      <p style="color: #bfdbfe; margin: 8px 0 0; font-size: 14px;">
-        Semana del ${weekStart} al ${weekEnd}
-      </p>
-    </div>
+<body style="font-family: Arial, Helvetica, sans-serif; background-color: #eef2f7; margin: 0; padding: 32px 16px; color: #26354a;">
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width: 640px; margin: 0 auto;">
+    <tr>
+      <td style="background-color: #173f6d; border-radius: 16px 16px 0 0; padding: 28px 32px;">
+        <p style="margin: 0 0 18px; color: #8dc63f; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">UTS | Asistencia académica</p>
+        <h1 style="margin: 0; color: #ffffff; font-size: 26px; line-height: 1.2; font-weight: 700;">Resumen semanal de asistencia</h1>
+        <p style="margin: 10px 0 0; color: #d7e5f5; font-size: 14px; line-height: 1.5;">Semana del ${weekStart} al ${weekEnd}</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: #ffffff; padding: 34px 32px 30px;">
+        <p style="margin: 0 0 10px; color: #26354a; font-size: 17px; line-height: 1.5;">Estimado/a <strong>${studentName}</strong>,</p>
+        <p style="margin: 0 0 26px; color: #536274; font-size: 15px; line-height: 1.7;">El sistema registró inasistencias en tus asignaturas durante la semana académica indicada.</p>
 
-    <div style="padding: 32px 24px;">
-      <p style="color: #374151; font-size: 16px; margin: 0 0 16px;">
-        Estimado/a <strong>${studentName}</strong>,
-      </p>
-      <p style="color: #4b5563; font-size: 15px; line-height: 1.6; margin: 0 0 24px;">
-        El sistema de control de asistencia ha registrado inasistencias durante la semana académica.
-      </p>
+        <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f3f8ec; border: 1px solid #d5e7b8; border-radius: 12px;">
+          <tr>
+            <td style="padding: 22px 24px;">
+              <p style="margin: 0 0 8px; color: #4f6f25; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;">Total de la semana</p>
+              <p style="margin: 0; color: #173f6d; font-size: 30px; line-height: 1.15; font-weight: 700;">${totalAbsences} <span style="font-size: 17px; font-weight: 600;">${textoFaltas}</span></p>
+            </td>
+          </tr>
+        </table>
 
-      <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-        <h2 style="color: #1e40af; font-size: 16px; margin: 0 0 12px;">📊 Resumen de la semana</h2>
-        <p style="color: #1e3a8a; font-size: 28px; font-weight: 700; margin: 0 0 12px;">
-          ${totalAbsences} ${totalAbsences === 1 ? 'falta' : 'faltas'} registradas
-        </p>
-        <p style="color: #374151; font-size: 14px; margin: 0 0 8px;"><strong>Asignaturas con inasistencias:</strong></p>
-        <ul style="color: #4b5563; font-size: 14px; margin: 0; padding-left: 20px;">
+        <p style="margin: 28px 0 10px; color: #26354a; font-size: 14px; font-weight: 700;">Asignaturas con inasistencias</p>
+        <ul style="margin: 0; padding: 0 0 0 20px; color: #536274; font-size: 14px; line-height: 1.8;">
           ${courseList}
         </ul>
-      </div>
 
-      <p style="color: #4b5563; font-size: 14px; line-height: 1.6; margin: 0 0 24px;">
-        Le recomendamos revisar su asistencia y comunicarse con el docente correspondiente en caso de ser necesario.
-      </p>
-    </div>
-
-    <div style="background: #f9fafb; border-top: 1px solid #e5e7eb; padding: 20px 24px; text-align: center;">
-      <p style="color: #9ca3af; font-size: 12px; margin: 0;">
-        Este mensaje es una notificación automática del sistema de control de asistencia.<br>
-        Por favor no responda a este correo.
-      </p>
-    </div>
-  </div>
+        <p style="margin: 28px 0 0; padding-top: 22px; border-top: 1px solid #e5eaf0; color: #536274; font-size: 14px; line-height: 1.7;">Te recomendamos revisar tu asistencia y comunicarte con el docente correspondiente si consideras que alguno de estos registros requiere revisión.</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: #f7f9fb; border-top: 1px solid #e5eaf0; border-radius: 0 0 16px 16px; padding: 20px 32px; text-align: center;">
+        <p style="margin: 0; color: #8190a3; font-size: 12px; line-height: 1.6;">Notificación automática del Sistema de Asistencia de Telecomunicaciones.<br>Por favor, no respondas a este correo.</p>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>`;
 }
@@ -184,28 +180,44 @@ export function construirCorreoReporteSemanalHTML({ weekStart, weekEnd, courseCo
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reporte semanal de asistencia</title>
 </head>
-<body style="font-family: Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px;">
-  <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-    <div style="background: linear-gradient(135deg, #1e3a8a, #2563eb); padding: 32px 24px; text-align: center;">
-      <h1 style="color: #ffffff; margin: 0; font-size: 22px; font-weight: 700;">📦 Reporte Semanal de Materias Activas</h1>
-      <p style="color: #bfdbfe; margin: 8px 0 0; font-size: 14px;">Semana del ${weekStart} al ${weekEnd}</p>
-    </div>
-    <div style="padding: 32px 24px;">
-      <p style="color: #374151; font-size: 16px; margin: 0 0 16px;">Adjuntamos el reporte en formato Excel con una hoja por materia activa.</p>
-      <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-        <p style="color: #1e40af; font-size: 16px; margin: 0 0 8px;"><strong>Resumen del reporte</strong></p>
-        <ul style="color: #4b5563; font-size: 14px; margin: 0; padding-left: 20px;">
-          <li>Total de materias activas: <strong>${courseCount}</strong></li>
-          <li>Total de registros de asistencia en la semana: <strong>${totalRecords}</strong></li>
-        </ul>
-      </div>
-      <p style="color: #4b5563; font-size: 14px; line-height: 1.6; margin: 0;">El archivo contiene una hoja separada por cada materia activa y muestra los registros de asistencia del periodo.</p>
-    </div>
-    <div style="background: #f9fafb; border-top: 1px solid #e5e7eb; padding: 20px 24px; text-align: center;">
-      <p style="color: #9ca3af; font-size: 12px; margin: 0;">Este es un correo automático generado por el sistema de asistencia.</p>
-    </div>
-  </div>
+<body style="font-family: Arial, Helvetica, sans-serif; background-color: #eef2f7; margin: 0; padding: 32px 16px; color: #26354a;">
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width: 640px; margin: 0 auto;">
+    <tr>
+      <td style="background-color: #173f6d; border-radius: 16px 16px 0 0; padding: 28px 32px;">
+        <p style="margin: 0 0 18px; color: #8dc63f; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;">UTS | Gestión académica</p>
+        <h1 style="margin: 0; color: #ffffff; font-size: 26px; line-height: 1.2; font-weight: 700;">Reporte semanal de asistencia</h1>
+        <p style="margin: 10px 0 0; color: #d7e5f5; font-size: 14px; line-height: 1.5;">Semana del ${weekStart} al ${weekEnd}</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: #ffffff; padding: 34px 32px 30px;">
+        <p style="margin: 0 0 10px; color: #26354a; font-size: 17px; line-height: 1.5;">Reporte listo para revisión</p>
+        <p style="margin: 0 0 26px; color: #536274; font-size: 15px; line-height: 1.7;">Adjuntamos el archivo Excel con el detalle de las materias activas y sus registros de asistencia correspondientes al periodo.</p>
+
+        <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f3f8ec; border: 1px solid #d5e7b8; border-radius: 12px;">
+          <tr>
+            <td width="50%" style="padding: 22px 20px; border-right: 1px solid #d5e7b8;">
+              <p style="margin: 0 0 8px; color: #4f6f25; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;">Materias activas</p>
+              <p style="margin: 0; color: #173f6d; font-size: 30px; line-height: 1.15; font-weight: 700;">${courseCount}</p>
+            </td>
+            <td width="50%" style="padding: 22px 20px;">
+              <p style="margin: 0 0 8px; color: #4f6f25; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;">Registros de asistencia</p>
+              <p style="margin: 0; color: #173f6d; font-size: 30px; line-height: 1.15; font-weight: 700;">${totalRecords}</p>
+            </td>
+          </tr>
+        </table>
+
+        <p style="margin: 28px 0 0; padding-top: 22px; border-top: 1px solid #e5eaf0; color: #536274; font-size: 14px; line-height: 1.7;">El archivo contiene una hoja separada por cada materia activa. Puedes utilizarlo para consultar, validar y dar seguimiento a la asistencia del periodo.</p>
+      </td>
+    </tr>
+    <tr>
+      <td style="background-color: #f7f9fb; border-top: 1px solid #e5eaf0; border-radius: 0 0 16px 16px; padding: 20px 32px; text-align: center;">
+        <p style="margin: 0; color: #8190a3; font-size: 12px; line-height: 1.6;">Notificación automática del Sistema de Asistencia de Telecomunicaciones.<br>Por favor, no respondas a este correo.</p>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>`;
 }
