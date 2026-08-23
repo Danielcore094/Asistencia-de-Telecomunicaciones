@@ -289,7 +289,7 @@ export default function Configuracion() {
                             <div className="mt-3 flex flex-wrap gap-4 text-xs">
                                 <span className="flex items-center gap-1.5" style={{ color: 'var(--color-accent)' }}>
                                     <span className="inline-block w-2 h-2 rounded-full" style={{ background: 'var(--color-accent)' }} />
-                                    Cron activo — Domingos 18:00 (Bogotá)
+                                    Cron activo — Domingos 09:00 (Bogotá)
                                 </span>
                                 {estadoCron?.ultimaEjecucion && (
                                     <span className="text-texto-secundario">
@@ -426,7 +426,7 @@ export default function Configuracion() {
                                             <tr className="text-left text-texto-secundario">
                                                 <th className="px-5 py-3 font-medium">Estudiante</th>
                                                 <th className="px-5 py-3 font-medium">Documento</th>
-                                                <th className="px-5 py-3 font-medium">Correo utilizado</th>
+                                                <th className="px-3 py-3 font-medium">Correo utilizado</th>
                                                 <th className="px-5 py-3 font-medium">Semana</th>
                                                 <th className="px-5 py-3 font-medium">Fecha</th>
                                                 <th className="px-5 py-3 font-medium text-center">Estado</th>
@@ -437,7 +437,7 @@ export default function Configuracion() {
                                                 <tr key={registro.id} className="tabla-fila">
                                                     <td className="px-5 py-2.5 font-medium">{registro.estudiante}</td>
                                                     <td className="px-5 py-2.5 font-mono text-xs text-texto-secundario">{registro.documento}</td>
-                                                    <td className="px-5 py-2.5 text-texto-secundario">{registro.correo || 'No registrado'}</td>
+                                                    <td className="px-3 py-2.5 text-texto-secundario break-all">{registro.correo || 'No registrado'}</td>
                                                     <td className="px-5 py-2.5 text-texto-secundario">{registro.semana}</td>
                                                     <td className="px-5 py-2.5 text-xs text-texto-secundario">{new Date(registro.fecha).toLocaleString('es-CO')}</td>
                                                     <td className="px-5 py-2.5 text-center">
