@@ -118,7 +118,7 @@ async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
 
     const courses = await prisma.curso.findMany({
         where: teacherId ? { teacherId } : {},
-        orderBy: [{ name: 'asc' }, { groupCode: 'asc' }],
+        orderBy: [{ teacher: { name: 'asc' } }, { name: 'asc' }, { groupCode: 'asc' }],
         include: { teacher: { select: { name: true, email: true } } },
     });
 

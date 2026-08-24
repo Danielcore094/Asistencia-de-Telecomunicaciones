@@ -8,9 +8,21 @@ import {
 import {
     crearReportesSemanalesPorDocente,
     crearReporteExcelSemanalGeneral,
+    crearExcelResumenSemestral,
     obtenerInasistenciasSemanales,
 } from '../lib/servicioAsistencia.js';
 import { registrarAccion } from '../lib/servicioAuditoria.js';
+
+function obtenerPeriodoAcademicoActual() {
+    const partes = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/Bogota',
+        year: 'numeric',
+        month: '2-digit',
+    }).formatToParts(new Date());
+    const anio = partes.find(({ type }) => type === 'year')?.value;
+    const mes = Number(partes.find(({ type }) => type === 'month')?.value);
+    return { anio, periodo: mes <= 6 ? '1' : '2' };
+}
 
 async function enviarReportesDocentes(resultados) {
     let reportes;
@@ -89,8 +101,15 @@ async function enviarReporteGeneralSemanal(resultados) {
     }
 
     let reporte;
+    let resumenSemestral;
     try {
         reporte = await crearReporteExcelSemanalGeneral({ semanaActual: true });
+        const { anio, periodo } = obtenerPeriodoAcademicoActual();
+        resumenSemestral = {
+            anio,
+            periodo,
+            buffer: await crearExcelResumenSemestral({ anio, periodo }),
+        };
     } catch (error) {
         resultados.errors++;
         resultados.details.push({ tipo: 'REPORTE_GENERAL_SEMANAL', destinatario, status: 'ERROR', reason: error.message });
@@ -125,11 +144,18 @@ async function enviarReporteGeneralSemanal(resultados) {
                 absencePercentage: reporte.absencePercentage,
                 absentStudentNames: reporte.absentStudentNames,
                 includeAbsentNames: false,
+                includeSemestral: Boolean(resumenSemestral?.buffer),
             }),
-            attachments: [{
-                name: `Reporte_Semanal_General_${reporte.weekStart}_${reporte.weekEnd}.xlsx`,
-                content: reporte.buffer.toString('base64'),
-            }],
+            attachments: [
+                {
+                    name: `Reporte_Semanal_General_${reporte.weekStart}_${reporte.weekEnd}.xlsx`,
+                    content: reporte.buffer.toString('base64'),
+                },
+                ...(resumenSemestral?.buffer ? [{
+                    name: `Resumen_Semestral_${resumenSemestral.anio}-${resumenSemestral.periodo}.xlsx`,
+                    content: resumenSemestral.buffer.toString('base64'),
+                }] : []),
+            ],
         });
     } catch (error) {
         resultadoCorreo = { success: false, error: error.message };

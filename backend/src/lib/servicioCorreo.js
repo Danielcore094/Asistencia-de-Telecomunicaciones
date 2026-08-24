@@ -172,9 +172,12 @@ export function construirCorreoRiesgoPerdidaHTML({ studentName, courseName, perc
 </html>`;
 }
 
-export function construirCorreoReporteSemanalHTML({ teacherName = '', weekStart, weekEnd, courseCount, totalRecords, absentRecords = 0, absentStudents = 0, absencePercentage = 0, absentStudentNames = [], includeAbsentNames = false }) {
+export function construirCorreoReporteSemanalHTML({ teacherName = '', weekStart, weekEnd, courseCount, totalRecords, absentRecords = 0, absentStudents = 0, absencePercentage = 0, absentStudentNames = [], includeAbsentNames = false, includeSemestral = false }) {
   const detalleDocente = teacherName ? `<p style="margin: 0 0 10px; color: #536274; font-size: 14px; line-height: 1.5;"><strong>Docente:</strong> ${teacherName}</p>` : '';
   const nombresAusentes = absentStudentNames.length > 0 ? absentStudentNames.join(', ') : 'Ninguno';
+  const detalleAdjuntos = includeSemestral
+    ? 'Adjuntamos el reporte semanal general y el resumen semestral de asistencia en archivos Excel separados.'
+    : 'Adjuntamos el archivo Excel con el detalle de las materias, grupos y registros de asistencia correspondientes a la semana.';
   const detalleAusentes = includeAbsentNames
     ? `<p style="margin: 0 0 26px; color: #536274; font-size: 14px; line-height: 1.7;"><strong>Estudiantes que faltaron:</strong> ${nombresAusentes}</p>`
     : '';
@@ -199,7 +202,7 @@ export function construirCorreoReporteSemanalHTML({ teacherName = '', weekStart,
       <td style="background-color: #ffffff; padding: 34px 32px 30px;">
         <p style="margin: 0 0 10px; color: #26354a; font-size: 17px; line-height: 1.5;">Reporte listo para revisión</p>
         ${detalleDocente}
-        <p style="margin: 0 0 12px; color: #536274; font-size: 15px; line-height: 1.7;">Adjuntamos el archivo Excel con el detalle de las materias, grupos y registros de asistencia correspondientes a la semana. Se registraron ${absentRecords} inasistencias de ${absentStudents} estudiantes.</p>
+        <p style="margin: 0 0 12px; color: #536274; font-size: 15px; line-height: 1.7;">${detalleAdjuntos} Se registraron ${absentRecords} inasistencias de ${absentStudents} estudiantes.</p>
         <p style="margin: 0 0 26px; color: #536274; font-size: 14px; line-height: 1.7;"><strong>Porcentaje de inasistencias:</strong> ${absencePercentage}%</p>
         ${detalleAusentes}
 
