@@ -117,7 +117,7 @@ async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
     const estilos   = crearEstilos();
 
     const courses = await prisma.curso.findMany({
-        where: { teacherId },
+        where: teacherId ? { teacherId } : {},
         orderBy: [{ name: 'asc' }, { groupCode: 'asc' }],
         include: { teacher: { select: { name: true, email: true } } },
     });
@@ -299,6 +299,57 @@ async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
     return Buffer.from(XLSX.write(wb, { type: 'array', bookType: 'xlsx' }));
 }
 
+async function obtenerResumenAsistenciaSemanal({ teacherId, dates }) {
+    const where = { date: { in: dates } };
+    if (teacherId) where.course = { teacherId };
+
+    const registros = await prisma.asistencia.findMany({
+        where,
+        select: { studentId: true, present: true, status: true, student: { select: { name: true } } },
+    });
+    const estudiantesAusentes = new Map();
+    let ausencias = 0;
+    for (const registro of registros) {
+        const estado = registro.status || (registro.present ? 'Presente' : 'Ausente');
+        if (estado !== 'Presente' && estado !== 'Justificado') {
+            ausencias++;
+            estudiantesAusentes.set(registro.studentId, registro.student?.name || registro.studentId);
+        }
+    }
+    return {
+        totalRecords: registros.length,
+        absentRecords: ausencias,
+        absentStudents: estudiantesAusentes.size,
+        absencePercentage: registros.length > 0 ? Math.round((ausencias / registros.length) * 100) : 0,
+        absentStudentNames: [...estudiantesAusentes.values()],
+    };
+}
+
+export async function crearReporteExcelSemanalGeneral({ referenceDate } = {}) {
+    const { weekStart, weekEnd } = obtenerRangoSemanaActual(referenceDate);
+    const dates = [];
+    const start = parseFechaUtc(weekStart);
+    const end = parseFechaUtc(weekEnd);
+    for (let d = new Date(start); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
+        const y = d.getUTCFullYear();
+        const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+        const day = String(d.getUTCDate()).padStart(2, '0');
+        dates.push(`${y}-${m}-${day}`);
+    }
+
+    const buffer = await generarExcelDocente({ weekStart, weekEnd, dates });
+    if (!buffer) return null;
+
+    const courseCount = await prisma.curso.count({ where: { attendances: { some: {} } } });
+    return {
+        buffer,
+        weekStart,
+        weekEnd,
+        courseCount,
+        ...(await obtenerResumenAsistenciaSemanal({ dates })),
+    };
+}
+
 export async function crearReportesSemanalesPorDocente({ referenceDate, semanaActual = false } = {}) {
     const { weekStart, weekEnd } = semanaActual
         ? obtenerRangoSemanaActual(referenceDate)
@@ -338,6 +389,7 @@ export async function crearReportesSemanalesPorDocente({ referenceDate, semanaAc
         }
 
         const courseCount = await prisma.curso.count({ where: { teacherId: teacher.id } });
+        const resumen = await obtenerResumenAsistenciaSemanal({ teacherId: teacher.id, dates });
 
         reportes.push({
             teacherName: teacher.name,
@@ -346,6 +398,7 @@ export async function crearReportesSemanalesPorDocente({ referenceDate, semanaAc
             weekStart,
             weekEnd,
             courseCount,
+            ...resumen,
         });
 
         console.log(`[servicioAsistencia] Reporte generado: ${teacher.name} (${courseCount} materias)`);
@@ -382,6 +435,7 @@ export async function crearReporteSemanalPorDocente({ teacherId, referenceDate }
     if (!buffer) return null;
 
     const courseCount = await prisma.curso.count({ where: { teacherId } });
+    const resumen = await obtenerResumenAsistenciaSemanal({ teacherId, dates });
     return {
         teacherName: teacher.name,
         teacherEmail: teacher.email,
@@ -389,6 +443,7 @@ export async function crearReporteSemanalPorDocente({ teacherId, referenceDate }
         weekStart,
         weekEnd,
         courseCount,
+        ...resumen,
     };
 }
 

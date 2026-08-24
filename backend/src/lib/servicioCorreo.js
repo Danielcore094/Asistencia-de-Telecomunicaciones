@@ -87,7 +87,6 @@ export function construirCorreoBienvenidaHTML({ userName, email, password, login
 </body>
 </html>`;
 }
-
 export function construirCorreoInasistenciasHTML({ studentName, totalAbsences, courses, weekStart, weekEnd }) {
     const courseList = courses.map(c => `<li style="margin: 4px 0;">${c}</li>`).join('');
     const textoFaltas = totalAbsences === 1 ? 'falta registrada' : 'faltas registradas';
@@ -173,7 +172,12 @@ export function construirCorreoRiesgoPerdidaHTML({ studentName, courseName, perc
 </html>`;
 }
 
-export function construirCorreoReporteSemanalHTML({ weekStart, weekEnd, courseCount, totalRecords }) {
+export function construirCorreoReporteSemanalHTML({ teacherName = '', weekStart, weekEnd, courseCount, totalRecords, absentRecords = 0, absentStudents = 0, absencePercentage = 0, absentStudentNames = [], includeAbsentNames = false }) {
+  const detalleDocente = teacherName ? `<p style="margin: 0 0 10px; color: #536274; font-size: 14px; line-height: 1.5;"><strong>Docente:</strong> ${teacherName}</p>` : '';
+  const nombresAusentes = absentStudentNames.length > 0 ? absentStudentNames.join(', ') : 'Ninguno';
+  const detalleAusentes = includeAbsentNames
+    ? `<p style="margin: 0 0 26px; color: #536274; font-size: 14px; line-height: 1.7;"><strong>Estudiantes que faltaron:</strong> ${nombresAusentes}</p>`
+    : '';
     return `
 <!DOCTYPE html>
 <html lang="es">
@@ -194,7 +198,10 @@ export function construirCorreoReporteSemanalHTML({ weekStart, weekEnd, courseCo
     <tr>
       <td style="background-color: #ffffff; padding: 34px 32px 30px;">
         <p style="margin: 0 0 10px; color: #26354a; font-size: 17px; line-height: 1.5;">Reporte listo para revisión</p>
-        <p style="margin: 0 0 26px; color: #536274; font-size: 15px; line-height: 1.7;">Adjuntamos el archivo Excel con el detalle de las materias activas y sus registros de asistencia correspondientes al periodo.</p>
+        ${detalleDocente}
+        <p style="margin: 0 0 12px; color: #536274; font-size: 15px; line-height: 1.7;">Adjuntamos el archivo Excel con el detalle de las materias, grupos y registros de asistencia correspondientes a la semana. Se registraron ${absentRecords} inasistencias de ${absentStudents} estudiantes.</p>
+        <p style="margin: 0 0 26px; color: #536274; font-size: 14px; line-height: 1.7;"><strong>Porcentaje de inasistencias:</strong> ${absencePercentage}%</p>
+        ${detalleAusentes}
 
         <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color: #f3f8ec; border: 1px solid #d5e7b8; border-radius: 12px;">
           <tr>
@@ -221,3 +228,4 @@ export function construirCorreoReporteSemanalHTML({ weekStart, weekEnd, courseCo
 </body>
 </html>`;
 }
+

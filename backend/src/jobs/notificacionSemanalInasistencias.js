@@ -7,21 +7,10 @@ import {
 } from '../lib/servicioCorreo.js';
 import {
     crearReportesSemanalesPorDocente,
-    crearExcelResumenSemestral,
+    crearReporteExcelSemanalGeneral,
     obtenerInasistenciasSemanales,
 } from '../lib/servicioAsistencia.js';
 import { registrarAccion } from '../lib/servicioAuditoria.js';
-
-function obtenerPeriodoAcademicoActual() {
-    const partes = new Intl.DateTimeFormat('en-CA', {
-        timeZone: 'America/Bogota',
-        year: 'numeric',
-        month: '2-digit',
-    }).formatToParts(new Date());
-    const anio = partes.find(({ type }) => type === 'year')?.value;
-    const mes = Number(partes.find(({ type }) => type === 'month')?.value);
-    return { anio, periodo: mes <= 6 ? '1' : '2' };
-}
 
 async function enviarReportesDocentes(resultados) {
     let reportes;
@@ -57,10 +46,15 @@ async function enviarReportesDocentes(resultados) {
                 toName: reporte.teacherName,
                 subject: `Reporte semanal de asistencia - ${reporte.weekStart}`,
                 htmlContent: construirCorreoReporteSemanalHTML({
+                    teacherName: reporte.teacherName,
                     weekStart: reporte.weekStart,
                     weekEnd: reporte.weekEnd,
                     courseCount: reporte.courseCount,
-                    totalRecords: 0,
+                    totalRecords: reporte.totalRecords,
+                    absentRecords: reporte.absentRecords,
+                    absentStudents: reporte.absentStudents,
+                    absencePercentage: reporte.absencePercentage,
+                    absentStudentNames: reporte.absentStudentNames,
                 }),
                 attachments: [{
                     name: `Reporte_Semanal_${reporte.weekStart}_${reporte.weekEnd}.xlsx`,
@@ -82,35 +76,34 @@ async function enviarReportesDocentes(resultados) {
     }
 }
 
-async function enviarReporteSemestral(resultados) {
+async function enviarReporteGeneralSemanal(resultados) {
     const destinatario = process.env.WEEKLY_REPORT_RECIPIENT_EMAIL;
     if (!destinatario) {
         resultados.skipped++;
         resultados.details.push({
-            tipo: 'REPORTE_SEMESTRAL',
+            tipo: 'REPORTE_GENERAL_SEMANAL',
             status: 'SKIPPED',
             reason: 'WEEKLY_REPORT_RECIPIENT_EMAIL no está configurado',
         });
         return;
     }
 
-    const { anio, periodo } = obtenerPeriodoAcademicoActual();
-    let buffer;
+    let reporte;
     try {
-        buffer = await crearExcelResumenSemestral({ anio, periodo });
+        reporte = await crearReporteExcelSemanalGeneral({ semanaActual: true });
     } catch (error) {
         resultados.errors++;
-        resultados.details.push({ tipo: 'REPORTE_SEMESTRAL', destinatario, status: 'ERROR', reason: error.message });
-        console.error('[notification-job] Error generando resumen semestral:', error.message);
+        resultados.details.push({ tipo: 'REPORTE_GENERAL_SEMANAL', destinatario, status: 'ERROR', reason: error.message });
+        console.error('[notification-job] Error generando reporte general semanal:', error.message);
         return;
     }
-    if (!buffer) {
+    if (!reporte) {
         resultados.skipped++;
         resultados.details.push({
-            tipo: 'REPORTE_SEMESTRAL',
+            tipo: 'REPORTE_GENERAL_SEMANAL',
             destinatario,
             status: 'SKIPPED',
-            reason: `No hay datos para el periodo ${anio}-${periodo}`,
+            reason: 'No hay cursos con estudiantes para la semana',
         });
         return;
     }
@@ -120,16 +113,22 @@ async function enviarReporteSemestral(resultados) {
         resultadoCorreo = await enviarCorreo({
             to: destinatario,
             toName: process.env.WEEKLY_REPORT_RECIPIENT_NAME || 'Administrador de Asistencia',
-            subject: `Resumen semestral de asistencia - ${anio}-${periodo}`,
+            subject: `Reporte semanal general de asistencia - ${reporte.weekStart}`,
             htmlContent: construirCorreoReporteSemanalHTML({
-                weekStart: `periodo ${anio}-${periodo}`,
-                weekEnd: 'resumen general',
-                courseCount: 0,
-                totalRecords: 0,
+                teacherName: process.env.WEEKLY_REPORT_RECIPIENT_NAME || 'Administrador de Asistencia',
+                weekStart: reporte.weekStart,
+                weekEnd: reporte.weekEnd,
+                courseCount: reporte.courseCount,
+                totalRecords: reporte.totalRecords,
+                absentRecords: reporte.absentRecords,
+                absentStudents: reporte.absentStudents,
+                absencePercentage: reporte.absencePercentage,
+                absentStudentNames: reporte.absentStudentNames,
+                includeAbsentNames: false,
             }),
             attachments: [{
-                name: `Resumen_Semestral_${anio}-${periodo}.xlsx`,
-                content: buffer.toString('base64'),
+                name: `Reporte_Semanal_General_${reporte.weekStart}_${reporte.weekEnd}.xlsx`,
+                content: reporte.buffer.toString('base64'),
             }],
         });
     } catch (error) {
@@ -137,7 +136,7 @@ async function enviarReporteSemestral(resultados) {
     }
 
     resultados.details.push({
-        tipo: 'REPORTE_SEMESTRAL',
+        tipo: 'REPORTE_GENERAL_SEMANAL',
         destinatario,
         status: resultadoCorreo.success ? 'SUCCESS' : 'ERROR',
         reason: resultadoCorreo.error || null,
@@ -274,7 +273,7 @@ export async function ejecutarNotificacionSemanalInasistencias({ usuario = null,
         }
 
         await enviarReportesDocentes(resultados);
-        await enviarReporteSemestral(resultados);
+        await enviarReporteGeneralSemanal(resultados);
     } catch (err) {
         console.error('[notification-job] Error en notificaciones de estudiantes:', err.message);
         resultados.errors++;

@@ -32,15 +32,23 @@ export async function GET(request) {
         const cursosPorId = new Map(cursos.map((curso) => [curso.id, curso]))
         const logsConIdentificador = logs.map((log) => ({
             ...log,
-            details: log.target === 'ATTENDANCE' && cursosPorId.has(log.targetId)
+            details: ['ATTENDANCE', 'COURSE'].includes(log.target) && cursosPorId.has(log.targetId)
                 ? {
                     ...(log.details || {}),
-                    nombreMateria: log.details?.nombreMateria || cursosPorId.get(log.targetId).name,
-                    codigoMateria: log.details?.codigoMateria || cursosPorId.get(log.targetId).code,
-                    grupo: log.details?.grupo || cursosPorId.get(log.targetId).groupCode,
+                    ...(log.action === 'ALERTA_POSIBLE_PERDIDA'
+                        ? { nombreMateria: log.details?.nombreMateria || cursosPorId.get(log.targetId).name }
+                        : {}),
+                    ...(log.target === 'ATTENDANCE'
+                        ? {
+                            nombreMateria: log.details?.nombreMateria || cursosPorId.get(log.targetId).name,
+                            codigoMateria: log.details?.codigoMateria || cursosPorId.get(log.targetId).code,
+                            grupo: log.details?.grupo || cursosPorId.get(log.targetId).groupCode,
+                        }
+                        : {}),
                 }
                 : log.details,
             identificadorEntidad: log.target === 'COURSE'
+                && log.action !== 'ALERTA_POSIBLE_PERDIDA'
                 ? (cursosPorId.get(log.targetId)
                     ? String(cursosPorId.get(log.targetId).numero).padStart(6, '0')
                     : log.details?.identificadorEntidad || null)
