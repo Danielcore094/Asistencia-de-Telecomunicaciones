@@ -268,6 +268,7 @@ export default function Inicio() {
             <div className="tarjeta flex flex-wrap items-center gap-4">
                 <FiltrosGlobales
                     textoDocenteSinSeleccion="Seleccione un docente"
+                    textoMateriaSinSeleccion="Seleccione una materia"
                     mostrarTodas={false}
                 />
             </div>

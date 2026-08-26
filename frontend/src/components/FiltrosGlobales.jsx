@@ -94,6 +94,7 @@ export default function FiltrosGlobales({
     mostrarTodas = true,
     soloDocente = false,
     textoDocenteSinSeleccion = 'Todos los docentes',
+    textoMateriaSinSeleccion = 'Seleccione una materia',
 }) {
     const { usuario } = useAutenticacion();
     const isAdmin = usuario?.role === 'ADMIN';
@@ -319,6 +320,11 @@ export default function FiltrosGlobales({
                             }
                             onChange={handleCambioMateria}
                         >
+                            {!mostrarTodas && !cursoSeleccionado && (
+                                <option value="" disabled>
+                                    {textoMateriaSinSeleccion}
+                                </option>
+                            )}
                             {mostrarTodas && (
                                 <option value="TODAS">
                                     Todas las materias

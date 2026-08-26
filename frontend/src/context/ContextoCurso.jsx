@@ -75,21 +75,7 @@ export const ProveedorCurso = ({ children }) => {
             const grupoGuardado = localStorage.getItem('selectedGroup');
             const codigoGuardado = localStorage.getItem('selectedCode');
 
-            if (idCursoGuardado === 'TODAS' && usuario?.role === 'ADMIN') {
-                if (docenteSeleccionado) {
-                    const primero = datosOrdenados[0];
-                    if (primero) {
-                        setCursoSeleccionado(primero);
-                        setGrupoSeleccionado(primero.groupCode || primero.grupo || null);
-                        setCodigoSeleccionado(primero.code || primero.codigo || null);
-                        localStorage.setItem('selectedCourseId', primero.id);
-                    } else {
-                        setCursoSeleccionado(null);
-                    }
-                } else {
-                    setCursoSeleccionado(null);
-                }
-            } else if (datosOrdenados.length > 0 && usuario?.role !== 'ADMIN') {
+            if (datosOrdenados.length > 0 && usuario?.role !== 'ADMIN') {
                 const encontrado = datosOrdenados.find(c => c.id === idCursoGuardado);
                 if (encontrado) {
                     setCursoSeleccionado(encontrado);
