@@ -66,6 +66,20 @@ Evita cerrar sesión o desvincular el dispositivo desde WhatsApp salvo que sea n
 VITE_API_URL=http://localhost:4000/api
 ```
 
+Para habilitar el CAPTCHA, crea un sitio en [Cloudflare Turnstile](https://dash.cloudflare.com/) y agrega la clave pública en `frontend/.env`:
+
+```env
+VITE_TURNSTILE_SITE_KEY=tu_clave_publica_turnstile
+```
+
+Agrega la clave privada correspondiente en `backend/.env`:
+
+```env
+TURNSTILE_SECRET_KEY=tu_secreto_turnstile
+```
+
+En desarrollo local registra `localhost` como dominio permitido en Turnstile. La clave privada nunca debe exponerse al frontend ni subirse al repositorio.
+
 5. Genera el cliente Prisma y aplica las migraciones:
 
 ```bash
