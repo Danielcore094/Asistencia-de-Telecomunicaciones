@@ -1,9 +1,8 @@
 import { useEffect, useState, useMemo } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAutenticacion } from '../context/ContextoAutenticacion';
-import { useCurso } from '../context/ContextoCurso';
 import api from '../services/api';
-import { enviarNotificacionesSemanal, obtenerEstadoNotificaciones, obtenerEstadoWhatsApp } from '../services/api';
+import { enviarNotificacionesSemanal, obtenerEstadoNotificaciones, obtenerEstadoWhatsApp, obtenerCursos } from '../services/api';
 import toast from 'react-hot-toast';
 import { UserPlus, Eye, EyeOff, Trash2, Loader2, X, Mail, Send, CheckCircle2, AlertCircle, Clock, MessageSquare, Smartphone, Pencil, Key } from 'lucide-react';
 
@@ -22,8 +21,8 @@ const renderizarHorario = (horario) => {
 
 export default function Configuracion() {
     const { usuario } = useAutenticacion();
-    const { cursos } = useCurso();
     const [docentes, setDocentes] = useState([]);
+    const [totalMateriasActivas, setTotalMateriasActivas] = useState(0);
     const [cargando, setCargando] = useState(true);
     const [guardando, setGuardando] = useState(false);
     const [mostrarContrasena, setMostrarContrasena] = useState(false);
@@ -111,9 +110,18 @@ export default function Configuracion() {
             } catch (_) {
             }
         };
+        const cargarTotalMaterias = async () => {
+            try {
+                const todasLasMaterias = await obtenerCursos();
+                setTotalMateriasActivas(Array.isArray(todasLasMaterias) ? todasLasMaterias.length : 0);
+            } catch (_) {
+                setTotalMateriasActivas(0);
+            }
+        };
 
         cargarDocentes();
         cargarEstadoCron();
+        cargarTotalMaterias();
     }, []);
 
     const manejarEnvio = async (e) => {
@@ -235,12 +243,12 @@ export default function Configuracion() {
                         <div className="mt-4 grid gap-3">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-sm text-texto-secundario">Materias activas</p>
+                                    <p className="text-sm text-texto-secundario">Materias activas de todos los docentes</p>
                                     <div className="inline-flex items-center gap-3">
                                         <div className="rounded-md px-3 py-1 bg-acento/10 border border-acento/20">
-                                            <span className="font-semibold text-lg text-acento">{cursos.length.toLocaleString('es-CO')}</span>
+                                            <span className="font-semibold text-lg text-acento">{totalMateriasActivas.toLocaleString('es-CO')}</span>
                                         </div>
-                                        <p className="text-sm text-texto-secundario">Resumen de materias activas</p>
+                                        <p className="text-sm text-texto-secundario">Total general del sistema</p>
                                     </div>
                                 </div>
                             </div>
