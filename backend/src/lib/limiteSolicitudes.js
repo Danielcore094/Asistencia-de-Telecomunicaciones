@@ -4,7 +4,7 @@ const registrosLocales = new Map()
 const urlRedis = process.env.UPSTASH_REDIS_REST_URL
 const tokenRedis = process.env.UPSTASH_REDIS_REST_TOKEN
 const usaRedis = Boolean(urlRedis && tokenRedis)
-const esProduccion = process.env.NODE_ENV === 'production'
+const esProduccion = process.env.NODE_ENV === 'production' && process.env.USAR_LIMITADOR_LOCAL !== 'true'
 const prefijoRedis = 'asistencia:limite-inicios-sesion:'
 
 const scriptConsumirCupo = `

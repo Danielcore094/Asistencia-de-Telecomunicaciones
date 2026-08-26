@@ -10,7 +10,9 @@ const dev = process.env.NODE_ENV !== 'production';
 const PORT = parseInt(process.env.PORT || '4000', 10);
 const ejecutarCron = process.env.EJECUTAR_CRON === 'true';
 
-if (!dev && (!process.env.JWT_SECRET || !process.env.CORS_ALLOWED_ORIGINS || !process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN)) {
+const usaLimitadorLocal = process.env.USAR_LIMITADOR_LOCAL === 'true';
+
+if (!dev && (!process.env.JWT_SECRET || !process.env.CORS_ALLOWED_ORIGINS || (!usaLimitadorLocal && (!process.env.UPSTASH_REDIS_REST_URL || !process.env.UPSTASH_REDIS_REST_TOKEN)))) {
     console.error('[server] JWT_SECRET, CORS_ALLOWED_ORIGINS y las credenciales Redis son obligatorios en producción');
     process.exit(1);
 }

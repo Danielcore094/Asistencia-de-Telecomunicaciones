@@ -96,6 +96,41 @@ npm run dev
 
 El frontend se sirve en `http://localhost:3000` y el backend en `http://localhost:4000` por defecto.
 
+## Entrega con Docker Compose
+
+La entrega puede ejecutarse sin Node.js instalado en el equipo del docente. Requiere Docker Desktop activo.
+
+1. Copia el archivo de variables de ejemplo:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+2. Edita `.env` y reemplaza `JWT_SECRET`, `VITE_TURNSTILE_SITE_KEY` y `TURNSTILE_SECRET_KEY` con valores reales. En Cloudflare Turnstile registra el dominio `localhost`.
+3. Levanta frontend, backend y PostgreSQL:
+
+```powershell
+docker compose up --build
+```
+
+4. Abre `http://localhost:3000`.
+
+El backend ejecuta `prisma migrate deploy` automáticamente antes de iniciar. El frontend usa Nginx como proxy interno, por lo que el navegador consume `/api` sin necesitar conocer el puerto del backend. Los datos de PostgreSQL quedan guardados en el volumen `postgres_data`.
+
+Para detener los servicios conserva los datos con:
+
+```powershell
+docker compose down
+```
+
+Para borrar también la base de datos local y comenzar de cero:
+
+```powershell
+docker compose down -v
+```
+
+Evolution API y Redis se mantienen disponibles en el mismo Compose para una instalación con WhatsApp, pero requieren configurar sus variables en `.env`. Para la demostración básica del sistema de asistencia no es necesario activar ese flujo.
+
 ## Pruebas y calidad
 
 Las pruebas unitarias usan el ejecutor nativo de Node.js y no requieren una base de datos.
