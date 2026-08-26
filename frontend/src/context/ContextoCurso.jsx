@@ -60,6 +60,17 @@ export const ProveedorCurso = ({ children }) => {
             );
             
             setCursos(datosOrdenados);
+
+            if (usuario?.role === 'ADMIN' && !docenteSeleccionado) {
+                setCursoSeleccionado(null);
+                setGrupoSeleccionado(null);
+                setCodigoSeleccionado(null);
+                localStorage.removeItem('selectedCourseId');
+                localStorage.removeItem('selectedGroup');
+                localStorage.removeItem('selectedCode');
+                return;
+            }
+
             const idCursoGuardado = localStorage.getItem('selectedCourseId');
             const grupoGuardado = localStorage.getItem('selectedGroup');
             const codigoGuardado = localStorage.getItem('selectedCode');

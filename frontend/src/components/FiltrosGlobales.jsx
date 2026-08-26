@@ -93,6 +93,7 @@ export default function FiltrosGlobales({
     filtroDia = null,
     mostrarTodas = true,
     soloDocente = false,
+    textoDocenteSinSeleccion = 'Todos los docentes',
 }) {
     const { usuario } = useAutenticacion();
     const isAdmin = usuario?.role === 'ADMIN';
@@ -285,7 +286,7 @@ export default function FiltrosGlobales({
                         seleccionarCurso(null);
                     }}
                 >
-                    <option value="">Todos los docentes</option>
+                    <option value="">{textoDocenteSinSeleccion}</option>
                     {docentes.map((d) => (
                         <option key={d.id} value={d.id}>
                             {d.name}

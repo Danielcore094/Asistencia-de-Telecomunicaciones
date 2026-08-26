@@ -65,7 +65,16 @@ export default function Inicio() {
             setCargandoAlertas(true);
             
             try {
-                if (!cursoSeleccionado && isAdmin) {
+                if (isAdmin && !docenteSeleccionado) {
+                    setTotalEstudiantes(0);
+                    setPorcentajeHoy(null);
+                    setAusentesHoy(null);
+                    setHuboClaseHoy(false);
+                    setActividadReciente([]);
+                    setAlertasRiesgo([]);
+                    setAsistenciaTodas([]);
+                    setProximasClases([]);
+                } else if (!cursoSeleccionado && isAdmin) {
                     try {
                         const datosHoy = await obtenerAsistenciaHoyPorCurso();
                         const asistencia = Array.isArray(datosHoy) ? datosHoy : [];
@@ -257,7 +266,7 @@ export default function Inicio() {
     return (
         <section className="space-y-6">
             <div className="tarjeta flex flex-wrap items-center gap-4">
-                <FiltrosGlobales />
+                <FiltrosGlobales textoDocenteSinSeleccion="Seleccione un docente" />
             </div>
 
             <header className="tarjeta flex flex-col gap-4">
@@ -265,13 +274,21 @@ export default function Inicio() {
                     <div>
                         <h2 className="text-2xl font-semibold">Panel Principal</h2>
                         <p className="mt-1 text-sm text-texto-secundario">
-                            {!cursoSeleccionado ? 'Asistencia de hoy en todas las materias.' : 'Resumen diario del curso seleccionado.'}
+                            {!docenteSeleccionado && isAdmin
+                                ? 'Selecciona un docente para consultar su información.'
+                                : !cursoSeleccionado
+                                ? 'Asistencia de hoy en todas las materias.'
+                                : 'Resumen diario del curso seleccionado.'}
                         </p>
                     </div>
                 </div>
             </header>
 
-            {!cursoSeleccionado && isAdmin ? (
+            {isAdmin && !docenteSeleccionado ? (
+                <section className="tarjeta">
+                    <p className="text-sm text-texto-secundario">Selecciona un docente para cargar el panel principal.</p>
+                </section>
+            ) : !cursoSeleccionado && isAdmin ? (
 
                 <section className="grid gap-4 lg:grid-cols-3">
                     <article className="tarjeta">
