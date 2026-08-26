@@ -258,7 +258,7 @@ export default function Reportes() {
     };
 
     const cargarReportes = async () => {
-        if (!cursoSeleccionado) return;
+        if (!cursoSeleccionado || (isAdmin && !docenteSeleccionado)) return;
         setCargando(true);
         try {
             const params = {};
@@ -272,13 +272,13 @@ export default function Reportes() {
     };
 
     useEffect(() => {
-        if (cursoSeleccionado) {
+        if (cursoSeleccionado && (!isAdmin || docenteSeleccionado)) {
             cargarReportes();
         } else {
             setDatos([]);
             setCargando(false);
         }
-    }, [fechaInicio, fechaFin, cursoSeleccionado, codigoSeleccionado, grupoSeleccionado, docenteSeleccionado]);
+    }, [fechaInicio, fechaFin, cursoSeleccionado, codigoSeleccionado, grupoSeleccionado, docenteSeleccionado, isAdmin]);
 
 
 
@@ -289,7 +289,12 @@ export default function Reportes() {
 
 
     useEffect(() => {
-        if (!cursoSeleccionado && !usuario?.id) return;
+        if (!cursoSeleccionado || (isAdmin && !docenteSeleccionado) || !usuario?.id) {
+            setDatosLineChart([]);
+            setDatosBarrasSemanales([]);
+            setCargandoSemanal(false);
+            return;
+        }
         const tid = usuario?.id || null;
         const fetchSemanal = async () => {
             setCargandoSemanal(true);
@@ -348,7 +353,7 @@ export default function Reportes() {
             }
         };
         fetchSemanal();
-    }, [modoGrupo, cursoSeleccionado, docentes, usuario?.id]);
+    }, [modoGrupo, cursoSeleccionado, docentes, usuario?.id, docenteSeleccionado, isAdmin]);
 
 
 
@@ -673,7 +678,11 @@ export default function Reportes() {
     return (
         <section className="space-y-6">
             <div className="tarjeta flex flex-wrap items-center gap-4">
-                <FiltrosGlobales />
+                <FiltrosGlobales
+                    textoDocenteSinSeleccion="Seleccione un docente"
+                    textoMateriaSinSeleccion="Seleccione una materia"
+                    mostrarTodas={false}
+                />
             </div>
 
             <header className="tarjeta flex flex-col gap-4">
