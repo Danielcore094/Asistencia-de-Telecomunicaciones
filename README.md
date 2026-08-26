@@ -155,7 +155,7 @@ El archivo se crea en `backups/` con formato personalizado de PostgreSQL. Para r
 pg_restore --clean --if-exists --no-owner --dbname="postgresql://usuario:contrasena@host:5432/base" backups/asistencia-AAAA-MM-DDTHH-MM-SS-SSSZ.dump
 ```
 
-El flujo `.github/workflows/backup.yml` crea un respaldo diario a las 00:15 de Colombia, lo cifra con AES-256 y lo conserva como artefacto durante 30 días. Configura estos secretos del repositorio:
+El flujo `.github/workflows/backup.yml` crea un respaldo diario a las 00:15 de Colombia, detecta la versión mayor del servidor PostgreSQL para instalar un `pg_dump` compatible, cifra el respaldo con AES-256 y lo conserva como artefacto durante 30 días. Configura estos secretos del repositorio:
 
 - `DATABASE_URL`: conexión de la base de datos que se respaldará.
 - `BACKUP_ENCRYPTION_PASSWORD`: contraseña fuerte guardada fuera de GitHub; es necesaria para descifrar el archivo `.dump.gpg`.
