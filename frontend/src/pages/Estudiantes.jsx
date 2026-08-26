@@ -967,10 +967,10 @@ export default function Estudiantes() {
                             <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
                                 <colgroup>
                                     {!isAdmin && <col style={{ width: '48px' }} />}
-                                    <col style={{ width: isAdmin ? '12%' : '12%' }} />
-                                    <col style={{ width: isAdmin ? '30%' : '30%' }} />
-                                    <col style={{ width: isAdmin ? '24%' : '20%' }} />
-                                    <col style={{ width: isAdmin ? '24%' : '20%' }} />
+                                    <col style={{ width: '12%' }} />
+                                    <col style={{ width: '24%' }} />
+                                    <col style={{ width: isAdmin ? '26%' : '23%' }} />
+                                    <col style={{ width: isAdmin ? '18%' : '23%' }} />
                                     <col style={{ width: '10%' }} />
                                     {!isAdmin && <col style={{ width: '8%' }} />}
                                 </colgroup>
@@ -1007,7 +1007,7 @@ export default function Estudiantes() {
                                                 </td>
                                             )}
                                             <td className="px-2 py-3 font-mono text-xs text-texto-secundario">{est.documento}</td>
-                                            <td className="px-2 py-3 font-medium text-texto" title={est.nombreFormateado}>{est.nombreFormateado}</td>
+                                            <td className="px-2 py-3 font-medium text-texto" title={est.nombreFormateado} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{est.nombreFormateado}</td>
                                             <td className="px-2 py-3 text-texto-secundario" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{est.programa || '—'}</td>
                                             <td className="px-2 py-3 text-texto-secundario" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{est.curso}</td>
                                             <td className="px-2 py-3 text-right font-mono">
