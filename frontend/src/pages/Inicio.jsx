@@ -266,7 +266,10 @@ export default function Inicio() {
     return (
         <section className="space-y-6">
             <div className="tarjeta flex flex-wrap items-center gap-4">
-                <FiltrosGlobales textoDocenteSinSeleccion="Seleccione un docente" />
+                <FiltrosGlobales
+                    textoDocenteSinSeleccion="Seleccione un docente"
+                    mostrarTodas={false}
+                />
             </div>
 
             <header className="tarjeta flex flex-col gap-4">
@@ -276,8 +279,10 @@ export default function Inicio() {
                         <p className="mt-1 text-sm text-texto-secundario">
                             {!docenteSeleccionado && isAdmin
                                 ? 'Selecciona un docente para consultar su información.'
+                                : !cursoSeleccionado && isAdmin
+                                ? 'Selecciona una materia para consultar su información.'
                                 : !cursoSeleccionado
-                                ? 'Asistencia de hoy en todas las materias.'
+                                ? 'Selecciona una materia para consultar su información.'
                                 : 'Resumen diario del curso seleccionado.'}
                         </p>
                     </div>
@@ -287,6 +292,10 @@ export default function Inicio() {
             {isAdmin && !docenteSeleccionado ? (
                 <section className="tarjeta">
                     <p className="text-sm text-texto-secundario">Selecciona un docente para cargar el panel principal.</p>
+                </section>
+            ) : isAdmin && !cursoSeleccionado ? (
+                <section className="tarjeta">
+                    <p className="text-sm text-texto-secundario">Selecciona una materia para cargar el panel principal.</p>
                 </section>
             ) : !cursoSeleccionado && isAdmin ? (
 

@@ -89,7 +89,7 @@ export const ProveedorCurso = ({ children }) => {
                 } else {
                     setCursoSeleccionado(null);
                 }
-            } else if (datosOrdenados.length > 0) {
+            } else if (datosOrdenados.length > 0 && usuario?.role !== 'ADMIN') {
                 const encontrado = datosOrdenados.find(c => c.id === idCursoGuardado);
                 if (encontrado) {
                     setCursoSeleccionado(encontrado);
