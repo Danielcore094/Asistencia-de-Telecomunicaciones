@@ -968,8 +968,8 @@ export default function Estudiantes() {
                                 <colgroup>
                                     {!isAdmin && <col style={{ width: '48px' }} />}
                                     <col style={{ width: '12%' }} />
-                                    <col style={{ width: '24%' }} />
-                                    <col style={{ width: isAdmin ? '26%' : '23%' }} />
+                                    <col style={{ width: '26%' }} />
+                                    <col style={{ width: isAdmin ? '24%' : '21%' }} />
                                     <col style={{ width: isAdmin ? '18%' : '23%' }} />
                                     <col style={{ width: '10%' }} />
                                     {!isAdmin && <col style={{ width: '8%' }} />}
