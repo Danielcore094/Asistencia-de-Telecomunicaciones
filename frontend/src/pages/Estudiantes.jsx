@@ -967,7 +967,7 @@ export default function Estudiantes() {
                             <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
                                 <colgroup>
                                     {!isAdmin && <col style={{ width: '48px' }} />}
-                                    <col style={{ width: '12%' }} />
+                                    <col style={{ width: '10%' }} />
                                     <col style={{ width: '26%' }} />
                                     <col style={{ width: isAdmin ? '24%' : '21%' }} />
                                     <col style={{ width: isAdmin ? '18%' : '23%' }} />
