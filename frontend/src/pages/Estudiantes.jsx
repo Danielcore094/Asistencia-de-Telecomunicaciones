@@ -7,7 +7,6 @@ import toast from 'react-hot-toast';
 import { useCurso } from '../context/ContextoCurso';
 import { useAutenticacion } from '../context/ContextoAutenticacion';
 import FiltrosGlobales from '../components/FiltrosGlobales';
-import { compararPorApellido } from '../utils/formatearNombre';
 
 const mostrarNombreEstudiante = (nombre = '') => nombre.replace(/\s*,\s*/g, ' ').trim();
 
@@ -339,7 +338,7 @@ export default function Estudiantes() {
                         programa: est.programa || cursoSeleccionado.programa || '',
                         porcentaje: porcentajePorId.get(est.id) ?? 0,
                     }))
-                    .sort((a, b) => compararPorApellido(a.nombre, b.nombre));
+                    .sort((a, b) => a.nombreFormateado.localeCompare(b.nombreFormateado, 'es', { sensitivity: 'base' }));
                 setEstudiantes(normalizados);
             } finally {
                 setCargando(false);
