@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 import { useCurso } from '../context/ContextoCurso';
 import { useAutenticacion } from '../context/ContextoAutenticacion';
 import FiltrosGlobales from '../components/FiltrosGlobales';
-import { formatearNombre, compararPorApellido } from '../utils/formatearNombre';
+import { compararPorApellido } from '../utils/formatearNombre';
 
 
 function ModalEdicion({ estudiante, onGuardar, onCancelar, guardando }) {
@@ -327,7 +327,7 @@ export default function Estudiantes() {
                         id: est.id,
                         documento: est.documento || est.id,
                         nombre: est.name,
-                        nombreFormateado: formatearNombre(est.name),
+                        nombreFormateado: est.name,
                         curso: cursoSeleccionado.name,
                         correo: est.email || '',
                         correo2: est.correo2 || '',
