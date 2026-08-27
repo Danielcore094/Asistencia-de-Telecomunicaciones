@@ -11,42 +11,30 @@ export const ProveedorCurso = ({ children }) => {
     const [cursoSeleccionado, setCursoSeleccionado] = useState(null);
     const [cargandoCursos, setCargandoCursos] = useState(true);
 
-
     const [grupoSeleccionado, setGrupoSeleccionado] = useState(
         () => localStorage.getItem('selectedGroup') || null
     );
     const [codigoSeleccionado, setCodigoSeleccionado] = useState(
         () => localStorage.getItem('selectedCode') || null
     );
-    const [docenteSeleccionado, setDocenteSeleccionado] = useState(() => {
-        const guardado = localStorage.getItem('selectedDocente');
-        return (guardado === 'null' || !guardado) ? null : guardado;
-    });
+    const [docenteSeleccionado, setDocenteSeleccionado] = useState(
+        () => localStorage.getItem('selectedDocente') || null
+    );
 
     useEffect(() => {
-        if (grupoSeleccionado !== null) {
-            localStorage.setItem('selectedGroup', grupoSeleccionado);
-        } else {
-            localStorage.removeItem('selectedGroup');
-        }
+        if (grupoSeleccionado !== null) localStorage.setItem('selectedGroup', grupoSeleccionado);
+        else localStorage.removeItem('selectedGroup');
     }, [grupoSeleccionado]);
 
     useEffect(() => {
-        if (codigoSeleccionado !== null) {
-            localStorage.setItem('selectedCode', codigoSeleccionado);
-        } else {
-            localStorage.removeItem('selectedCode');
-        }
+        if (codigoSeleccionado !== null) localStorage.setItem('selectedCode', codigoSeleccionado);
+        else localStorage.removeItem('selectedCode');
     }, [codigoSeleccionado]);
 
     useEffect(() => {
-        if (docenteSeleccionado !== null) {
-            localStorage.setItem('selectedDocente', docenteSeleccionado);
-        } else {
-            localStorage.removeItem('selectedDocente');
-        }
+        if (docenteSeleccionado !== null) localStorage.setItem('selectedDocente', docenteSeleccionado);
+        else localStorage.removeItem('selectedDocente');
     }, [docenteSeleccionado]);
-
 
     const cargarCursos = useCallback(async () => {
         if (!usuario) return;
@@ -65,29 +53,22 @@ export const ProveedorCurso = ({ children }) => {
                 setCursoSeleccionado(null);
                 setGrupoSeleccionado(null);
                 setCodigoSeleccionado(null);
-                localStorage.removeItem('selectedCourseId');
-                localStorage.removeItem('selectedGroup');
-                localStorage.removeItem('selectedCode');
                 return;
             }
 
             const idCursoGuardado = localStorage.getItem('selectedCourseId');
-            const grupoGuardado = localStorage.getItem('selectedGroup');
-            const codigoGuardado = localStorage.getItem('selectedCode');
+            const cursoGuardado = datosOrdenados.find((curso) => curso.id === idCursoGuardado);
 
-            if (datosOrdenados.length > 0 && usuario?.role !== 'ADMIN') {
-                const encontrado = datosOrdenados.find(c => c.id === idCursoGuardado);
-                if (encontrado) {
-                    setCursoSeleccionado(encontrado);
-                    setGrupoSeleccionado(encontrado.groupCode || encontrado.grupo || null);
-                    setCodigoSeleccionado(encontrado.code || encontrado.codigo || null);
-                } else {
-                    const primero = datosOrdenados[0];
-                    setCursoSeleccionado(primero);
-                    setGrupoSeleccionado(primero.groupCode || primero.grupo || null);
-                    setCodigoSeleccionado(primero.code || primero.codigo || null);
-                    localStorage.setItem('selectedCourseId', primero.id);
-                }
+            if (cursoGuardado) {
+                setCursoSeleccionado(cursoGuardado);
+                setGrupoSeleccionado(cursoGuardado.groupCode || cursoGuardado.grupo || null);
+                setCodigoSeleccionado(cursoGuardado.code || cursoGuardado.codigo || null);
+            } else if (datosOrdenados.length > 0 && usuario?.role !== 'ADMIN') {
+                const primero = datosOrdenados[0];
+                setCursoSeleccionado(primero);
+                setGrupoSeleccionado(primero.groupCode || primero.grupo || null);
+                setCodigoSeleccionado(primero.code || primero.codigo || null);
+                localStorage.setItem('selectedCourseId', primero.id);
             } else {
                 setCursoSeleccionado(null);
                 setGrupoSeleccionado(null);
@@ -122,7 +103,9 @@ export const ProveedorCurso = ({ children }) => {
             if (grupoSeleccionado !== nuevoGrupo) setGrupoSeleccionado(nuevoGrupo);
             if (codigoSeleccionado !== nuevoCodigo) setCodigoSeleccionado(nuevoCodigo);
         } else {
-            localStorage.setItem('selectedCourseId', 'TODAS');
+            setGrupoSeleccionado(null);
+            setCodigoSeleccionado(null);
+            localStorage.removeItem('selectedCourseId');
         }
 
         if (esCursoDistinto) {
