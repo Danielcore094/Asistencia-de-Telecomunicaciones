@@ -9,6 +9,8 @@ import { useAutenticacion } from '../context/ContextoAutenticacion';
 import FiltrosGlobales from '../components/FiltrosGlobales';
 import { compararPorApellido } from '../utils/formatearNombre';
 
+const mostrarNombreEstudiante = (nombre = '') => nombre.replace(/\s*,\s*/g, ' ').trim();
+
 
 function ModalEdicion({ estudiante, onGuardar, onCancelar, guardando }) {
     const programasPermitidos = [
@@ -327,7 +329,7 @@ export default function Estudiantes() {
                         id: est.id,
                         documento: est.documento || est.id,
                         nombre: est.name,
-                        nombreFormateado: est.name,
+                        nombreFormateado: mostrarNombreEstudiante(est.name),
                         curso: cursoSeleccionado.name,
                         correo: est.email || '',
                         correo2: est.correo2 || '',
