@@ -1,5 +1,4 @@
 import { createContext, useState, useEffect, useContext, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
 import { obtenerCursos } from '../services/api';
 import { useAutenticacion } from './ContextoAutenticacion';
 import toast from 'react-hot-toast';
@@ -8,7 +7,6 @@ const ContextoCurso = createContext(null);
 
 export const ProveedorCurso = ({ children }) => {
     const { usuario } = useAutenticacion();
-    const ubicacion = useLocation();
     const [cursos, setCursos] = useState([]);
     const [cursoSeleccionado, setCursoSeleccionado] = useState(null);
     const [cargandoCursos, setCargandoCursos] = useState(true);
@@ -24,17 +22,6 @@ export const ProveedorCurso = ({ children }) => {
         const guardado = localStorage.getItem('selectedDocente');
         return (guardado === 'null' || !guardado) ? null : guardado;
     });
-
-    useEffect(() => {
-        setCursoSeleccionado(null);
-        setGrupoSeleccionado(null);
-        setCodigoSeleccionado(null);
-        setDocenteSeleccionado(null);
-        localStorage.removeItem('selectedCourseId');
-        localStorage.removeItem('selectedGroup');
-        localStorage.removeItem('selectedCode');
-        localStorage.removeItem('selectedDocente');
-    }, [ubicacion.pathname]);
 
     useEffect(() => {
         if (grupoSeleccionado !== null) {
