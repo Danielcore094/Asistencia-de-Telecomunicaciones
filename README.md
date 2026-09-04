@@ -131,6 +131,74 @@ docker compose down -v
 
 Evolution API y Redis se mantienen disponibles en el mismo Compose para una instalación con WhatsApp, pero requieren configurar sus variables en `.env`. Para la demostración básica del sistema de asistencia no es necesario activar ese flujo.
 
+## Despliegue en servidor sin acceso al repositorio
+
+El servidor institucional no necesita Git ni acceso a Internet. La construcción y descarga de imágenes se realiza una sola vez en un equipo con Docker y acceso a Internet; al servidor se transportan un archivo `.tar` con las imágenes, `docker-compose.servidor.yml` y `.env`.
+
+### Preparar el paquete
+
+Desde la raíz del proyecto, configura `.env` con los valores del servidor y una etiqueta única en `IMAGE_TAG`. Después construye las imágenes de la aplicación y descarga las imágenes externas:
+
+```powershell
+$env:IMAGE_TAG = "2026-09-03"
+docker compose build backend frontend
+docker pull postgres:15
+docker pull redis:7.4-alpine
+docker pull evoapicloud/evolution-api:latest
+```
+
+Exporta todas las imágenes a un único archivo y copia estos elementos al servidor por el medio autorizado por la institución:
+
+```powershell
+docker save -o asistencia-imagenes.tar `
+  telecom-backend:$env:IMAGE_TAG `
+  telecom-frontend:$env:IMAGE_TAG `
+  postgres:15 `
+  redis:7.4-alpine `
+  evoapicloud/evolution-api:latest
+```
+
+Incluye también `docker-compose.servidor.yml` y `.env`. No incluyas credenciales en un archivo que vaya a quedar expuesto o almacenado sin protección.
+
+### Instalar y actualizar en el servidor
+
+Instala Docker Engine y el complemento Docker Compose en el servidor una sola vez. Copia el paquete, carga las imágenes y arranca la aplicación sin usar `build` ni `pull`:
+
+```bash
+docker load --input asistencia-imagenes.tar
+docker compose -f docker-compose.servidor.yml up -d
+docker compose -f docker-compose.servidor.yml ps
+docker compose -f docker-compose.servidor.yml logs --tail=100 backend
+```
+
+Comprueba `http://IP_DEL_SERVIDOR:3000` y `http://IP_DEL_SERVIDOR:3000/api/salud`. En este paquete inicial el esquema actual se sincroniza automáticamente con `prisma db push`; no borres el volumen de PostgreSQL después de comenzar a usar el sistema. Para una actualización, carga primero el nuevo `.tar`, cambia `IMAGE_TAG` y ejecuta el mismo `up -d`; los volúmenes de PostgreSQL, Redis y Evolution API se conservan.
+
+WhatsApp y Evolution API son opcionales y no se inician en la instalación básica. Para habilitarlos, arranca con `docker compose --profile whatsapp -f docker-compose.servidor.yml up -d` después de configurar sus variables. En el firewall institucional publica únicamente el puerto del frontend. PostgreSQL, Redis y Evolution API no publican puertos hacia la red. Configura HTTPS mediante el proxy inverso institucional y cambia `PUBLIC_URL` a la URL HTTPS final antes de construir el frontend.
+
+## Trasladar solo el backend y conservar servicios externos
+
+Si el despliegue vigente usa Vercel, Railway, Supabase y Upstash, conserva esos servicios durante la transición y utiliza `docker-compose.servidor-hibrido.yml`. Este archivo inicia únicamente el backend en el servidor institucional; no crea otra base de datos, no sustituye Upstash y no inicia otra instancia de Evolution API. Usa `.env.servidor-hibrido.example` como plantilla.
+
+1. En el servidor copia `asistencia-imagenes-2026-09-03.tar`, `docker-compose.servidor-hibrido.yml` y un `.env` de producción. Conserva las conexiones actuales de Supabase, Upstash y Railway, y define `CORS_ALLOWED_ORIGINS` y `FRONTEND_URL` con la URL vigente de Vercel.
+2. Carga la imagen y valida la configuración:
+
+```bash
+docker load --input asistencia-imagenes-2026-09-03.tar
+docker compose -f docker-compose.servidor-hibrido.yml config
+```
+
+3. Inicia el backend y comprueba su salud:
+
+```bash
+docker compose -f docker-compose.servidor-hibrido.yml up -d
+docker compose -f docker-compose.servidor-hibrido.yml ps
+curl http://localhost:4000/api/salud
+```
+
+4. Prueba autenticación y consultas desde la URL de Vercel. Mantén Railway activo hasta validar el backend institucional; después cambia `VITE_API_URL` en Vercel a la URL pública del servidor, por ejemplo `https://backend.institucion.edu.co/api`, y vuelve a desplegar el frontend.
+
+En esta modalidad no ejecutes `prisma db push` ni `docker compose down -v`: Supabase conserva los datos y el esquema existentes. Las migraciones deben ejecutarse de forma controlada contra Supabase, con un respaldo verificado.
+
 ## Pruebas y calidad
 
 Las pruebas unitarias usan el ejecutor nativo de Node.js y no requieren una base de datos.

@@ -1,0 +1,34 @@
+services:
+  backend:
+    image: telecom-backend:${IMAGE_TAG:-2026-09-03}
+    container_name: telecom_backend
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL debe estar definido en .env}
+      DIRECT_URL: ${DIRECT_URL:-${DATABASE_URL}}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET debe estar definido en .env}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:?CORS_ALLOWED_ORIGINS debe estar definido en .env}
+      FRONTEND_URL: ${FRONTEND_URL:?FRONTEND_URL debe estar definido en .env}
+      USAR_LIMITADOR_LOCAL: "false"
+      UPSTASH_REDIS_REST_URL: ${UPSTASH_REDIS_REST_URL:?UPSTASH_REDIS_REST_URL debe estar definido en .env}
+      UPSTASH_REDIS_REST_TOKEN: ${UPSTASH_REDIS_REST_TOKEN:?UPSTASH_REDIS_REST_TOKEN debe estar definido en .env}
+      TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:?TURNSTILE_SECRET_KEY debe estar definido en .env}
+      EVOLUTION_API_URL: ${EVOLUTION_API_URL:?EVOLUTION_API_URL debe estar definido en .env}
+      EVOLUTION_API_KEY: ${EVOLUTION_API_KEY:-}
+      EVOLUTION_INSTANCE: ${EVOLUTION_INSTANCE:-}
+      WHATSAPP_SEND_DELAY_MS: ${WHATSAPP_SEND_DELAY_MS:-10000}
+      BREVO_API_KEY: ${BREVO_API_KEY:-}
+      BREVO_SENDER_EMAIL: ${BREVO_SENDER_EMAIL:-}
+      BREVO_SENDER_NAME: ${BREVO_SENDER_NAME:-}
+      WEEKLY_REPORT_RECIPIENT_EMAIL: ${WEEKLY_REPORT_RECIPIENT_EMAIL:-}
+      WEEKLY_REPORT_RECIPIENT_NAME: ${WEEKLY_REPORT_RECIPIENT_NAME:-}
+      EJECUTAR_CRON: ${EJECUTAR_CRON:-false}
+    ports:
+      - "${BACKEND_PORT:-4000}:4000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4000/api/salud').then((respuesta) => process.exit(respuesta.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
