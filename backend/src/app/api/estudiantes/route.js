@@ -76,7 +76,7 @@ export async function GET(request) {
 
         const estudiantes = await prisma.estudiante.findMany({
             where,
-            orderBy: { name: 'asc' }
+            orderBy: { createdAt: 'asc' }
         })
         return Response.json(estudiantes.map((estudiante) => ({
             ...estudiante,

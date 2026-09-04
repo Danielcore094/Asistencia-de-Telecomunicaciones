@@ -8,7 +8,7 @@ import { useCurso } from '../context/ContextoCurso';
 import { useAutenticacion } from '../context/ContextoAutenticacion';
 import FiltrosGlobales from '../components/FiltrosGlobales';
 
-const mostrarNombreEstudiante = (nombre = '') => nombre.replace(/\s*,\s*/g, ' ').trim();
+const mostrarNombreEstudiante = (nombre = '') => nombre.replace(/\s*,\s*/g, ' ').replace(/\s+/g, ' ').trim();
 
 
 function ModalEdicion({ estudiante, onGuardar, onCancelar, guardando }) {
@@ -323,8 +323,7 @@ export default function Estudiantes() {
                     obtenerReportes(cursoSeleccionado.id, {}, filtros),
                 ]);
                 const porcentajePorId = new Map(reporte.map((item) => [item.id, item.percentage]));
-                const normalizados = lista
-                    .map((est) => ({
+                const normalizados = lista.map((est) => ({
                         id: est.id,
                         documento: est.documento || est.id,
                         nombre: est.name,
@@ -337,8 +336,7 @@ export default function Estudiantes() {
                         franja: est.franja || cursoSeleccionado.franja || '',
                         programa: est.programa || cursoSeleccionado.programa || '',
                         porcentaje: porcentajePorId.get(est.id) ?? 0,
-                    }))
-                    .sort((a, b) => a.nombreFormateado.localeCompare(b.nombreFormateado, 'es', { sensitivity: 'base' }));
+                    }));
                 setEstudiantes(normalizados);
             } finally {
                 setCargando(false);

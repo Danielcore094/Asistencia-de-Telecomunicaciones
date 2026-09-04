@@ -6,7 +6,7 @@ import { useCurso } from '../context/ContextoCurso';
 import FiltrosGlobales from '../components/FiltrosGlobales';
 import { Navigate } from 'react-router-dom';
 import { useAutenticacion } from '../context/ContextoAutenticacion';
-import { formatearNombre, compararPorApellido } from '../utils/formatearNombre';
+const mostrarNombreOriginal = (nombre = '') => nombre.replace(/\s*,\s*/g, ' ').replace(/\s+/g, ' ').trim();
 
 const estadosAsistencia = [
     { valor: 'Presente', icono: CheckCircle2, colorTexto: 'text-presente', colorFondo: 'var(--color-present-bg)' },
@@ -114,8 +114,7 @@ export default function Asistencia() {
 
                 if (!isCurrent) return;
 
-                const ordenados = [...listaEstudiantes].sort((a, b) => compararPorApellido(a.name, b.name));
-                setEstudiantes(ordenados);
+                setEstudiantes(listaEstudiantes);
 
                 const mapaAsistencia = {};
                 if (asistenciaExistente.length > 0) {
@@ -398,8 +397,8 @@ export default function Asistencia() {
                 ) : estudiantes.length === 0 ? (
                     <p className="p-6 text-sm text-texto-secundario">No hay estudiantes para los filtros seleccionados.</p>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full min-w-[780px] text-sm">
+                    <div className="hidden overflow-x-auto md:block">
+                        <table className="w-full text-sm">
                             <thead style={{ background: 'color-mix(in srgb, var(--color-border) 50%, transparent)' }}>
                                 <tr className="text-left text-texto-secundario">
                                     <th className="px-4 py-3 font-medium">Nombre</th>
@@ -410,7 +409,7 @@ export default function Asistencia() {
                             <tbody>
                                 {estudiantes.map((estudiante) => (
                                     <tr key={estudiante.id} className="border-b">
-                                        <td className="px-4 py-3 font-medium text-texto">{formatearNombre(estudiante.name)}</td>
+                                        <td className="px-4 py-3 font-medium text-texto">{mostrarNombreOriginal(estudiante.name)}</td>
                                         <td className="px-4 py-3 font-mono text-xs text-texto-secundario">{estudiante.id}</td>
                                         <td className="px-4 py-3">
                                             <div className="flex flex-wrap justify-end gap-2">
@@ -439,6 +438,36 @@ export default function Asistencia() {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+                    <div className="divide-y md:hidden">
+                        {estudiantes.map((estudiante) => (
+                            <article key={estudiante.id} className="space-y-3 px-4 py-4">
+                                <div className="flex min-w-0 items-start justify-between gap-3">
+                                    <p className="min-w-0 break-words font-medium text-texto">
+                                        {mostrarNombreOriginal(estudiante.name)}
+                                    </p>
+                                    <span className="shrink-0 font-mono text-xs text-texto-secundario">{estudiante.id}</span>
+                                </div>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {estadosAsistencia.map((estado) => {
+                                        const Icono = estado.icono;
+                                        const activo = asistencia[estudiante.id] === estado.valor;
+                                        return (
+                                            <button
+                                                key={estado.valor}
+                                                type="button"
+                                                onClick={() => cambiarEstado(estudiante.id, estado.valor)}
+                                                className={`inline-flex min-w-0 items-center justify-center gap-1 rounded-[var(--badge-radius)] border px-1.5 py-2 text-xs font-semibold ${activo ? estado.colorTexto : 'text-texto-secundario'}`}
+                                                style={{ background: activo ? estado.colorFondo : 'var(--color-surface)' }}
+                                            >
+                                                <Icono size={14} />
+                                                <span className="truncate">{estado.valor}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </article>
+                        ))}
                     </div>
                 )}
             </section>
