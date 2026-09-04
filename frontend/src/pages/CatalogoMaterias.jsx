@@ -255,7 +255,7 @@ export default function CatalogoMaterias() {
                                             <tr key={materia.id} className="border-t" style={{ borderColor: 'var(--color-border)' }}>
                                                 <td className="px-4 py-2 font-mono font-medium">{materia.codigo}</td>
                                                 <td className="px-4 py-2 font-medium">{materia.nombre}</td>
-                                                <td className="px-4 py-2 text-texto-secundario">{materia.programa}</td>
+                                                <td className="px-4 py-2 text-texto-secundario">{String(materia.programa || '').toUpperCase()}</td>
                                                 <td className="px-4 py-2 text-center font-mono">{materia.semestre ?? '—'}</td>
                                                 <td className="px-4 py-2">
                                                     <div className="flex justify-end gap-1">

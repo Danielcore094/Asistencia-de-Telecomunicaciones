@@ -1009,7 +1009,7 @@ export default function Estudiantes() {
                                             )}
                                             <td className="px-2 py-3 font-mono text-xs text-texto-secundario">{est.documento}</td>
                                             <td className="px-2 py-3 font-medium text-texto" title={est.nombreFormateado} style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{est.nombreFormateado}</td>
-                                            <td className="px-2 py-3 text-texto-secundario" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{est.programa || '—'}</td>
+                                            <td className="px-2 py-3 text-texto-secundario" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{est.programa ? String(est.programa).toUpperCase() : '—'}</td>
                                             <td className="px-2 py-3 text-texto-secundario" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{est.curso}</td>
                                             <td className="px-2 py-3 text-right font-mono">
                                                 {Number(est.porcentaje).toLocaleString('es-CO')}%

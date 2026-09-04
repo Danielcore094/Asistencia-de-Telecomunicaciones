@@ -45,7 +45,7 @@ export async function PUT(request, { params }) {
             horaInicio2: horaInicio2?.trim() || null,
             horaFin2: horaFin2?.trim() || null,
             franja: franja?.trim() || null,
-            programa: programa?.trim() || null,
+            programa: programa ? programa.trim().toUpperCase() : null,
         }
 
         const cursosMismaAsignacion = await prisma.curso.findMany({

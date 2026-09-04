@@ -151,7 +151,7 @@ export async function POST(request) {
                         email: limpiarTexto(e.email),
                         whatsapp: limpiarTexto(e.whatsapp),
                         franja: franjaEstudiante,
-                        programa: limpiarTexto(e.programa),
+                        programa: limpiarTexto(e.programa)?.toUpperCase() || null,
                         matriculas: { create: { curso: { connect: { id: curso.id } } } }
                     }
                 });
@@ -204,7 +204,7 @@ export async function POST(request) {
                 email: limpiarTexto(email),
                 whatsapp: limpiarTexto(whatsapp),
                 franja: franjaLimpia,
-                programa: limpiarTexto(programa),
+                programa: limpiarTexto(programa)?.toUpperCase() || null,
                 matriculas: { create: { curso: { connect: { id: idCurso } } } }
             }
         })

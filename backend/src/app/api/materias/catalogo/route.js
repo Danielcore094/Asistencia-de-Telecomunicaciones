@@ -7,7 +7,7 @@ import { registrarAccion } from '@/lib/servicioAuditoria';
 const obtenerDatosMateria = (datos) => {
     const codigo = String(datos.codigo || '').trim().toUpperCase();
     const nombre = String(datos.nombre || '').trim();
-    const programa = String(datos.programa || '').trim();
+    const programa = String(datos.programa || '').trim().toUpperCase();
     const semestre = datos.semestre === '' || datos.semestre == null
         ? null
         : Number(datos.semestre);

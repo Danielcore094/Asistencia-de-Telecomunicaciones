@@ -778,7 +778,7 @@ export default function Materias() {
                                 )}
                                 <div>
                                     <p className="text-xs text-texto-secundario">Programa</p>
-                                    <p className="font-medium text-texto">{curso.programa}</p>
+                                    <p className="font-medium text-texto">{String(curso.programa || '').toUpperCase()}</p>
                                 </div>
                                 <div>
                                     <p className="text-xs text-texto-secundario">Franja</p>

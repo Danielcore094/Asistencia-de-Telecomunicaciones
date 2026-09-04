@@ -71,7 +71,7 @@ export async function POST(request) {
             horaInicio2: horaInicio2?.trim() || null,
             horaFin2: horaFin2?.trim() || null,
             franja: franja?.trim() || null,
-            programa: programa?.trim() || null,
+            programa: programa ? programa.trim().toUpperCase() : null,
             teacherId: usuario.id,
         }
 

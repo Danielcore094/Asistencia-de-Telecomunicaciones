@@ -32,7 +32,7 @@ export async function PUT(request, { params }) {
         }
 
         if (Object.prototype.hasOwnProperty.call(payload, 'programa')) {
-            const programaLimpio = payload.programa ? payload.programa.trim() : null
+            const programaLimpio = payload.programa ? payload.programa.trim().toUpperCase() : null
             if (programaLimpio) {
                 datosActualizacion.programa = programaLimpio
             }
