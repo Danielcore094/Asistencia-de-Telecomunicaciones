@@ -64,8 +64,11 @@ export async function GET(request) {
     return Response.json({
         servicio: 'notificador-semanal-inasistencias',
         estado: 'activo',
-        programacion: '0 9 * * 0',
-        descripcion: 'Envía correos a estudiantes con inasistencias de la semana (lunes-sábado)',
+        programacion: {
+            estudiantes: '0 9 * * 0',
+            reportes: '0 6 * * 1',
+        },
+        descripcion: 'Envía correos a estudiantes los domingos y reportes a docentes y administrador los lunes',
         zonaHoraria: 'America/Bogota',
         ultimaEjecucion: ultimoLog
             ? {

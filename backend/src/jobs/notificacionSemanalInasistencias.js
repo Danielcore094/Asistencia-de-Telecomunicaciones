@@ -171,7 +171,7 @@ async function enviarReporteGeneralSemanal(resultados) {
     else resultados.errors++;
 }
 
-export async function ejecutarNotificacionSemanalInasistencias({ usuario = null, origen = 'AUTOMATICO' } = {}) {
+export async function ejecutarNotificacionSemanalInasistencias({ usuario = null, origen = 'AUTOMATICO', tipo = 'TODAS' } = {}) {
     console.log('\n========================================');
     console.log('[notification-job] Iniciando envío de notificaciones semanales...');
     console.log(`[notification-job] Hora: ${new Date().toISOString()}`);
@@ -181,13 +181,17 @@ export async function ejecutarNotificacionSemanalInasistencias({ usuario = null,
     const usuarioAuditoria = usuario || { id: 'SISTEMA_AUTOMATICO', name: 'Sistema automático', role: 'SYSTEM' };
 
     try {
-        const listaInasistencias = await obtenerInasistenciasSemanales();
+        const enviarEstudiantes = tipo === 'TODAS' || tipo === 'ESTUDIANTES';
+        const enviarReportes = tipo === 'TODAS' || tipo === 'REPORTES';
 
-        if (listaInasistencias.length === 0) {
-            console.log('[notification-job] Sin inasistencias en la semana. No se envían correos a estudiantes.');
-        }
+        if (enviarEstudiantes) {
+            const listaInasistencias = await obtenerInasistenciasSemanales();
 
-        for (const estudiante of listaInasistencias) {
+            if (listaInasistencias.length === 0) {
+                console.log('[notification-job] Sin inasistencias en la semana. No se envían correos a estudiantes.');
+            }
+
+            for (const estudiante of listaInasistencias) {
             const entradaLog = {
                 studentId:   estudiante.studentId,
                 studentName: estudiante.studentName,
@@ -295,11 +299,14 @@ export async function ejecutarNotificacionSemanalInasistencias({ usuario = null,
                 resultados.errors++;
             }
 
-            resultados.details.push(entradaLog);
+                resultados.details.push(entradaLog);
+            }
         }
 
-        await enviarReportesDocentes(resultados);
-        await enviarReporteGeneralSemanal(resultados);
+        if (enviarReportes) {
+            await enviarReportesDocentes(resultados);
+            await enviarReporteGeneralSemanal(resultados);
+        }
     } catch (err) {
         console.error('[notification-job] Error en notificaciones de estudiantes:', err.message);
         resultados.errors++;

@@ -26,9 +26,9 @@ app.prepare().then(async () => {
 
     if (ejecutarCron) {
         cron.schedule('0 9 * * 0', async () => {
-            console.log('\n[cron] Tarea semanal ejecutada - Domingo 09:00');
+            console.log('\n[cron] Notificaciones a estudiantes - Domingo 09:00');
             try {
-                await ejecutarNotificacionSemanalInasistencias({ origen: 'AUTOMATICO' });
+                await ejecutarNotificacionSemanalInasistencias({ origen: 'AUTOMATICO', tipo: 'ESTUDIANTES' });
             } catch (err) {
                 console.error('[cron] Error en tarea programada:', err.message);
             }
@@ -37,7 +37,19 @@ app.prepare().then(async () => {
             timezone: 'America/Bogota',
         });
 
-        console.log('[server] Cron configurado: Domingos a las 09:00 AM (America/Bogota)');
+        cron.schedule('0 6 * * 1', async () => {
+            console.log('\n[cron] Reportes a docentes y administrador - Lunes 06:00');
+            try {
+                await ejecutarNotificacionSemanalInasistencias({ origen: 'AUTOMATICO', tipo: 'REPORTES' });
+            } catch (err) {
+                console.error('[cron] Error en tarea programada:', err.message);
+            }
+        }, {
+            scheduled: true,
+            timezone: 'America/Bogota',
+        });
+
+        console.log('[server] Cron configurado: estudiantes domingos 09:00 y reportes lunes 06:00 (America/Bogota)');
     } else {
         console.log('[server] Cron deshabilitado en esta instancia');
     }

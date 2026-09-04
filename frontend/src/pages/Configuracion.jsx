@@ -297,7 +297,7 @@ export default function Configuracion() {
                             <div className="mt-3 flex flex-wrap gap-4 text-xs">
                                 <span className="flex items-center gap-1.5" style={{ color: 'var(--color-accent)' }}>
                                     <span className="inline-block w-2 h-2 rounded-full" style={{ background: 'var(--color-accent)' }} />
-                                    Cron activo — Domingos 09:00 (Bogotá)
+                                    Cron activo — Estudiantes: domingos 09:00; docentes y administrador: lunes 06:00 (Bogotá)
                                 </span>
                                 {estadoCron?.ultimaEjecucion && (
                                     <span className="text-texto-secundario">

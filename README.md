@@ -279,7 +279,7 @@ docker run --rm --env-file backend/.env telecom-backend:migraciones npx prisma m
 docker build --tag registro-asistencia-backend:VERSION backend
 ```
 
-3. Inicia las réplicas web con `EJECUTAR_CRON=false`. Inicia exactamente una instancia dedicada con `EJECUTAR_CRON=true`; esta programa las notificaciones los domingos a las 09:00 en `America/Bogota`.
+3. Inicia las réplicas web con `EJECUTAR_CRON=false`. Inicia exactamente una instancia dedicada con `EJECUTAR_CRON=true`; esta programa las notificaciones a estudiantes los domingos a las 09:00 y los reportes a docentes y administrador los lunes a las 06:00 en `America/Bogota`.
 4. Comprueba `/api/salud`, los errores de aplicación y la entrega de notificaciones antes de dirigir tráfico a la nueva versión. Conserva la imagen anterior para rollback.
 
 ### Monitoreo y recuperación
