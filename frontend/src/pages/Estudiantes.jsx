@@ -962,7 +962,8 @@ export default function Estudiantes() {
                     {cargando ? (
                         <p className="p-6 text-sm text-texto-secundario">Cargando...</p>
                     ) : (
-                        <div className="overflow-x-auto">
+                        <>
+                        <div className="hidden overflow-x-auto md:block">
                             <table className="w-full text-sm" style={{ tableLayout: 'fixed' }}>
                                 <colgroup>
                                     {!isAdmin && <col style={{ width: '48px' }} />}
@@ -1054,6 +1055,78 @@ export default function Estudiantes() {
                                 </tbody>
                             </table>
                         </div>
+                        <div className="divide-y md:hidden" style={{ borderColor: 'var(--color-border)' }}>
+                            {filtrados.map((est) => (
+                                <article key={est.id} className="space-y-3 px-4 py-4">
+                                    <div className="flex items-start gap-3">
+                                        {!isAdmin && (
+                                            <button
+                                                type="button"
+                                                onClick={() => toggleSeleccion(est.id)}
+                                                className="mt-0.5 flex shrink-0 items-center"
+                                                title="Seleccionar estudiante"
+                                            >
+                                                {seleccionados.has(est.id)
+                                                    ? <CheckSquare size={18} style={{ color: 'var(--color-primary)' }} />
+                                                    : <Square size={18} style={{ color: 'var(--color-muted)' }} />}
+                                            </button>
+                                        )}
+                                        <div className="min-w-0 flex-1">
+                                            <p className="break-words font-semibold text-texto">{est.nombreFormateado}</p>
+                                            <p className="mt-1 font-mono text-xs text-texto-secundario">Documento: {est.documento}</p>
+                                        </div>
+                                        <span
+                                            className="shrink-0 rounded-[var(--badge-radius)] px-2 py-1 font-mono text-xs font-semibold"
+                                            style={{
+                                                background: est.porcentaje >= 80 ? 'var(--color-present-bg)' : 'var(--color-absent-bg)',
+                                                color: est.porcentaje >= 80 ? 'var(--color-present)' : 'var(--color-absent)',
+                                            }}
+                                        >
+                                            {Number(est.porcentaje).toLocaleString('es-CO')}%
+                                        </span>
+                                    </div>
+                                    <dl className="grid grid-cols-1 gap-2 rounded-[var(--input-radius)] bg-fondo px-3 py-2 text-xs">
+                                        <div className="min-w-0">
+                                            <dt className="text-texto-secundario">Programa</dt>
+                                            <dd className="truncate font-medium text-texto">{est.programa ? String(est.programa).toUpperCase() : '—'}</dd>
+                                        </div>
+                                        <div className="min-w-0">
+                                            <dt className="text-texto-secundario">Materia</dt>
+                                            <dd className="truncate font-medium text-texto">{est.curso}</dd>
+                                        </div>
+                                    </dl>
+                                    {!isAdmin && (
+                                        <div className="flex justify-end gap-2 border-t pt-2" style={{ borderColor: 'var(--color-border)' }}>
+                                            <button
+                                                type="button"
+                                                onClick={() => setEstudianteEnEdicion(est)}
+                                                disabled={editandoId === est.id || eliminandoId === est.id}
+                                                className="inline-flex items-center gap-1 rounded-[var(--input-radius)] border px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
+                                                style={{ color: 'var(--color-primary)', borderColor: 'var(--color-border)' }}
+                                            >
+                                                <Pencil size={14} /> Editar
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => manejarEliminacionEstudiante(est.id, est.nombre)}
+                                                disabled={eliminandoId === est.id || editandoId === est.id}
+                                                className="inline-flex items-center gap-1 rounded-[var(--input-radius)] border px-3 py-1.5 text-xs font-semibold disabled:opacity-50"
+                                                style={{ color: 'var(--color-absent)', borderColor: 'var(--color-border)' }}
+                                            >
+                                                {eliminandoId === est.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                                                Eliminar
+                                            </button>
+                                        </div>
+                                    )}
+                                </article>
+                            ))}
+                            {filtrados.length === 0 && (
+                                <p className="px-4 py-8 text-center text-sm text-texto-secundario">
+                                    No hay estudiantes para los filtros seleccionados.
+                                </p>
+                            )}
+                        </div>
+                        </>
                     )}
                 </section>
             </section>
