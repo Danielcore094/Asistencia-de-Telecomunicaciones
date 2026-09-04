@@ -53,6 +53,23 @@ export async function enviarCorreo({ to, toName, subject, htmlContent, attachmen
     }
 }
 
+export function construirCorreoSegundoFactorHTML({ userName, code }) {
+    return `
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="font-family: Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px; color: #334155;">
+  <div style="max-width: 560px; margin: 0 auto; background: #ffffff; border-radius: 12px; padding: 32px 24px; text-align: center;">
+    <h1 style="color: #6B2D8B; font-size: 22px;">Código de verificación</h1>
+    <p style="font-size: 16px;">Hola <strong>${userName}</strong>, usa este código para completar tu inicio de sesión:</p>
+    <p style="margin: 28px 0; color: #6B2D8B; font-size: 34px; letter-spacing: 8px; font-weight: 700;">${code}</p>
+    <p style="color: #64748b; font-size: 14px;">El código vence en 10 minutos y solo puede utilizarse una vez.</p>
+    <p style="color: #94a3b8; font-size: 12px;">Si no intentaste iniciar sesión, cambia tu contraseña y contacta al administrador.</p>
+  </div>
+</body>
+</html>`;
+}
+
 export function construirCorreoBienvenidaHTML({ userName, email, password, loginUrl }) {
     return `
 <!DOCTYPE html>

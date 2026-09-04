@@ -15,6 +15,8 @@ export default function InicioSesion() {
     const [tokenCaptcha, setTokenCaptcha] = useState('');
     const [errorCaptcha, setErrorCaptcha] = useState('');
     const [versionCaptcha, setVersionCaptcha] = useState(0);
+    const [desafioSegundoFactor, setDesafioSegundoFactor] = useState('');
+    const [codigoSegundoFactor, setCodigoSegundoFactor] = useState('');
     const { iniciarSesion } = useAutenticacion();
     const navegar = useNavigate();
 
@@ -22,6 +24,30 @@ export default function InicioSesion() {
         e.preventDefault();
         setError('');
         setMostrarOlvido(false);
+        if (desafioSegundoFactor) {
+            setCargando(true);
+            try {
+                const res = await api.post('/autenticacion/verificar-segundo-factor', {
+                    desafio: desafioSegundoFactor,
+                    codigo: codigoSegundoFactor,
+                });
+
+                if (res.data.forcePasswordChange && res.data.forcePasswordChangeToken) {
+                    toast.success('Debes cambiar tu contraseña inicial antes de continuar');
+                    navegar(`/reset-password?token=${encodeURIComponent(res.data.forcePasswordChangeToken)}`);
+                    return;
+                }
+
+                iniciarSesion(res.data.token, res.data.teacher);
+                navegar('/');
+            } catch (err) {
+                setError(err.response?.data?.error || 'No fue posible verificar el código');
+                setCodigoSegundoFactor('');
+            } finally {
+                setCargando(false);
+            }
+            return;
+        }
         if (!tokenCaptcha) {
             setError('Completa la verificación CAPTCHA para continuar');
             return;
@@ -33,6 +59,12 @@ export default function InicioSesion() {
                 password: contrasena,
                 captchaToken: tokenCaptcha,
             });
+
+            if (res.data.requiereSegundoFactor && res.data.desafio) {
+                setDesafioSegundoFactor(res.data.desafio);
+                setCodigoSegundoFactor('');
+                return;
+            }
 
             if (res.data.forcePasswordChange && res.data.forcePasswordChangeToken) {
                 toast.success('Debes cambiar tu contraseña inicial antes de continuar');
@@ -55,6 +87,14 @@ export default function InicioSesion() {
         }
     };
 
+    const volverAlInicioSesion = () => {
+        setDesafioSegundoFactor('');
+        setCodigoSegundoFactor('');
+        setError('');
+        setTokenCaptcha('');
+        setVersionCaptcha(version => version + 1);
+    };
+
     return (
         <div className="flex min-h-screen items-center justify-center bg-beige p-4">
             <div className="w-full max-w-md">
@@ -75,10 +115,17 @@ export default function InicioSesion() {
                 </div>
 
                 <div className="bg-white border border-borde rounded-3xl p-6 sm:p-8 shadow-sm">
-                    <h2 className="text-xl font-bold text-texto mb-6 text-center">Iniciar Sesión</h2>
+                    <h2 className="text-xl font-bold text-texto mb-2 text-center">
+                        {desafioSegundoFactor ? 'Verificación en dos pasos' : 'Iniciar Sesión'}
+                    </h2>
+                    <p className="mb-6 text-center text-sm text-texto-secundario">
+                        {desafioSegundoFactor
+                            ? 'Ingresa el código de 6 dígitos enviado a tu correo institucional.'
+                            : 'Usa tus credenciales institucionales para continuar.'}
+                    </p>
 
                     <form onSubmit={manejarEnvio} className="space-y-5">
-                        <div>
+                        {!desafioSegundoFactor && <><div>
                             <label className="block text-sm font-semibold text-texto-secundario mb-2">
                                 Correo Electrónico
                             </label>
@@ -114,9 +161,31 @@ export default function InicioSesion() {
                                     </a>
                                 </div>
                             )}
-                        </div>
+                        </div></>}
 
-                        <CaptchaTurnstile
+                        {desafioSegundoFactor && (
+                            <div>
+                                <label className="block text-sm font-semibold text-texto-secundario mb-2" htmlFor="codigo-segundo-factor">
+                                    Código de verificación
+                                </label>
+                                <input
+                                    id="codigo-segundo-factor"
+                                    type="text"
+                                    inputMode="numeric"
+                                    autoComplete="one-time-code"
+                                    maxLength={6}
+                                    pattern="[0-9]{6}"
+                                    value={codigoSegundoFactor}
+                                    onChange={e => setCodigoSegundoFactor(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                    placeholder="000000"
+                                    required
+                                    autoFocus
+                                    className="w-full bg-slate-50 border border-borde rounded-xl px-4 py-3 text-center text-xl tracking-[0.35em] text-texto placeholder-slate-400 outline-none focus:ring-2 focus:ring-primario focus:border-transparent transition-all"
+                                />
+                            </div>
+                        )}
+
+                        {!desafioSegundoFactor && <CaptchaTurnstile
                             key={versionCaptcha}
                             alVerificar={token => {
                                 setTokenCaptcha(token);
@@ -127,8 +196,8 @@ export default function InicioSesion() {
                                 setTokenCaptcha('');
                                 setErrorCaptcha(mensaje);
                             }}
-                        />
-                        {errorCaptcha && (
+                        />}
+                        {!desafioSegundoFactor && errorCaptcha && (
                             <p className="text-sm text-red-600">{errorCaptcha}</p>
                         )}
 
@@ -140,7 +209,7 @@ export default function InicioSesion() {
 
                         <button
                             type="submit"
-                            disabled={cargando || !tokenCaptcha}
+                            disabled={cargando || (desafioSegundoFactor ? codigoSegundoFactor.length !== 6 : !tokenCaptcha)}
                             className="w-full flex items-center justify-center gap-2 bg-primario hover:bg-opacity-90 text-white font-bold py-3.5 rounded-xl transition-all shadow-md shadow-primario/10 disabled:opacity-60 disabled:cursor-not-allowed transform hover:-translate-y-0.5 active:translate-y-0"
                         >
                             {cargando ? (
@@ -148,8 +217,18 @@ export default function InicioSesion() {
                             ) : (
                                 <LogIn size={20} />
                             )}
-                            {cargando ? 'Iniciando sesión...' : 'Entrar'}
+                            {cargando ? (desafioSegundoFactor ? 'Verificando...' : 'Iniciando sesión...') : (desafioSegundoFactor ? 'Verificar código' : 'Entrar')}
                         </button>
+                        {desafioSegundoFactor && (
+                            <button
+                                type="button"
+                                onClick={volverAlInicioSesion}
+                                disabled={cargando}
+                                className="w-full text-sm font-medium text-primario hover:text-primario-oscuro disabled:opacity-50"
+                            >
+                                Volver al inicio de sesión
+                            </button>
+                        )}
                     </form>
                 </div>
 

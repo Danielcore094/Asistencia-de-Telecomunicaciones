@@ -17,7 +17,11 @@ clienteApi.interceptors.response.use(
     error => {
         const estado = error.response?.status;
         
-        if (estado === 401 && error.config?.url !== '/autenticacion/iniciar-sesion') {
+        const rutasPublicasAutenticacion = [
+            '/autenticacion/iniciar-sesion',
+            '/autenticacion/verificar-segundo-factor',
+        ];
+        if (estado === 401 && !rutasPublicasAutenticacion.includes(error.config?.url)) {
             sessionStorage.removeItem('token');
             localStorage.removeItem('selectedCourseId');
             localStorage.removeItem('selectedGroup');

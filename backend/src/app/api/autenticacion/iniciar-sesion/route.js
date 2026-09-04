@@ -3,7 +3,9 @@ export const dynamic = 'force-dynamic';
 import prisma from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
+import { randomInt, createHash } from 'node:crypto'
 import { consumirCupo, limpiarIntentos } from '@/lib/limiteSolicitudes'
+import { enviarCorreo, construirCorreoSegundoFactorHTML } from '@/lib/servicioCorreo'
 
 const SECRETO = process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? null : 'secreto-solo-desarrollo-no-usar-produccion')
 
@@ -80,26 +82,43 @@ export async function POST(request) {
 
         await Promise.all([limpiarIntentos(claveIp), limpiarIntentos(claveCuenta)])
 
-        const token = jwt.sign(
-            { id: docente.id, email: docente.email, name: docente.name, role: docente.role },
-            SECRETO,
-            { expiresIn: process.env.JWT_EXPIRACION || '8h' }
-        )
+        const codigo = String(randomInt(100000, 1000000))
+        const codigoHash = createHash('sha256').update(codigo).digest('hex')
+        const codigoExpira = new Date(Date.now() + 10 * 60 * 1000)
+        await prisma.docente.update({
+            where: { id: docente.id },
+            data: {
+                twoFactorCodeHash: codigoHash,
+                twoFactorCodeExpiry: codigoExpira,
+                twoFactorCodeAttempts: 0,
+            },
+        })
 
-        console.log(`[Login] Sesión iniciada: ${email} (${docente.role})`)
-        
-        const { registrarAccion } = await import('@/lib/servicioAuditoria');
-        registrarAccion({
-            usuario: { id: docente.id, name: docente.name, role: docente.role },
-            accion: 'LOGIN',
-            target: 'AUTH',
-            ip
-        });
+        const correoCodigo = await enviarCorreo({
+            to: docente.email,
+            toName: docente.name,
+            subject: 'Código de verificación - Asistencia Telecomunicaciones',
+            htmlContent: construirCorreoSegundoFactorHTML({ userName: docente.name, code: codigo }),
+        })
+        if (!correoCodigo.success) {
+            await prisma.docente.update({
+                where: { id: docente.id },
+                data: { twoFactorCodeHash: null, twoFactorCodeExpiry: null, twoFactorCodeAttempts: 0 },
+            })
+            return Response.json({ error: 'No fue posible enviar el código de verificación. Intenta nuevamente.' }, { status: 503 })
+        }
+
+        const desafio = jwt.sign(
+            { id: docente.id, email: docente.email, purpose: 'SECOND_FACTOR' },
+            SECRETO,
+            { expiresIn: '10m' }
+        )
 
         const forcePasswordChange = typeof docente.resetToken === 'string' && docente.resetToken.startsWith('FORCE_CHANGE_PASSWORD:')
 
         return Response.json({ 
-            token, 
+            requiereSegundoFactor: true,
+            desafio,
             teacher: { id: docente.id, email: docente.email, name: docente.name, role: docente.role },
             forcePasswordChange,
             forcePasswordChangeToken: forcePasswordChange ? docente.resetToken : null,

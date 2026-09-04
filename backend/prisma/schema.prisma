@@ -88,6 +88,9 @@ model Docente {
   role              String                  @default("TEACHER") @map("rol")
   resetToken        String?                 @map("token_recuperacion")
   resetTokenExpiry  DateTime?               @map("expiracion_token")
+  twoFactorCodeHash String?                 @map("codigo_2fa_hash")
+  twoFactorCodeExpiry DateTime?             @map("codigo_2fa_expira_en")
+  twoFactorCodeAttempts Int                 @default(0) @map("codigo_2fa_intentos")
   createdAt         DateTime                @default(now()) @map("fecha_creacion")
   courses           Curso[]
 
