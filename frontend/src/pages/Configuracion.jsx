@@ -755,10 +755,10 @@ export default function Configuracion() {
                                 maxHeight: '88vh',
                             }}
                         >
-                            <div className="flex items-center justify-between px-6 py-4 border-b shrink-0" style={{ borderColor: 'var(--color-border)' }}>
-                                <h3 className="text-lg font-semibold flex items-center gap-2">
+                            <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 border-b shrink-0" style={{ borderColor: 'var(--color-border)' }}>
+                                <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2 min-w-0">
                                     <MessageSquare size={20} className="text-primario" />
-                                    Historial de notificaciones WhatsApp
+                                    <span>Historial de notificaciones WhatsApp</span>
                                 </h3>
                                 <button
                                     type="button"
@@ -771,26 +771,26 @@ export default function Configuracion() {
                                 </button>
                             </div>
 
-                            <div className="px-6 py-4 grid grid-cols-3 gap-3 shrink-0 border-b" style={{ borderColor: 'var(--color-border)' }}>
-                                <div className="flex items-center gap-3 rounded-lg p-3" style={{ background: 'color-mix(in srgb, var(--color-present) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--color-present) 25%, transparent)' }}>
+                            <div className="px-4 py-3 sm:px-6 sm:py-4 grid grid-cols-3 gap-2 sm:gap-3 shrink-0 border-b" style={{ borderColor: 'var(--color-border)' }}>
+                                <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-3 rounded-lg p-2 sm:p-3" style={{ background: 'color-mix(in srgb, var(--color-present) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--color-present) 25%, transparent)' }}>
                                     <CheckCircle2 size={20} style={{ color: 'var(--color-present)', flexShrink: 0 }} />
                                     <div>
-                                        <p className="font-mono text-2xl font-semibold" style={{ color: 'var(--color-present)' }}>{estadoWhatsApp?.resumen?.enviados || 0}</p>
-                                        <p className="text-xs text-texto-secundario">Enviados</p>
+                                        <p className="font-mono text-xl sm:text-2xl font-semibold" style={{ color: 'var(--color-present)' }}>{estadoWhatsApp?.resumen?.enviados || 0}</p>
+                                        <p className="text-[11px] sm:text-xs text-texto-secundario">Enviados</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3 rounded-lg p-3" style={{ background: 'color-mix(in srgb, var(--color-muted) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--color-muted) 25%, transparent)' }}>
+                                <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-3 rounded-lg p-2 sm:p-3" style={{ background: 'color-mix(in srgb, var(--color-muted) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--color-muted) 25%, transparent)' }}>
                                     <Clock size={20} style={{ color: 'var(--color-muted)', flexShrink: 0 }} />
                                     <div>
-                                        <p className="font-mono text-2xl font-semibold text-texto-secundario">{estadoWhatsApp?.resumen?.omitidos || 0}</p>
-                                        <p className="text-xs text-texto-secundario">Omitidos</p>
+                                        <p className="font-mono text-xl sm:text-2xl font-semibold text-texto-secundario">{estadoWhatsApp?.resumen?.omitidos || 0}</p>
+                                        <p className="text-[11px] sm:text-xs text-texto-secundario">Omitidos</p>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-3 rounded-lg p-3" style={{ background: 'color-mix(in srgb, var(--color-absent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--color-absent) 25%, transparent)' }}>
+                                <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-3 rounded-lg p-2 sm:p-3" style={{ background: 'color-mix(in srgb, var(--color-absent) 10%, transparent)', border: '1px solid color-mix(in srgb, var(--color-absent) 25%, transparent)' }}>
                                     <AlertCircle size={20} style={{ color: 'var(--color-absent)', flexShrink: 0 }} />
                                     <div>
-                                        <p className="font-mono text-2xl font-semibold" style={{ color: 'var(--color-absent)' }}>{estadoWhatsApp?.resumen?.errores || 0}</p>
-                                        <p className="text-xs text-texto-secundario">Errores</p>
+                                        <p className="font-mono text-xl sm:text-2xl font-semibold" style={{ color: 'var(--color-absent)' }}>{estadoWhatsApp?.resumen?.errores || 0}</p>
+                                        <p className="text-[11px] sm:text-xs text-texto-secundario">Errores</p>
                                     </div>
                                 </div>
                             </div>
@@ -805,7 +805,38 @@ export default function Configuracion() {
                                         No hay notificaciones de WhatsApp registradas aún.
                                     </p>
                                 ) : (
-                                    <table className="w-full table-fixed text-sm">
+                                    <>
+                                        <div className="sm:hidden divide-y" style={{ borderColor: 'var(--color-border)' }}>
+                                        {estadoWhatsApp.logs.map((log) => (
+                                            <article key={log.id} className="px-4 py-3 space-y-2">
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <p className="font-medium break-words min-w-0">{log.estudiante}</p>
+                                                    {log.status === 'SUCCESS' && <span className="badge-docente shrink-0">Enviado</span>}
+                                                    {log.status === 'SKIPPED' && <span className="text-xs text-texto-secundario shrink-0">Omitido</span>}
+                                                    {log.status === 'ERROR' && <span className="badge-admin shrink-0" title={log.error}>Error</span>}
+                                                </div>
+                                                <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
+                                                    <div>
+                                                        <dt className="text-texto-secundario">WhatsApp</dt>
+                                                        <dd className="font-mono break-words">{log.whatsapp}</dd>
+                                                    </div>
+                                                    <div>
+                                                        <dt className="text-texto-secundario">Fecha de clase</dt>
+                                                        <dd className="break-words">{log.fecha}</dd>
+                                                    </div>
+                                                    <div>
+                                                        <dt className="text-texto-secundario">Materia</dt>
+                                                        <dd className="break-words">{log.materia}</dd>
+                                                    </div>
+                                                    <div>
+                                                        <dt className="text-texto-secundario">Horario</dt>
+                                                        <dd className="leading-5">{renderizarHorario(log.horario)}</dd>
+                                                    </div>
+                                                </dl>
+                                            </article>
+                                        ))}
+                                        </div>
+                                        <table className="hidden sm:table w-full table-fixed text-sm">
                                         <thead className="sticky top-0" style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', zIndex: 1 }}>
                                             <tr className="text-left text-texto-secundario">
                                                 <th className="w-[22%] px-3 py-3 font-medium">Estudiante</th>
@@ -832,12 +863,13 @@ export default function Configuracion() {
                                                 </tr>
                                             ))}
                                         </tbody>
-                                    </table>
+                                        </table>
+                                    </>
                                 )}
                             </div>
 
-                            <div className="px-6 py-3 border-t shrink-0 flex items-center justify-between" style={{ borderColor: 'var(--color-border)' }}>
-                                <p className="text-xs text-texto-secundario">
+                            <div className="px-4 py-3 sm:px-6 border-t shrink-0 flex items-center justify-between gap-3" style={{ borderColor: 'var(--color-border)' }}>
+                                <p className="text-xs text-texto-secundario min-w-0">
                                     Mostrando {estadoWhatsApp?.logs?.length || 0} registro{estadoWhatsApp?.logs?.length !== 1 ? 's' : ''} más recientes
                                 </p>
                                 <button
