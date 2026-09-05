@@ -36,17 +36,25 @@ const Auditoria = () => {
     const [total, setTotal] = useState(0);
     const [pagina, setPagina] = useState(0);
     const [terminoBusqueda, setTerminoBusqueda] = useState('');
+    const [errorCarga, setErrorCarga] = useState('');
     const [modalLog, setModalLog] = useState(null);
     const limite = 20;
 
     const obtenerLogs = async () => {
         try {
             setCargando(true);
-            const res = await api.get(`/auditoria?limit=${limite}&offset=${pagina * limite}`);
+            setErrorCarga('');
+            const parametros = new URLSearchParams({
+                limit: String(limite),
+                offset: String(pagina * limite),
+            });
+            if (terminoBusqueda.trim()) parametros.set('search', terminoBusqueda.trim());
+            const res = await api.get(`/auditoria?${parametros.toString()}`);
             setRegistros(res.data.logs);
             setTotal(res.data.total);
         } catch (error) {
             console.error('Error al cargar logs:', error);
+            setErrorCarga('No se pudo cargar la auditoría. Intenta nuevamente.');
         } finally {
             setCargando(false);
         }
@@ -54,7 +62,7 @@ const Auditoria = () => {
 
     useEffect(() => {
         obtenerLogs();
-    }, [pagina]);
+    }, [pagina, terminoBusqueda]);
 
     const getActionIcon = (action) => {
         if (action.includes('LOGIN')) return <Key className="text-purple-500" size={18} />;
@@ -268,12 +276,6 @@ const Auditoria = () => {
         );
     };
 
-    const logsFiltrados = registros.filter(log => 
-        log.userName.toLowerCase().includes(terminoBusqueda.toLowerCase()) ||
-        log.action.toLowerCase().includes(terminoBusqueda.toLowerCase()) ||
-        obtenerEtiquetaEntidad(log.target).toLowerCase().includes(terminoBusqueda.toLowerCase())
-    );
-
     return (
         <div className="p-8 max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-8">
@@ -302,12 +304,15 @@ const Auditoria = () => {
                             placeholder="Buscar por usuario, acción o entidad..."
                             className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 transition-all text-sm"
                             value={terminoBusqueda}
-                            onChange={(e) => setTerminoBusqueda(e.target.value)}
+                            onChange={(e) => {
+                                setPagina(0);
+                                setTerminoBusqueda(e.target.value);
+                            }}
                         />
                     </div>
                     
                     <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <span>Mostrando {logsFiltrados.length} de {total} registros</span>
+                        <span>Mostrando {registros.length} de {total} registros</span>
                         <div className="flex items-center gap-1 ml-4">
                             <button 
                                 onClick={() => setPagina(p => Math.max(0, p - 1))}
@@ -327,6 +332,12 @@ const Auditoria = () => {
                         </div>
                     </div>
                 </div>
+
+                {errorCarga && (
+                    <div className="m-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+                        {errorCarga}
+                    </div>
+                )}
 
                 {modalLog && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -367,13 +378,13 @@ const Auditoria = () => {
                                         </td>
                                     </tr>
                                 ))
-                            ) : logsFiltrados.length === 0 ? (
+                            ) : registros.length === 0 ? (
                                 <tr>
                                     <td colSpan="6" className="px-6 py-12 text-center text-gray-400">
                                         No se encontraron registros.
                                     </td>
                                 </tr>
-                            ) : logsFiltrados.map((log) => (
+                            ) : registros.map((log) => (
                                 <tr key={log.id} className="hover:bg-gray-50/50 transition-colors">
                                     <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
                                         <div className="flex items-center gap-2">

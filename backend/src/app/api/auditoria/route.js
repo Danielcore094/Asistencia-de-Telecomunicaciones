@@ -11,12 +11,26 @@ export async function GET(request) {
         }
 
         const { searchParams } = new URL(request.url)
-        const limit = parseInt(searchParams.get('limit') || '100')
-        const offset = parseInt(searchParams.get('offset') || '0')
+        const limiteSolicitado = Number.parseInt(searchParams.get('limit') || '100', 10)
+        const desplazamientoSolicitado = Number.parseInt(searchParams.get('offset') || '0', 10)
+        const limit = Number.isFinite(limiteSolicitado) ? Math.min(Math.max(limiteSolicitado, 1), 100) : 100
+        const offset = Number.isFinite(desplazamientoSolicitado) ? Math.max(desplazamientoSolicitado, 0) : 0
+        const busqueda = searchParams.get('search')?.trim() || ''
+        const where = busqueda
+            ? {
+                OR: [
+                    { userName: { contains: busqueda, mode: 'insensitive' } },
+                    { action: { contains: busqueda, mode: 'insensitive' } },
+                    { target: { contains: busqueda, mode: 'insensitive' } },
+                    { targetId: { contains: busqueda, mode: 'insensitive' } },
+                ],
+            }
+            : undefined
 
         const logs = await prisma.registroAuditoria.findMany({
             take: limit,
             skip: offset,
+            where,
             orderBy: { createdAt: 'desc' }
         })
 
@@ -55,7 +69,7 @@ export async function GET(request) {
                 : null,
         }))
 
-        const total = await prisma.registroAuditoria.count()
+        const total = await prisma.registroAuditoria.count({ where })
 
         return Response.json({ logs: logsConIdentificador, total })
     } catch (error) {
