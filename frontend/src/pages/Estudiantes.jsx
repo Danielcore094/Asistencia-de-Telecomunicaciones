@@ -336,7 +336,11 @@ export default function Estudiantes() {
                         franja: est.franja || cursoSeleccionado.franja || '',
                         programa: est.programa || cursoSeleccionado.programa || '',
                         porcentaje: porcentajePorId.get(est.id) ?? 0,
-                    }));
+                    })).sort((a, b) => a.nombreFormateado.localeCompare(
+                        b.nombreFormateado,
+                        'es',
+                        { sensitivity: 'base' },
+                    ));
                 setEstudiantes(normalizados);
             } finally {
                 setCargando(false);
