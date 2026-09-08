@@ -325,7 +325,7 @@ export default function Configuracion() {
                                 )}
                             </div>
                         </div>
-                        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                        <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2">
                             <button
                                 type="button"
                                 disabled={enviandoNotificaciones}
@@ -507,7 +507,7 @@ export default function Configuracion() {
                                 )}
                             </div>
                         </div>
-                        <div className="flex shrink-0 items-center justify-end">
+                        <div className="ml-auto flex shrink-0 items-center justify-end">
                             <button
                                 type="button"
                                 disabled={cargandoWa}
