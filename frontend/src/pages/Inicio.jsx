@@ -30,6 +30,7 @@ const COLORES_CURSOS = _COLORES_FALLBACK.map((f, i) => v(`--color-course-${i + 1
 export default function Inicio() {
     const { usuario } = useAutenticacion();
     const {
+        cursos,
         cursoSeleccionado,
         codigoSeleccionado,
         grupoSeleccionado,
@@ -57,6 +58,36 @@ export default function Inicio() {
         grupo:     grupoSeleccionado,
         docenteId: docenteSeleccionado,
     }), [codigoSeleccionado, grupoSeleccionado, docenteSeleccionado]);
+
+    const clasesDelDia = useMemo(() => {
+        const diaActual = new Intl.DateTimeFormat('es-CO', {
+            timeZone: 'America/Bogota',
+            weekday: 'long',
+        }).format(new Date()).toLowerCase();
+
+        return cursos.flatMap((curso) => {
+            const clases = [];
+            const franjas = [
+                { dia: curso.dia, horaInicio: curso.horaInicio, horaFin: curso.horaFin },
+                { dia: curso.dia2, horaInicio: curso.horaInicio2, horaFin: curso.horaFin2 },
+            ];
+
+            franjas.forEach((franja, indice) => {
+                if (String(franja.dia || '').trim().toLowerCase() === diaActual) {
+                    clases.push({
+                        id: `${curso.id}-${indice}`,
+                        materia: curso.name || curso.nombre,
+                        grupo: curso.groupCode || curso.grupo,
+                        dia: franja.dia,
+                        horaInicio: franja.horaInicio,
+                        horaFin: franja.horaFin,
+                    });
+                }
+            });
+
+            return clases;
+        }).sort((a, b) => String(a.horaInicio || '').localeCompare(String(b.horaInicio || '')));
+    }, [cursos]);
 
     useEffect(() => {
         const cargarPanel = async () => {
@@ -295,9 +326,36 @@ export default function Inicio() {
                     <p className="text-sm text-texto-secundario">Selecciona un docente para cargar el panel principal.</p>
                 </section>
             ) : isAdmin && !cursoSeleccionado ? (
-                <section className="tarjeta">
-                    <p className="text-sm text-texto-secundario">Selecciona una materia para cargar el panel principal.</p>
-                </section>
+                <>
+                    <section className="tarjeta">
+                        <p className="text-sm text-texto-secundario">Selecciona una materia para cargar el panel principal.</p>
+                    </section>
+
+                    <section className="tarjeta">
+                        <h3 className="mb-4 text-lg font-medium">Clases de hoy</h3>
+                        {clasesDelDia.length === 0 ? (
+                            <p className="text-sm text-texto-secundario">El docente no tiene clases programadas para hoy.</p>
+                        ) : (
+                            <ul className="space-y-3">
+                                {clasesDelDia.map((clase) => (
+                                    <li key={clase.id} className="rounded-lg border border-border p-4">
+                                        <div className="flex items-center justify-between gap-3">
+                                            <div>
+                                                <p className="font-medium text-texto-primario">{clase.materia}</p>
+                                                <p className="text-sm text-texto-secundario">
+                                                    {clase.dia}{clase.grupo ? ` · Grupo ${clase.grupo}` : ''}
+                                                </p>
+                                            </div>
+                                            <span className="font-mono text-sm text-texto-secundario">
+                                                {clase.horaInicio || '--:--'} - {clase.horaFin || '--:--'}
+                                            </span>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </section>
+                </>
             ) : !cursoSeleccionado && isAdmin ? (
 
                 <section className="grid gap-4 lg:grid-cols-3">

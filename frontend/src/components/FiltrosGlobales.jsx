@@ -108,6 +108,7 @@ export default function FiltrosGlobales({
         setGrupoSeleccionado,
         docenteSeleccionado,
         setDocenteSeleccionado,
+        setCodigoSeleccionado,
     } = useCurso();
 
     const [docentes, setDocentes] = useState([]);
