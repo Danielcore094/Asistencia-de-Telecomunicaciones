@@ -77,13 +77,13 @@ export default function LayoutPrincipal({ children }) {
                     </div>
 
                     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none hidden xl:block">
-                        <h1 className="text-xl font-bold text-primario">
+                        <h1 className="text-xl font-bold text-primario tracking-tight">
                             Control de Asistencia Telecomunicaciones
                         </h1>
                     </div>
 
                     <div className="min-w-0 flex-1 px-2 text-center xl:hidden">
-                        <h1 className="truncate text-sm font-bold text-primario sm:text-base">
+                        <h1 className="truncate text-sm font-bold text-primario sm:text-base tracking-tight">
                             Control de Asistencia
                         </h1>
                     </div>

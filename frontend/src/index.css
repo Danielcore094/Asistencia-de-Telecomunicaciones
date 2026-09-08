@@ -1,35 +1,35 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=DM+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-    --color-primary: #6D100A;
-    --color-primary-light: #F5E1E6;
-    --color-primary-dark: #4A0B07;
-    --color-accent: #7B8C45;
-    --color-accent-light: #EBF1DD;
-    --color-accent-dark: #5A6B35;
-    --color-bg: #F8F9FC;
-    --color-beige: #F8E9D4;
+    --color-primary: #0F4C75;
+    --color-primary-light: #E8F1F7;
+    --color-primary-dark: #083B5C;
+    --color-accent: #C6D92E;
+    --color-accent-light: #F5F8D9;
+    --color-accent-dark: #9DAF18;
+    --color-bg: #F5F8FA;
+    --color-beige: #F5F8FA;
     --color-surface: #FFFFFF;
     --color-border: #E2E6EF;
-    --color-topbar-bg: #FFF8F0;
-    --color-sidebar-bg: #F7F1E6;
+    --color-topbar-bg: #FFFFFF;
+    --color-sidebar-bg: #F4F7F9;
     --color-muted: #8A93A8;
     --color-text-primary: #1A1A2E;
     --color-text-secondary: #4B5563;
-    --color-present: #7B8C45;
-    --color-present-bg: #EBF1DD;
+    --color-present: #9DAF18;
+    --color-present-bg: #F5F8D9;
     --color-absent: #DC2626;
     --color-absent-bg: #FEF2F2;
     --color-late: #D97706;
     --color-late-bg: #FFFBEB;
-    --color-excused: #2563EB;
-    --color-excused-bg: #EFF6FF;
-    --color-course-1: #6B2D8B;
-    --color-course-2: #8DC63F;
+    --color-excused: #0F4C75;
+    --color-excused-bg: #E8F1F7;
+    --color-course-1: #0F4C75;
+    --color-course-2: #C6D92E;
     --color-course-3: #D97706;
     --color-course-4: #5D4C6C;
     --color-course-5: #DC2626;
@@ -40,7 +40,7 @@
     --color-course-10: #756AA2;
     --color-warning: #F59E0B;
     --color-warning-bg: color-mix(in srgb, var(--color-warning) 15%, transparent);
-    --font-sans: 'DM Sans', sans-serif;
+    --font-sans: 'Lato', 'DM Sans', sans-serif;
     --font-mono: 'DM Mono', monospace;
     --space-1: 4px;
     --space-2: 8px;
@@ -87,6 +87,16 @@
         font-family: var(--font-sans);
     }
 
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-family: var(--font-sans);
+        font-weight: 700;
+    }
+
     button,
     input,
     select,
@@ -114,11 +124,13 @@
     }
 
     .sidebar-nav {
-        background: var(--color-sidebar-bg, #F7F8FA);
+        background: var(--color-sidebar-bg);
+        border-right-color: var(--color-border);
     }
 
     .topbar-bg {
         background: var(--color-topbar-bg);
+        border-color: var(--color-border);
     }
 
     .filtro-global {
@@ -229,6 +241,10 @@
         color: var(--color-primary);
         font-weight: 600;
         border-left-color: var(--color-primary);
+    }
+
+    .nav-item.activo svg {
+        color: var(--color-accent-dark);
     }
 
     @keyframes modal-fade-in {
