@@ -295,8 +295,8 @@ export default function Configuracion() {
                                 El sistema evita duplicados: si ya fue notificado esta semana, no se reenvía.
                             </p>
                             <div className="mt-3 flex flex-wrap gap-4 text-xs">
-                                <span className="flex items-center gap-1.5" style={{ color: 'var(--color-accent)' }}>
-                                    <span className="inline-block w-2 h-2 rounded-full" style={{ background: 'var(--color-accent)' }} />
+                                <span className="notificacion-estado">
+                                    <span className="notificacion-estado__indicador" />
                                     Cron activo — Estudiantes: domingos 09:00; docentes y administrador: lunes 06:00 (Bogotá)
                                 </span>
                                 {estadoCron?.ultimaEjecucion && (
@@ -480,8 +480,8 @@ export default function Configuracion() {
                                 El envío es inmediato y no requiere acción manual.
                             </p>
                             <div className="mt-3 flex flex-wrap gap-4 text-xs">
-                                <span className="flex items-center gap-1.5" style={{ color: 'var(--color-accent)' }}>
-                                    <span className="inline-block w-2 h-2 rounded-full" style={{ background: 'var(--color-accent)' }} />
+                                <span className="notificacion-estado">
+                                    <span className="notificacion-estado__indicador" />
                                     Activo — disparo automático al guardar asistencia
                                 </span>
                                 {estadoWhatsApp?.resumen && (
