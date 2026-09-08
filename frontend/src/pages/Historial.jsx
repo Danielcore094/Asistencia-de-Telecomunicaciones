@@ -3,7 +3,6 @@ import { obtenerAsistencia } from '../services/api';
 import { Calendar as IconoCalendario, CheckCircle2, XCircle, Loader2, Filter } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { compararPorApellido } from '../utils/formatearNombre';
 import { useCurso } from '../context/ContextoCurso';
 import { useAutenticacion } from '../context/ContextoAutenticacion';
 import FiltrosGlobales from '../components/FiltrosGlobales';
@@ -101,7 +100,13 @@ export default function Historial() {
         setCargandoDetalles(true);
         try {
             const detalles = await obtenerAsistencia(cursoSeleccionado.id, fecha, filtrosCombinados);
-            setDetallesFecha([...detalles].sort((a, b) => compararPorApellido(a.student?.name ?? '', b.student?.name ?? '')));
+            setDetallesFecha([...detalles].sort((a, b) => (
+                mostrarNombreEstudiante(a.student?.name ?? '').localeCompare(
+                    mostrarNombreEstudiante(b.student?.name ?? ''),
+                    'es',
+                    { sensitivity: 'base' },
+                )
+            )));
         } catch (_err) {
             setDetallesFecha([]);
         } finally {
