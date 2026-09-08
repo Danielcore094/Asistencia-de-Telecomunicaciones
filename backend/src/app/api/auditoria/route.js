@@ -44,9 +44,46 @@ export async function GET(request) {
             })
             : []
         const cursosPorId = new Map(cursos.map((curso) => [curso.id, curso]))
+        const detallesNotificaciones = logs
+            .filter((log) => log.action === 'REINTENTAR_NOTIFICACION_WHATSAPP' && log.details)
+            .map((log) => (typeof log.details === 'object' ? log.details : {}))
+        const idsEstudiantes = [...new Set(detallesNotificaciones
+            .map((detalle) => detalle.estudianteId)
+            .filter(Boolean))]
+        const idsCursosNotificaciones = [...new Set(detallesNotificaciones
+            .map((detalle) => detalle.cursoId)
+            .filter(Boolean))]
+        const [estudiantes, cursosNotificaciones] = await Promise.all([
+            idsEstudiantes.length > 0
+                ? prisma.estudiante.findMany({
+                    where: { documento: { in: idsEstudiantes } },
+                    select: { documento: true, name: true },
+                })
+                : [],
+            idsCursosNotificaciones.length > 0
+                ? prisma.curso.findMany({
+                    where: { id: { in: idsCursosNotificaciones } },
+                    select: { id: true, name: true, code: true, groupCode: true },
+                })
+                : [],
+        ])
+        const estudiantesPorId = new Map(estudiantes.map((estudiante) => [estudiante.documento, estudiante]))
+        const cursosNotificacionesPorId = new Map(cursosNotificaciones.map((curso) => [curso.id, curso]))
         const logsConIdentificador = logs.map((log) => ({
             ...log,
-            details: ['ATTENDANCE', 'COURSE'].includes(log.target) && cursosPorId.has(log.targetId)
+            details: log.action === 'REINTENTAR_NOTIFICACION_WHATSAPP'
+                ? {
+                    ...(log.details || {}),
+                    nombreEstudiante: log.details?.nombreEstudiante
+                        || estudiantesPorId.get(log.details?.estudianteId)?.name,
+                    nombreMateria: log.details?.nombreMateria
+                        || cursosNotificacionesPorId.get(log.details?.cursoId)?.name,
+                    codigoMateria: log.details?.codigoMateria
+                        || cursosNotificacionesPorId.get(log.details?.cursoId)?.code,
+                    grupo: log.details?.grupo
+                        || cursosNotificacionesPorId.get(log.details?.cursoId)?.groupCode,
+                }
+                : ['ATTENDANCE', 'COURSE'].includes(log.target) && cursosPorId.has(log.targetId)
                 ? {
                     ...(log.details || {}),
                     ...(log.action === 'ALERTA_POSIBLE_PERDIDA'

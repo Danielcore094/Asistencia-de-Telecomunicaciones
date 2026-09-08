@@ -19,7 +19,14 @@ export async function POST(request) {
 
         const registro = await prisma.registroNotificacionWhatsapp.findUnique({
             where: { id },
-            select: { id: true, studentId: true, courseId: true, date: true, status: true },
+            select: {
+                id: true,
+                studentId: true,
+                courseId: true,
+                date: true,
+                status: true,
+                student: { select: { name: true } },
+            },
         });
 
         if (!registro) {
@@ -34,6 +41,11 @@ export async function POST(request) {
         if (registro.status !== 'ERROR') {
             return Response.json({ error: 'Solo se pueden reintentar envíos con error' }, { status: 409 });
         }
+
+        const curso = await prisma.curso.findUnique({
+            where: { id: registro.courseId },
+            select: { name: true, code: true, groupCode: true },
+        });
 
         const asistencia = await prisma.asistencia.findUnique({
             where: {
@@ -68,7 +80,11 @@ export async function POST(request) {
             targetId: registro.id,
             detalles: {
                 estudianteId: registro.studentId,
+                nombreEstudiante: registro.student?.name,
                 cursoId: registro.courseId,
+                nombreMateria: curso?.name,
+                codigoMateria: curso?.code,
+                grupo: curso?.groupCode,
                 fecha: registro.date,
                 estado: actualizado?.status,
                 error: actualizado?.error,

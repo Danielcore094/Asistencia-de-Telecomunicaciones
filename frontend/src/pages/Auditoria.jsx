@@ -91,6 +91,8 @@ const Auditoria = () => {
             courseNames: 'Materias',
             courseCount: 'Cantidad de materias',
             cursoId: 'Materia',
+            estudianteId: 'Estudiante',
+            nombreEstudiante: 'Estudiante',
             nombreCurso: 'Materia',
             nombresCursos: 'Materias',
             cantidadCursos: 'Cantidad de materias',
@@ -192,7 +194,8 @@ const Auditoria = () => {
 
         const filasTodas = [...Object.entries(detalles)];
         const tieneNombreCurso = (Object.prototype.hasOwnProperty.call(detalles, 'nombreCurso') && detalles.nombreCurso)
-            || (Object.prototype.hasOwnProperty.call(detalles, 'courseName') && detalles.courseName);
+            || (Object.prototype.hasOwnProperty.call(detalles, 'courseName') && detalles.courseName)
+            || (Object.prototype.hasOwnProperty.call(detalles, 'nombreMateria') && detalles.nombreMateria);
         if (tieneNombreCurso) {
             for (let i = filasTodas.length - 1; i >= 0; i--) {
                 if (filasTodas[i][0] === 'courseId' || filasTodas[i][0] === 'cursoId') {
@@ -206,6 +209,12 @@ const Auditoria = () => {
             }
             if (log.identificadorEntidad && !Object.prototype.hasOwnProperty.call(detalles, 'identificadorEntidad')) {
                 filasTodas.unshift(['identificadorEntidad', log.identificadorEntidad]);
+            }
+        } else if (log.action === 'REINTENTAR_NOTIFICACION_WHATSAPP') {
+            for (let i = filasTodas.length - 1; i >= 0; i--) {
+                if (['targetId', 'estudianteId', 'cursoId'].includes(filasTodas[i][0])) {
+                    filasTodas.splice(i, 1);
+                }
             }
         } else if (log.target === 'STUDENT' && detalles.nombreEstudiante) {
             for (let i = filasTodas.length - 1; i >= 0; i--) {

@@ -730,7 +730,7 @@ export default function Reportes() {
                                 type="button"
                                 onClick={exportarExcel}
                                 disabled={(datos.length === 0 && cursoSeleccionado) || exportando || (!cursoSeleccionado && cursos.length === 0)}
-                                className="boton-primario inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed min-w-[140px]"
+                                className="boton-primario inline-flex w-full items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed min-w-[140px]"
                             >
                                 {exportando ? <Loader2 size={15} className="animate-spin" aria-label="Exportando" /> : <Download size={15} aria-label="Descargar reporte detallado" />}
                                 {exportando ? 'Generando...' : esDocente ? 'Descargar reporte' : 'Exportar detallado'}
@@ -741,7 +741,7 @@ export default function Reportes() {
                                 type="button"
                                 onClick={exportarResumenSemestral}
                                 disabled={exportandoResumen}
-                                className="boton-secundario inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed min-w-[140px]"
+                                className="boton-secundario inline-flex w-full items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed min-w-[140px]"
                             >
                                 {exportandoResumen ? <Loader2 size={15} className="animate-spin" aria-label="Generando resumen" /> : <Download size={15} aria-label="Descargar resumen semestral" />}
                                 {exportandoResumen ? 'Generando...' : 'Resumen semestral'}
