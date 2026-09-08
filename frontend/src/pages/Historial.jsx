@@ -3,13 +3,15 @@ import { obtenerAsistencia } from '../services/api';
 import { Calendar as IconoCalendario, CheckCircle2, XCircle, Loader2, Filter } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { formatearNombre, compararPorApellido } from '../utils/formatearNombre';
+import { compararPorApellido } from '../utils/formatearNombre';
 import { useCurso } from '../context/ContextoCurso';
 import { useAutenticacion } from '../context/ContextoAutenticacion';
 import FiltrosGlobales from '../components/FiltrosGlobales';
 
 
 const ANIOS = ['2024', '2025', '2026'];
+
+const mostrarNombreEstudiante = (nombre = '') => nombre.replace(/\s*,\s*/g, ' ').replace(/\s+/g, ' ').trim();
 
 
 const estiloSelectLocal = {
@@ -352,7 +354,7 @@ export default function Historial() {
                                                             className="text-sm font-medium"
                                                             style={{ color: 'var(--color-text-primary)' }}
                                                         >
-                                                            {formatearNombre(item.student.name)}
+                                                            {mostrarNombreEstudiante(item.student.name)}
                                                         </span>
                                                     </div>
                                                     <div>

@@ -88,6 +88,15 @@ npx prisma generate
 npx prisma migrate deploy
 ```
 
+Para el entorno de desarrollo alojado en Supabase, configura en `backend/.env` las dos conexiones de ese proyecto antes de ejecutar esos comandos:
+
+```env
+DATABASE_URL="postgresql://...pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"
+DIRECT_URL="postgresql://...supabase.co:5432/postgres"
+```
+
+`DATABASE_URL` se usa para la aplicación y `DIRECT_URL` para que Prisma ejecute migraciones directamente contra Supabase. No uses las URLs de PostgreSQL local/Docker para aplicar la migración del entorno de desarrollo.
+
 6. Inicia ambos servicios desde la raíz:
 
 ```bash
