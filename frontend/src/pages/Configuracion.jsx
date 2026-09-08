@@ -19,6 +19,20 @@ const renderizarHorario = (horario) => {
     });
 };
 
+const generarContrasenaInicial = () => {
+    const valoresAleatorios = new Uint32Array(8);
+    if (globalThis.crypto?.getRandomValues) {
+        globalThis.crypto.getRandomValues(valoresAleatorios);
+    } else {
+        valoresAleatorios.forEach((_, indice) => {
+            valoresAleatorios[indice] = Math.floor(Math.random() * 0xFFFFFFFF);
+        });
+    }
+
+    const digitos = Array.from(valoresAleatorios, (valor) => String(valor % 10)).join('');
+    return `Uts${digitos}!`;
+};
+
 export default function Configuracion() {
     const { usuario } = useAutenticacion();
     const [docentes, setDocentes] = useState([]);
@@ -294,7 +308,7 @@ export default function Configuracion() {
                                 Envía correos automáticos a estudiantes con inasistencias registradas durante la semana actual (lunes a sábado).
                                 El sistema evita duplicados: si ya fue notificado esta semana, no se reenvía.
                             </p>
-                            <div className="mt-3 flex flex-wrap gap-4 text-xs">
+                            <div className="mt-3 flex flex-wrap items-center gap-4 text-xs">
                                 <span className="notificacion-estado">
                                     <span className="notificacion-estado__indicador" />
                                     Cron activo — Estudiantes: domingos 09:00; docentes y administrador: lunes 06:00 (Bogotá)
@@ -311,40 +325,42 @@ export default function Configuracion() {
                                 )}
                             </div>
                         </div>
-                        <button
-                            type="button"
-                            disabled={enviandoNotificaciones}
-                            onClick={async () => {
-                                setEnviandoNotificaciones(true);
-                                setResultadoNotificaciones(null);
-                                try {
-                                    const resultado = await enviarNotificacionesSemanal();
-                                    setResultadoNotificaciones(resultado.results);
-                                    const estadoActualizado = await obtenerEstadoNotificaciones();
-                                    setEstadoCron(estadoActualizado);
-                                    toast.success(`Proceso completado: ${resultado.results.sent} correos enviados`);
-                                } catch (err) {
-                                    const msg = err?.response?.data?.error || 'Error al enviar notificaciones';
-                                    toast.error(msg);
-                                } finally {
-                                    setEnviandoNotificaciones(false);
-                                }
-                            }}
-                            className="boton-primario inline-flex items-center gap-2 shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
-                            aria-label="Enviar notificaciones semanales"
-                        >
-                            {enviandoNotificaciones
-                                ? <><Loader2 size={16} className="animate-spin" aria-label="Enviando" /> Enviando...</>
-                                : <><Send size={16} aria-label="Enviar" /> Enviar notificaciones semanales</>}
-                        </button>
-                        <button
-                            type="button"
-                            onClick={cargarHistorialCorreo}
-                            className="boton-secundario inline-flex items-center gap-2 shrink-0"
-                            aria-label="Ver historial de correos"
-                        >
-                            <Mail size={16} aria-label="Ver historial de correos" /> Ver historial
-                        </button>
+                        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+                            <button
+                                type="button"
+                                disabled={enviandoNotificaciones}
+                                onClick={async () => {
+                                    setEnviandoNotificaciones(true);
+                                    setResultadoNotificaciones(null);
+                                    try {
+                                        const resultado = await enviarNotificacionesSemanal();
+                                        setResultadoNotificaciones(resultado.results);
+                                        const estadoActualizado = await obtenerEstadoNotificaciones();
+                                        setEstadoCron(estadoActualizado);
+                                        toast.success(`Proceso completado: ${resultado.results.sent} correos enviados`);
+                                    } catch (err) {
+                                        const msg = err?.response?.data?.error || 'Error al enviar notificaciones';
+                                        toast.error(msg);
+                                    } finally {
+                                        setEnviandoNotificaciones(false);
+                                    }
+                                }}
+                                className="boton-primario inline-flex items-center gap-2 shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
+                                aria-label="Enviar notificaciones semanales"
+                            >
+                                {enviandoNotificaciones
+                                    ? <><Loader2 size={16} className="animate-spin" aria-label="Enviando" /> Enviando...</>
+                                    : <><Send size={16} aria-label="Enviar" /> Enviar notificaciones semanales</>}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={cargarHistorialCorreo}
+                                className="boton-secundario inline-flex items-center gap-2 shrink-0"
+                                aria-label="Ver historial de correos"
+                            >
+                                <Mail size={16} aria-label="Ver historial de correos" /> Ver historial
+                            </button>
+                        </div>
                     </div>
 
                     {resultadoNotificaciones && (
@@ -479,7 +495,7 @@ export default function Configuracion() {
                                 envía automáticamente un mensaje de WhatsApp a través de Evolution API.
                                 El envío es inmediato y no requiere acción manual.
                             </p>
-                            <div className="mt-3 flex flex-wrap gap-4 text-xs">
+                            <div className="mt-3 flex flex-wrap items-center gap-4 text-xs">
                                 <span className="notificacion-estado">
                                     <span className="notificacion-estado__indicador" />
                                     Activo — disparo automático al guardar asistencia
@@ -491,17 +507,19 @@ export default function Configuracion() {
                                 )}
                             </div>
                         </div>
-                        <button
-                            type="button"
-                            disabled={cargandoWa}
-                            onClick={cargarHistorialWhatsApp}
-                            className="boton-secundario inline-flex items-center gap-2 shrink-0"
-                            aria-label="Ver historial WhatsApp"
-                        >
-                            {cargandoWa
-                                ? <><Loader2 size={16} className="animate-spin" aria-label="Cargando" /> Cargando...</>
-                                : <><Smartphone size={16} aria-label="Ver historial" /> Ver historial</>}
-                        </button>
+                        <div className="flex shrink-0 items-center justify-end">
+                            <button
+                                type="button"
+                                disabled={cargandoWa}
+                                onClick={cargarHistorialWhatsApp}
+                                className="boton-secundario inline-flex items-center gap-2 shrink-0"
+                                aria-label="Ver historial WhatsApp"
+                            >
+                                {cargandoWa
+                                    ? <><Loader2 size={16} className="animate-spin" aria-label="Cargando" /> Cargando...</>
+                                    : <><Smartphone size={16} aria-label="Ver historial" /> Ver historial</>}
+                            </button>
+                        </div>
                     </div>
                 </section>
 
@@ -513,7 +531,7 @@ export default function Configuracion() {
                             onClick={() => {
                                 setEditandoId(null);
                                 setModoCambioContrasena(false);
-                                setFormulario({ documento: '', name: '', email: '', password: '', role: 'TEACHER' });
+                                setFormulario({ documento: '', name: '', email: '', password: generarContrasenaInicial(), role: 'TEACHER' });
                                 setModalFormularioVisible(true);
                             }}
                             className="boton-primario inline-flex items-center gap-2 h-[38px]"
@@ -660,7 +678,8 @@ export default function Configuracion() {
                                                 <input
                                                     type="email"
                                                     required
-                                                    placeholder="correo@ejemplo.com"
+                                                    autoComplete="off"
+                                                    placeholder="ejemplo@correo.uts.edu.co"
                                                     className="campo w-full"
                                                     value={formulario.email}
                                                     onChange={(e) => setFormulario({ ...formulario, email: e.target.value })}
@@ -675,6 +694,7 @@ export default function Configuracion() {
                                                         type={mostrarContrasena ? 'text' : 'password'}
                                                         required
                                                         minLength={8}
+                                                        autoComplete="new-password"
                                                         placeholder="Mín. 8 caracteres"
                                                         className="campo w-full pr-10"
                                                         value={formulario.password}
