@@ -32,3 +32,19 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
+
+  frontend:
+    image: telecom-frontend:${IMAGE_TAG:-2026-09-03}
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: /api
+        VITE_TURNSTILE_SITE_KEY: ${VITE_TURNSTILE_SITE_KEY:?VITE_TURNSTILE_SITE_KEY debe estar definido en .env}
+    container_name: telecom_frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    restart: unless-stopped

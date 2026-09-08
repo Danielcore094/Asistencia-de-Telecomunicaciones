@@ -184,11 +184,11 @@ Comprueba `http://IP_DEL_SERVIDOR:3000` y `http://IP_DEL_SERVIDOR:3000/api/salud
 
 WhatsApp y Evolution API son opcionales y no se inician en la instalación básica. Para habilitarlos, arranca con `docker compose --profile whatsapp -f docker-compose.servidor.yml up -d` después de configurar sus variables. En el firewall institucional publica únicamente el puerto del frontend. PostgreSQL, Redis y Evolution API no publican puertos hacia la red. Configura HTTPS mediante el proxy inverso institucional y cambia `PUBLIC_URL` a la URL HTTPS final antes de construir el frontend.
 
-## Trasladar solo el backend y conservar servicios externos
+## Entrega contenerizada con servicios externos
 
-Si el despliegue vigente usa Vercel, Railway, Supabase y Upstash, conserva esos servicios durante la transición y utiliza `docker-compose.servidor-hibrido.yml`. Este archivo inicia únicamente el backend en el servidor institucional; no crea otra base de datos, no sustituye Upstash y no inicia otra instancia de Evolution API. Usa `.env.servidor-hibrido.example` como plantilla.
+Si el despliegue vigente usa Railway, Supabase, Upstash y Evolution API, puedes conservar esos servicios externos y ejecutar frontend y backend en Docker Desktop mediante `docker-compose.servidor-hibrido.yml`. Este archivo no crea otra base de datos, no sustituye Upstash y no inicia otra instancia de Evolution API. Usa `.env.servidor-hibrido.example` como plantilla.
 
-1. En el servidor copia `asistencia-imagenes-2026-09-03.tar`, `docker-compose.servidor-hibrido.yml` y un `.env` de producción. Conserva las conexiones actuales de Supabase, Upstash y Railway, y define `CORS_ALLOWED_ORIGINS` y `FRONTEND_URL` con la URL vigente de Vercel.
+1. En el equipo de entrega copia `docker-compose.servidor-hibrido.yml` y un `.env` de producción. Conserva las conexiones actuales de Supabase, Upstash y Evolution API. Define `CORS_ALLOWED_ORIGINS` y `FRONTEND_URL` con la URL final donde se abrirá el frontend, y configura `VITE_TURNSTILE_SITE_KEY`.
 2. Carga la imagen y valida la configuración:
 
 ```bash
@@ -196,15 +196,16 @@ docker load --input asistencia-imagenes-2026-09-03.tar
 docker compose -f docker-compose.servidor-hibrido.yml config
 ```
 
-3. Inicia el backend y comprueba su salud:
+3. Construye e inicia ambos contenedores y comprueba su salud:
 
 ```bash
+docker compose -f docker-compose.servidor-hibrido.yml build
 docker compose -f docker-compose.servidor-hibrido.yml up -d
 docker compose -f docker-compose.servidor-hibrido.yml ps
-curl http://localhost:4000/api/salud
+curl http://localhost:3000/api/salud
 ```
 
-4. Prueba autenticación y consultas desde la URL de Vercel. Mantén Railway activo hasta validar el backend institucional; después cambia `VITE_API_URL` en Vercel a la URL pública del servidor, por ejemplo `https://backend.institucion.edu.co/api`, y vuelve a desplegar el frontend.
+4. Abre `http://localhost:3000` o la URL/IP del equipo de entrega. El frontend consume `/api` por el mismo origen, por lo que no necesita `VITE_API_URL` apuntando a Vercel ni a `localhost` dentro de una configuración externa.
 
 En esta modalidad no ejecutes `prisma db push` ni `docker compose down -v`: Supabase conserva los datos y el esquema existentes. Las migraciones deben ejecutarse de forma controlada contra Supabase, con un respaldo verificado.
 
