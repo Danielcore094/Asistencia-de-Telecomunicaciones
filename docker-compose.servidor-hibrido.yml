@@ -1,6 +1,6 @@
 services:
   backend:
-    image: telecom-backend:${IMAGE_TAG:-2026-09-03}
+    image: telecom-backend:${IMAGE_TAG:-2026-09-08}
     container_name: telecom_backend
     environment:
       NODE_ENV: production
@@ -34,7 +34,7 @@ services:
       retries: 12
 
   frontend:
-    image: telecom-frontend:${IMAGE_TAG:-2026-09-03}
+    image: telecom-frontend:${IMAGE_TAG:-2026-09-08}
     build:
       context: ./frontend
       dockerfile: Dockerfile
