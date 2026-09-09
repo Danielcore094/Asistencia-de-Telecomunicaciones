@@ -185,18 +185,20 @@ export default function InicioSesion() {
                             </div>
                         )}
 
-                        {!desafioSegundoFactor && <CaptchaTurnstile
-                            key={versionCaptcha}
-                            alVerificar={token => {
-                                setTokenCaptcha(token);
-                                setErrorCaptcha('');
-                            }}
-                            alExpirar={() => setTokenCaptcha('')}
-                            alError={mensaje => {
-                                setTokenCaptcha('');
-                                setErrorCaptcha(mensaje);
-                            }}
-                        />}
+                        {!desafioSegundoFactor && <div className="flex justify-center">
+                            <CaptchaTurnstile
+                                key={versionCaptcha}
+                                alVerificar={token => {
+                                    setTokenCaptcha(token);
+                                    setErrorCaptcha('');
+                                }}
+                                alExpirar={() => setTokenCaptcha('')}
+                                alError={mensaje => {
+                                    setTokenCaptcha('');
+                                    setErrorCaptcha(mensaje);
+                                }}
+                            />
+                        </div>}
                         {!desafioSegundoFactor && errorCaptcha && (
                             <p className="text-sm text-red-600">{errorCaptcha}</p>
                         )}
