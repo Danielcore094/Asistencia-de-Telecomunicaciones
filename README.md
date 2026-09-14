@@ -1,17 +1,17 @@
-# Sistema de Control de Asistencia - Telecomunicaciones
+# Sistema de control de asistencia - Telecomunicaciones
 
-Aplicación para registrar asistencia, administrar cursos y estudiantes, generar reportes y enviar notificaciones académicas.
+El presente repositorio corresponde a una solución para la gestión de asistencia, administración de cursos y estudiantes, generación de reportes y envío de notificaciones académicas.
 
 ## Arquitectura
 
-- `frontend/`: cliente React con Vite que consume la API mediante `VITE_API_URL`.
-- `backend/`: API con Next.js App Router, Prisma y PostgreSQL.
-- `backend/src/jobs/`: trabajos de notificación semanal y de ausencias por WhatsApp.
+- `frontend/`: aplicación cliente desarrollada con React y Vite, que consume la API mediante `VITE_API_URL`.
+- `backend/`: API construida con Next.js App Router, Prisma y PostgreSQL.
+- `backend/src/jobs/`: procesos programados para notificación semanal y alertas de inasistencia mediante WhatsApp.
 - `docker-compose.yml`: servicios locales de PostgreSQL y Evolution API.
 
-## Rutas de API
+## Rutas de la API
 
-La API usa rutas en español bajo el prefijo `/api`:
+La API expone endpoints en español bajo el prefijo `/api`:
 
 | Recurso | Ruta |
 | --- | --- |
@@ -25,62 +25,62 @@ La API usa rutas en español bajo el prefijo `/api`:
 | Notificaciones | `/api/notificaciones` |
 | Salud | `/api/salud` |
 
-Las rutas anteriores en inglés, como `/api/courses`, `/api/auth` y `/api/reports`, fueron retiradas y responden `404`.
+Las rutas en inglés anteriores, como `/api/courses`, `/api/auth` y `/api/reports`, fueron retiradas y responden con `404`.
 
 ## Requisitos
 
 - Node.js 20 o superior.
 - PostgreSQL 15 o superior.
-- `pg_dump` y `pg_restore` para crear o restaurar respaldos locales.
+- `pg_dump` y `pg_restore` para la creación y restauración de respaldos locales.
 
 ## Configuración local
 
-1. Instala las dependencias:
+1. Instalación de dependencias:
 
 ```bash
 npm install
 ```
 
-2. Si usarás los servicios locales de Docker, crea `.env` desde `.env.example`, reemplaza sus valores y arranca PostgreSQL y Evolution API:
+2. En caso de utilizar servicios locales de Docker, se debe crear `.env` a partir de `.env.example`, reemplazar los valores y levantar PostgreSQL y Evolution API:
 
 ```bash
 docker compose up -d
 ```
 
-Los puertos `5432` y `5000` quedan asociados únicamente a `127.0.0.1`; no quedan accesibles desde otros equipos de la red. Redis de Evolution API no publica ningún puerto: persiste las sesiones en un volumen local y Evolution se reconecta automáticamente sin eliminar una instancia desconectada. No subas el archivo `.env` al repositorio.
+Los puertos `5432` y `5000` quedan asociados únicamente a `127.0.0.1`; no resultan accesibles desde otros equipos de la red. Redis de Evolution API no publica puertos: persiste las sesiones en un volumen local y Evolution se reconecta automáticamente sin eliminar una instancia desconectada. No debe subirse el archivo `.env` al repositorio.
 
-Para actualizar Evolution API de forma controlada, conserva los volúmenes y ejecuta:
+Para actualizar Evolution API de forma controlada, se conserva el volumen y se ejecuta:
 
 ```bash
 docker compose pull evolution_api
 docker compose up -d evolution_api
 ```
 
-Evita cerrar sesión o desvincular el dispositivo desde WhatsApp salvo que sea necesario. Si debes volver a vincularlo, realiza un único escaneo de QR y verifica primero el estado de la instancia antes de generar otro código.
+Se recomienda evitar cerrar sesión o desvincular el dispositivo desde WhatsApp salvo que sea estrictamente necesario. En caso de volver a vincularlo, se sugiere un único escaneo de QR y la verificación previa del estado de la instancia antes de generar otro código.
 
-3. Crea `backend/.env` desde `backend/.env.example` y define, como mínimo, `DATABASE_URL`, `DIRECT_URL` y `JWT_SECRET`.
+3. Se debe crear `backend/.env` a partir de `backend/.env.example` y definir, como mínimo, `DATABASE_URL`, `DIRECT_URL` y `JWT_SECRET`.
 
-4. Crea `frontend/.env` desde `frontend/.env.example`. Para desarrollo local usa:
+4. Se debe crear `frontend/.env` a partir de `frontend/.env.example`. Para el entorno de desarrollo local, se usa:
 
 ```env
 VITE_API_URL=http://localhost:4000/api
 ```
 
-Para habilitar el CAPTCHA, crea un sitio en [Cloudflare Turnstile](https://dash.cloudflare.com/) y agrega la clave pública en `frontend/.env`:
+Para habilitar el CAPTCHA, se crea un sitio en [Cloudflare Turnstile](https://dash.cloudflare.com/) y se agrega la clave pública en `frontend/.env`:
 
 ```env
 VITE_TURNSTILE_SITE_KEY=tu_clave_publica_turnstile
 ```
 
-Agrega la clave privada correspondiente en `backend/.env`:
+La clave privada correspondiente se agrega en `backend/.env`:
 
 ```env
 TURNSTILE_SECRET_KEY=tu_secreto_turnstile
 ```
 
-En desarrollo local registra `localhost` como dominio permitido en Turnstile. La clave privada nunca debe exponerse al frontend ni subirse al repositorio.
+En desarrollo local, se registra `localhost` como dominio permitido en Turnstile. La clave privada nunca debe exponerse al frontend ni incluirse en el repositorio.
 
-5. Genera el cliente Prisma y aplica las migraciones:
+5. Se genera el cliente Prisma y se aplican las migraciones:
 
 ```bash
 cd backend
@@ -88,45 +88,45 @@ npx prisma generate
 npx prisma migrate deploy
 ```
 
-Para el entorno de desarrollo alojado en Supabase, configura en `backend/.env` las dos conexiones de ese proyecto antes de ejecutar esos comandos:
+Para el entorno de desarrollo alojado en Supabase, se configuran en `backend/.env` las dos conexiones del proyecto antes de ejecutar estos comandos:
 
 ```env
 DATABASE_URL="postgresql://...pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1"
 DIRECT_URL="postgresql://...supabase.co:5432/postgres"
 ```
 
-`DATABASE_URL` se usa para la aplicación y `DIRECT_URL` para que Prisma ejecute migraciones directamente contra Supabase. No uses las URLs de PostgreSQL local/Docker para aplicar la migración del entorno de desarrollo.
+`DATABASE_URL` se utiliza para la aplicación y `DIRECT_URL` para que Prisma ejecute migraciones directamente contra Supabase. No se usan las URLs de PostgreSQL local o Docker para aplicar la migración del entorno de desarrollo.
 
-6. Inicia ambos servicios desde la raíz:
+6. Se inician los servicios desde la raíz:
 
 ```bash
 npm run dev
 ```
 
-El frontend se sirve en `http://localhost:3000` y el backend en `http://localhost:4000` por defecto.
+El frontend queda disponible en `http://localhost:3000` y el backend en `http://localhost:4000` por defecto.
 
 ## Entrega con Docker Compose
 
-La entrega puede ejecutarse sin Node.js instalado en el equipo del docente. Requiere Docker Desktop activo.
+La entrega puede ejecutarse sin la instalación de Node.js en el equipo del docente. Requiere Docker Desktop activo.
 
-1. Copia el archivo de variables de ejemplo:
+1. Se copia el archivo de variables de ejemplo:
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-2. Edita `.env` y reemplaza `JWT_SECRET`, `VITE_TURNSTILE_SITE_KEY` y `TURNSTILE_SECRET_KEY` con valores reales. En Cloudflare Turnstile registra el dominio `localhost`.
-3. Levanta frontend, backend y PostgreSQL:
+2. Se edita `.env` y se reemplazan `JWT_SECRET`, `VITE_TURNSTILE_SITE_KEY` y `TURNSTILE_SECRET_KEY` con valores reales. En Cloudflare Turnstile se registra el dominio `localhost`.
+3. Se levantan los servicios de frontend, backend y PostgreSQL:
 
 ```powershell
 docker compose up --build
 ```
 
-4. Abre `http://localhost:3000`.
+4. Se accede a `http://localhost:3000`.
 
-El backend ejecuta `prisma migrate deploy` automáticamente antes de iniciar. El frontend usa Nginx como proxy interno, por lo que el navegador consume `/api` sin necesitar conocer el puerto del backend. Los datos de PostgreSQL quedan guardados en el volumen `postgres_data`.
+El backend ejecuta `prisma migrate deploy` automáticamente antes de iniciar. El frontend usa Nginx como proxy interno, por lo que el navegador consume `/api` sin necesidad de conocer el puerto del backend. Los datos de PostgreSQL quedan almacenados en el volumen `postgres_data`.
 
-Para detener los servicios conserva los datos con:
+Para detener los servicios conservando los datos, se ejecuta:
 
 ```powershell
 docker compose down
@@ -138,15 +138,15 @@ Para borrar también la base de datos local y comenzar de cero:
 docker compose down -v
 ```
 
-Evolution API y Redis se mantienen disponibles en el mismo Compose para una instalación con WhatsApp, pero requieren configurar sus variables en `.env`. Para la demostración básica del sistema de asistencia no es necesario activar ese flujo.
+Evolution API y Redis quedan disponibles en el mismo Compose para una instalación con WhatsApp, pero requieren la configuración de sus variables en `.env`. Para la demostración básica del sistema de asistencia, no resulta necesario activar ese flujo.
 
 ## Despliegue en servidor sin acceso al repositorio
 
-El servidor institucional no necesita Git ni acceso a Internet. La construcción y descarga de imágenes se realiza una sola vez en un equipo con Docker y acceso a Internet; al servidor se transportan un archivo `.tar` con las imágenes, `docker-compose.servidor.yml` y `.env`.
+El servidor institucional no requiere Git ni acceso a Internet. La construcción y descarga de imágenes se realiza una sola vez en un equipo con Docker y acceso a Internet; al servidor se transporta un archivo `.tar` con las imágenes, `docker-compose.servidor.yml` y `.env`.
 
-### Preparar el paquete
+### Preparación del paquete
 
-Desde la raíz del proyecto, configura `.env` con los valores del servidor y una etiqueta única en `IMAGE_TAG`. Después construye las imágenes de la aplicación y descarga las imágenes externas:
+Desde la raíz del proyecto, se configura `.env` con los valores del servidor y una etiqueta única en `IMAGE_TAG`. A continuación, se construyen las imágenes de la aplicación y se descargan las imágenes externas:
 
 ```powershell
 $env:IMAGE_TAG = "2026-09-03"
@@ -156,7 +156,7 @@ docker pull redis:7.4-alpine
 docker pull evoapicloud/evolution-api:latest
 ```
 
-Exporta todas las imágenes a un único archivo y copia estos elementos al servidor por el medio autorizado por la institución:
+Se exportan todas las imágenes a un único archivo y se copian estos elementos al servidor por el medio autorizado por la institución:
 
 ```powershell
 docker save -o asistencia-imagenes.tar `
@@ -167,11 +167,11 @@ docker save -o asistencia-imagenes.tar `
   evoapicloud/evolution-api:latest
 ```
 
-Incluye también `docker-compose.servidor.yml` y `.env`. No incluyas credenciales en un archivo que vaya a quedar expuesto o almacenado sin protección.
+Se incluye también `docker-compose.servidor.yml` y `.env`. No deben incluirse credenciales en archivos que vayan a quedar expuestos o almacenados sin protección.
 
-### Instalar y actualizar en el servidor
+### Instalación y actualización en el servidor
 
-Instala Docker Engine y el complemento Docker Compose en el servidor una sola vez. Copia el paquete, carga las imágenes y arranca la aplicación sin usar `build` ni `pull`:
+Se instala Docker Engine y el complemento Docker Compose en el servidor una sola vez. Se copia el paquete, se cargan las imágenes y se inicia la aplicación sin ejecutar `build` ni `pull`:
 
 ```bash
 docker load --input asistencia-imagenes.tar
@@ -180,23 +180,23 @@ docker compose -f docker-compose.servidor.yml ps
 docker compose -f docker-compose.servidor.yml logs --tail=100 backend
 ```
 
-Comprueba `http://IP_DEL_SERVIDOR:3000` y `http://IP_DEL_SERVIDOR:3000/api/salud`. En este paquete inicial el esquema actual se sincroniza automáticamente con `prisma db push`; no borres el volumen de PostgreSQL después de comenzar a usar el sistema. Para una actualización, carga primero el nuevo `.tar`, cambia `IMAGE_TAG` y ejecuta el mismo `up -d`; los volúmenes de PostgreSQL, Redis y Evolution API se conservan.
+Se comprueba `http://IP_DEL_SERVIDOR:3000` y `http://IP_DEL_SERVIDOR:3000/api/salud`. En este paquete inicial, el esquema actual se sincroniza automáticamente con `prisma db push`; no debe eliminarse el volumen de PostgreSQL después de comenzar a usar el sistema. Para una actualización, se carga primero el nuevo `.tar`, se cambia `IMAGE_TAG` y se ejecuta el mismo `up -d`; los volúmenes de PostgreSQL, Redis y Evolution API se conservan.
 
-WhatsApp y Evolution API son opcionales y no se inician en la instalación básica. Para habilitarlos, arranca con `docker compose --profile whatsapp -f docker-compose.servidor.yml up -d` después de configurar sus variables. En el firewall institucional publica únicamente el puerto del frontend. PostgreSQL, Redis y Evolution API no publican puertos hacia la red. Configura HTTPS mediante el proxy inverso institucional y cambia `PUBLIC_URL` a la URL HTTPS final antes de construir el frontend.
+WhatsApp y Evolution API son opcionales y no se inician en la instalación básica. Para habilitarlos, se arranca con `docker compose --profile whatsapp -f docker-compose.servidor.yml up -d` después de configurar sus variables. En el firewall institucional, se publica únicamente el puerto del frontend. PostgreSQL, Redis y Evolution API no exponen puertos hacia la red. Se configura HTTPS mediante el proxy inverso institucional y se cambia `PUBLIC_URL` a la URL HTTPS final antes de construir el frontend.
 
 ## Entrega contenerizada con servicios externos
 
-Si el despliegue vigente usa Railway, Supabase, Upstash y Evolution API, puedes conservar esos servicios externos y ejecutar frontend y backend en Docker Desktop mediante `docker-compose.servidor-hibrido.yml`. Este archivo no crea otra base de datos, no sustituye Upstash y no inicia otra instancia de Evolution API. Usa `.env.servidor-hibrido.example` como plantilla.
+Si el despliegue vigente usa Railway, Supabase, Upstash y Evolution API, es posible conservar esos servicios externos y ejecutar frontend y backend en Docker Desktop mediante `docker-compose.servidor-hibrido.yml`. Este archivo no crea otra base de datos, no reemplaza Upstash y no inicia otra instancia de Evolution API. Se usa `.env.servidor-hibrido.example` como plantilla.
 
-1. En el equipo de entrega copia `docker-compose.servidor-hibrido.yml` y un `.env` de producción. Conserva las conexiones actuales de Supabase, Upstash y Evolution API. Define `CORS_ALLOWED_ORIGINS` y `FRONTEND_URL` con la URL final donde se abrirá el frontend, y configura `VITE_TURNSTILE_SITE_KEY`.
-2. Carga la imagen y valida la configuración:
+1. En el equipo de entrega, se copia `docker-compose.servidor-hibrido.yml` y un `.env` de producción. Se conservan las conexiones actuales de Supabase, Upstash y Evolution API. Se definen `CORS_ALLOWED_ORIGINS` y `FRONTEND_URL` con la URL final donde se abrirá el frontend y se configura `VITE_TURNSTILE_SITE_KEY`.
+2. Se carga la imagen y se valida la configuración:
 
 ```bash
 docker load --input asistencia-imagenes-2026-09-03.tar
 docker compose -f docker-compose.servidor-hibrido.yml config
 ```
 
-3. Construye e inicia ambos contenedores y comprueba su salud:
+3. Se construyen e inician ambos contenedores y se comprueba su salud:
 
 ```bash
 docker compose -f docker-compose.servidor-hibrido.yml build
@@ -205,19 +205,19 @@ docker compose -f docker-compose.servidor-hibrido.yml ps
 curl http://localhost:3000/api/salud
 ```
 
-4. Abre `http://localhost:3000` o la URL/IP del equipo de entrega. El frontend consume `/api` por el mismo origen, por lo que no necesita `VITE_API_URL` apuntando a Vercel ni a `localhost` dentro de una configuración externa.
+4. Se accede a `http://localhost:3000` o a la URL/IP del equipo de entrega. El frontend consume `/api` por el mismo origen, por lo que no requiere `VITE_API_URL` apuntando a Vercel ni a `localhost` dentro de una configuración externa.
 
-En esta modalidad no ejecutes `prisma db push` ni `docker compose down -v`: Supabase conserva los datos y el esquema existentes. Las migraciones deben ejecutarse de forma controlada contra Supabase, con un respaldo verificado.
+En esta modalidad no se ejecuta `prisma db push` ni `docker compose down -v`: Supabase conserva los datos y el esquema existentes. Las migraciones deben ejecutarse de forma controlada en Supabase con un respaldo verificado.
 
 ## Pruebas y calidad
 
-Las pruebas unitarias usan el ejecutor nativo de Node.js y no requieren una base de datos.
+Las pruebas unitarias emplean el ejecutor nativo de Node.js y no requieren una base de datos.
 
 ```bash
 node --test backend/tests/*.test.js
 ```
 
-GitHub Actions ejecuta estas pruebas y compila frontend y backend en cada `push` o `pull request` hacia `main`. La definición está en `.github/workflows/main.yml`.
+GitHub Actions ejecuta estas pruebas y compila frontend y backend en cada `push` o `pull request` hacia `main`. La definición se encuentra en `.github/workflows/main.yml`.
 
 ## Respaldos
 
@@ -233,7 +233,7 @@ El archivo se crea en `backups/` con formato personalizado de PostgreSQL. Para r
 pg_restore --clean --if-exists --no-owner --dbname="postgresql://usuario:contrasena@host:5432/base" backups/asistencia-AAAA-MM-DDTHH-MM-SS-SSSZ.dump
 ```
 
-El flujo `.github/workflows/backup.yml` crea un respaldo diario a las 00:15 de Colombia, lo cifra con AES-256 y lo conserva como artefacto durante 30 días. Configura estos secretos del repositorio:
+El flujo `.github/workflows/backup.yml` crea un respaldo diario a las 00:15 de Colombia, lo cifra con AES-256 y lo conserva como artefacto durante 30 días. Se configuran los siguientes secretos del repositorio:
 
 - `DATABASE_URL`: conexión de la base de datos que se respaldará.
 - `BACKUP_ENCRYPTION_PASSWORD`: contraseña fuerte guardada fuera de GitHub; es necesaria para descifrar el archivo `.dump.gpg`.
@@ -252,11 +252,11 @@ Para descifrar un artefacto descargado:
 gpg --batch --output respaldo.dump --decrypt --passphrase "$BACKUP_ENCRYPTION_PASSWORD" respaldo.dump.gpg
 ```
 
-Los artefactos de Actions son almacenamiento temporal. Descarga los respaldos periódicamente o replica el archivo cifrado a almacenamiento institucional para cumplir una política de retención de mayor duración.
+Los artefactos de Actions constituyen almacenamiento temporal. Se recomienda descargar los respaldos periódicamente o replicar el archivo cifrado a un almacenamiento institucional para cumplir una política de retención de mayor duración.
 
 ## Despliegue
 
-El `Dockerfile` del backend puede desplegarse en Railway, Render o una plataforma equivalente. Configura las variables de entorno del backend en el panel del proveedor; nunca publiques archivos `.env` ni credenciales en el repositorio.
+El `Dockerfile` del backend puede desplegarse en Railway, Render o una plataforma equivalente. Las variables de entorno del backend se configuran en el panel del proveedor; no se publican archivos `.env` ni credenciales en el repositorio.
 
 ### Configuración de producción
 
