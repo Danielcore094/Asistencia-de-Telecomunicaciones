@@ -33,6 +33,7 @@ export default function InicioSesion() {
                 });
 
                 if (res.data.forcePasswordChange && res.data.forcePasswordChangeToken) {
+                    iniciarSesion(res.data.token, res.data.teacher);
                     toast.success('Debes cambiar tu contraseña inicial antes de continuar');
                     navegar(`/reset-password?token=${encodeURIComponent(res.data.forcePasswordChangeToken)}`);
                     return;
@@ -67,6 +68,7 @@ export default function InicioSesion() {
             }
 
             if (res.data.forcePasswordChange && res.data.forcePasswordChangeToken) {
+                iniciarSesion(res.data.token, res.data.teacher);
                 toast.success('Debes cambiar tu contraseña inicial antes de continuar');
                 navegar(`/reset-password?token=${encodeURIComponent(res.data.forcePasswordChangeToken)}`);
                 return;

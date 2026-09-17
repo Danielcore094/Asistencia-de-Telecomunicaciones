@@ -38,7 +38,7 @@ export default function RestablecerContrasena() {
             await api.post('/autenticacion/restablecer-contrasena', { token, newPassword: nuevaContrasena });
             setExito(true);
             setTimeout(() => {
-                navegar('/login');
+                navegar(sessionStorage.getItem('token') ? '/' : '/login');
             }, 3000);
         } catch (err) {
             setError(err.response?.data?.error || 'Error al restablecer la contraseña. Puede que el enlace haya expirado.');
