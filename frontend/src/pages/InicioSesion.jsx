@@ -101,11 +101,11 @@ export default function InicioSesion() {
         <div className="flex min-h-screen items-center justify-center bg-beige p-4">
             <div className="w-full max-w-md">
                 <div className="mb-6 text-center sm:mb-8">
-                    <div className="flex justify-center mb-4">
+                    <div className="relative flex h-20 justify-center overflow-hidden mb-4 sm:h-24">
                         <img 
                             src="/logo.png" 
                             alt="Logo UTS" 
-                            className="h-40 w-auto max-w-full object-contain drop-shadow-sm sm:h-56"
+                            className="block h-40 w-auto max-w-full object-contain drop-shadow-sm sm:h-56"
                         />
                     </div>
                     <h1 className="text-2xl sm:text-3xl font-extrabold text-texto tracking-tight mt-0">
