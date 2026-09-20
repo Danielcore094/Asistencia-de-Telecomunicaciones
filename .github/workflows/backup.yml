@@ -25,8 +25,21 @@ jobs:
       - name: Instalar dependencias del backend
         run: npm ci --prefix backend
 
-      - name: Instalar cliente PostgreSQL
-        run: sudo apt-get update && sudo apt-get install --yes postgresql-client
+      - name: Instalar cliente PostgreSQL 17
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes ca-certificates curl gnupg
+          curl --fail --silent --show-error https://www.postgresql.org/media/keys/ACCC4CF8.asc \
+            | gpg --dearmor \
+            | sudo tee /usr/share/keyrings/postgresql.gpg > /dev/null
+          echo "deb [signed-by=/usr/share/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt noble-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client-17
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+
+      - name: Verificar cliente PostgreSQL
+        run: pg_dump --version
 
       - name: Crear respaldo cifrado
         env:
