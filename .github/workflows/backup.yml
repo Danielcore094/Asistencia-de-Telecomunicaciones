@@ -32,10 +32,11 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           BACKUP_ENCRYPTION_PASSWORD: ${{ secrets.BACKUP_ENCRYPTION_PASSWORD }}
+          BACKUP_OUTPUT_DIR: backups
         run: |
           test -n "$DATABASE_URL"
           test -n "$BACKUP_ENCRYPTION_PASSWORD"
-          node backend/scripts/respaldarBaseDatos.mjs
+          npm run backup --prefix backend
           gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase "$BACKUP_ENCRYPTION_PASSWORD" backups/*.dump
           rm backups/*.dump
 

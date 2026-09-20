@@ -180,7 +180,7 @@ GitHub Actions ejecuta estas pruebas y compila frontend y backend en cada `push`
 Para crear un respaldo local de PostgreSQL:
 
 ```bash
-DATABASE_URL="postgresql://usuario:contrasena@host:5432/base" node backend/scripts/respaldarBaseDatos.mjs
+DATABASE_URL="postgresql://usuario:contrasena@host:5432/base" npm run backup
 ```
 
 El archivo se crea en `backups/` con formato personalizado de PostgreSQL. Para restaurarlo en una base de datos vacía:
@@ -193,6 +193,8 @@ El flujo `.github/workflows/backup.yml` crea un respaldo diario a las 00:15 de C
 
 - `DATABASE_URL`: conexión de la base de datos que se respaldará.
 - `BACKUP_ENCRYPTION_PASSWORD`: contraseña fuerte guardada fuera de GitHub; es necesaria para descifrar el archivo `.dump.gpg`.
+
+Para generarlo inmediatamente, abre la pestaña **Actions**, selecciona **Respaldo de base de datos**, pulsa **Run workflow** y revisa el artefacto `respaldo-postgresql-{run_id}` de la ejecución. El archivo no se guarda dentro del contenedor ni en la carpeta local del servidor; los artefactos de Actions se descargan desde esa ejecución.
 
 El paso `Crear respaldo cifrado` usa estos secretos directamente:
 
