@@ -140,50 +140,6 @@ docker compose down -v
 
 Evolution API y Redis quedan disponibles en el mismo Compose para una instalación con WhatsApp, pero requieren la configuración de sus variables en `.env`. Para la demostración básica del sistema de asistencia, no resulta necesario activar ese flujo.
 
-## Despliegue en servidor sin acceso al repositorio
-
-El servidor institucional no requiere Git ni acceso a Internet. La construcción y descarga de imágenes se realiza una sola vez en un equipo con Docker y acceso a Internet; al servidor se transporta un archivo `.tar` con las imágenes, `docker-compose.servidor.yml` y `.env`.
-
-### Preparación del paquete
-
-Desde la raíz del proyecto, se configura `.env` con los valores del servidor y una etiqueta única en `IMAGE_TAG`. A continuación, se construyen las imágenes de la aplicación y se descargan las imágenes externas:
-
-```powershell
-$env:IMAGE_TAG = "2026-09-03"
-docker compose build backend frontend
-docker pull postgres:15
-docker pull redis:7.4-alpine
-docker pull evoapicloud/evolution-api:latest
-```
-
-Se exportan todas las imágenes a un único archivo y se copian estos elementos al servidor por el medio autorizado por la institución:
-
-```powershell
-docker save -o asistencia-imagenes.tar `
-  telecom-backend:$env:IMAGE_TAG `
-  telecom-frontend:$env:IMAGE_TAG `
-  postgres:15 `
-  redis:7.4-alpine `
-  evoapicloud/evolution-api:latest
-```
-
-Se incluye también `docker-compose.servidor.yml` y `.env`. No deben incluirse credenciales en archivos que vayan a quedar expuestos o almacenados sin protección.
-
-### Instalación y actualización en el servidor
-
-Se instala Docker Engine y el complemento Docker Compose en el servidor una sola vez. Se copia el paquete, se cargan las imágenes y se inicia la aplicación sin ejecutar `build` ni `pull`:
-
-```bash
-docker load --input asistencia-imagenes.tar
-docker compose -f docker-compose.servidor.yml up -d
-docker compose -f docker-compose.servidor.yml ps
-docker compose -f docker-compose.servidor.yml logs --tail=100 backend
-```
-
-Se comprueba `http://IP_DEL_SERVIDOR:3000` y `http://IP_DEL_SERVIDOR:3000/api/salud`. En este paquete inicial, el esquema actual se sincroniza automáticamente con `prisma db push`; no debe eliminarse el volumen de PostgreSQL después de comenzar a usar el sistema. Para una actualización, se carga primero el nuevo `.tar`, se cambia `IMAGE_TAG` y se ejecuta el mismo `up -d`; los volúmenes de PostgreSQL, Redis y Evolution API se conservan.
-
-WhatsApp y Evolution API son opcionales y no se inician en la instalación básica. Para habilitarlos, se arranca con `docker compose --profile whatsapp -f docker-compose.servidor.yml up -d` después de configurar sus variables. En el firewall institucional, se publica únicamente el puerto del frontend. PostgreSQL, Redis y Evolution API no exponen puertos hacia la red. Se configura HTTPS mediante el proxy inverso institucional y se cambia `PUBLIC_URL` a la URL HTTPS final antes de construir el frontend.
-
 ## Entrega contenerizada con servicios externos
 
 Si el despliegue vigente usa Railway, Supabase, Upstash y Evolution API, es posible conservar esos servicios externos y ejecutar frontend y backend en Docker Desktop mediante `docker-compose.servidor-hibrido.yml`. Este archivo no crea otra base de datos, no reemplaza Upstash y no inicia otra instancia de Evolution API. Se usa `.env.servidor-hibrido.example` como plantilla.
