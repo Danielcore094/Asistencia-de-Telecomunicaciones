@@ -13,10 +13,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Obtener código
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Configurar Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: npm
@@ -54,7 +54,7 @@ jobs:
           rm backups/*.dump
 
       - name: Conservar respaldo cifrado durante 30 días
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: respaldo-postgresql-${{ github.run_id }}
           path: backups/*.dump.gpg
