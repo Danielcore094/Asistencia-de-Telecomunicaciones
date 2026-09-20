@@ -45,7 +45,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           BACKUP_ENCRYPTION_PASSWORD: ${{ secrets.BACKUP_ENCRYPTION_PASSWORD }}
-          BACKUP_OUTPUT_DIR: backups
+          BACKUP_OUTPUT_DIR: ../backups
         run: |
           test -n "$DATABASE_URL"
           test -n "$BACKUP_ENCRYPTION_PASSWORD"
