@@ -27,7 +27,7 @@ function obtenerPeriodoAcademicoActual() {
 async function enviarReportesDocentes(resultados) {
     let reportes;
     try {
-        reportes = await crearReportesSemanalesPorDocente({ semanaActual: true });
+        reportes = await crearReportesSemanalesPorDocente();
     } catch (error) {
         resultados.errors++;
         resultados.details.push({
@@ -103,7 +103,7 @@ async function enviarReporteGeneralSemanal(resultados) {
     let reporte;
     let resumenSemestral;
     try {
-        reporte = await crearReporteExcelSemanalGeneral({ semanaActual: true });
+        reporte = await crearReporteExcelSemanalGeneral();
         const { anio, periodo } = obtenerPeriodoAcademicoActual();
         resumenSemestral = {
             anio,

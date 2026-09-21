@@ -325,8 +325,10 @@ async function obtenerResumenAsistenciaSemanal({ teacherId, dates }) {
     };
 }
 
-export async function crearReporteExcelSemanalGeneral({ referenceDate } = {}) {
-    const { weekStart, weekEnd } = obtenerRangoSemanaActual(referenceDate);
+export async function crearReporteExcelSemanalGeneral({ referenceDate, semanaActual = false } = {}) {
+    const { weekStart, weekEnd } = semanaActual
+        ? obtenerRangoSemanaActual(referenceDate)
+        : obtenerRangoSemanaAnterior(referenceDate);
     const dates = [];
     const start = parseFechaUtc(weekStart);
     const end = parseFechaUtc(weekEnd);
