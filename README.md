@@ -9,7 +9,8 @@ La aplicación está orientada a la operación académica de programas de Teleco
 - `frontend/`: aplicación cliente desarrollada con React y Vite, que consume la API mediante `VITE_API_URL`.
 - `backend/`: API construida con Next.js App Router, Prisma y PostgreSQL.
 - `backend/src/jobs/`: procesos programados para notificación semanal y alertas de inasistencia mediante WhatsApp.
-- `docker-compose.yml`: servicios locales de PostgreSQL y Evolution API.
+- `docker-compose.yml`: despliegue completo contenerizado con PostgreSQL, backend, frontend, Evolution API y Redis.
+- `docker-compose.servidor-hibrido.yml`: despliegue alternativo con backend y frontend contenerizados y servicios externos.
 
 ### Tecnologías
 
@@ -63,13 +64,59 @@ Las rutas en inglés anteriores, como `/api/courses`, `/api/auth` y `/api/report
 npm install
 ```
 
-2. En caso de utilizar servicios locales de Docker, se debe crear `.env` a partir de `.env.example`, reemplazar los valores y levantar PostgreSQL y Evolution API:
+2. Para el despliegue completo contenerizado, se debe crear un archivo `.env` en la raíz del proyecto con las variables requeridas por Docker Compose:
+
+```env
+POSTGRES_USER=telecom
+POSTGRES_PASSWORD=una_contrasena_segura
+POSTGRES_DB=asistencia
+JWT_SECRET=un_secreto_jwt_largo_y_seguro
+TURNSTILE_SECRET_KEY=tu_secreto_turnstile
+VITE_TURNSTILE_SITE_KEY=tu_clave_publica_turnstile
+FRONTEND_PORT=3000
+POSTGRES_PORT=5432
+EVOLUTION_PORT=5000
+EVOLUTION_API_KEY=tu_api_key_evolution
+```
+
+Se deben reemplazar los valores de ejemplo y no subir `.env` al repositorio. Después, se valida la configuración y se construyen los contenedores:
 
 ```bash
+docker compose config
 docker compose up -d
 ```
 
-Los puertos `5432` y `5000` quedan asociados únicamente a `127.0.0.1`; no resultan accesibles desde otros equipos de la red. Redis de Evolution API no publica puertos: persiste las sesiones en un volumen local y Evolution se reconecta automáticamente sin eliminar una instancia desconectada. No debe subirse el archivo `.env` al repositorio.
+El despliegue inicia `telecom_db`, `telecom_backend`, `telecom_frontend`, `evolution_api` y `evolution_redis`. El backend aplica automáticamente las migraciones de Prisma antes de iniciar. La aplicación queda disponible en `http://localhost:3000`; PostgreSQL y Evolution API quedan asociados únicamente a `127.0.0.1`.
+
+Para consultar el estado y los logs:
+
+```bash
+docker compose ps
+docker compose logs -f backend
+```
+
+Para reconstruir después de cambios en el código:
+
+```bash
+docker compose down
+docker compose up -d --build
+```
+
+No se debe usar `docker compose down -v`, porque elimina los volúmenes persistentes de PostgreSQL y Evolution API.
+
+Para detener y volver a iniciar los servicios sin eliminar datos:
+
+```bash
+docker compose stop
+docker compose start
+```
+
+Para actualizar únicamente Evolution API de forma controlada:
+
+```bash
+docker compose pull evolution_api
+docker compose up -d evolution_api
+```
 
 Para actualizar Evolution API de forma controlada, se conserva el volumen y se ejecuta:
 
