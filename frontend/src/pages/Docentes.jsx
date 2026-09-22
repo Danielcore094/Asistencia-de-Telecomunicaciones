@@ -157,7 +157,9 @@ export default function Docentes() {
                                 type="email"
                                 value={formulario.correo}
                                 onChange={e => setFormulario(p => ({ ...p, correo: e.target.value }))}
-                                placeholder="correo@ejemplo.com"
+                                    placeholder="correo@uts.edu.co"
+                                    pattern="^[^\s@]+@(correo\.uts\.edu\.co|uts\.edu\.co)$"
+                                    title="Usa un correo @correo.uts.edu.co o @uts.edu.co"
                                 required
                                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-gray-800 placeholder-gray-400 outline-none focus:ring-2 focus:ring-brand-purple focus:border-transparent transition"
                             />

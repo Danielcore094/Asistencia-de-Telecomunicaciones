@@ -2,12 +2,22 @@
 
 El presente repositorio corresponde a una solución para la gestión de asistencia, administración de cursos y estudiantes, generación de reportes y envío de notificaciones académicas.
 
+La aplicación está orientada a la operación académica de programas de Telecomunicaciones. Incluye autenticación de docentes y administradores, control de acceso por materia, registro de asistencia, auditoría, reportes y notificaciones por correo electrónico y WhatsApp.
+
 ## Arquitectura
 
 - `frontend/`: aplicación cliente desarrollada con React y Vite, que consume la API mediante `VITE_API_URL`.
 - `backend/`: API construida con Next.js App Router, Prisma y PostgreSQL.
 - `backend/src/jobs/`: procesos programados para notificación semanal y alertas de inasistencia mediante WhatsApp.
 - `docker-compose.yml`: servicios locales de PostgreSQL y Evolution API.
+
+### Tecnologías
+
+- Frontend: React 18, Vite, Tailwind CSS, Axios y PWA.
+- Backend: Node.js 20, Next.js 14 App Router, Prisma 6 y PostgreSQL.
+- Autenticación: JWT, segundo factor para docentes y Cloudflare Turnstile.
+- Notificaciones: Brevo Transactional Email y Evolution API para WhatsApp.
+- Despliegue: Docker Compose, Nginx, Supabase/PostgreSQL, Redis/Upstash y plataformas compatibles con contenedores.
 
 ## Rutas de la API
 
@@ -26,6 +36,18 @@ La API expone endpoints en español bajo el prefijo `/api`:
 | Salud | `/api/salud` |
 
 Las rutas en inglés anteriores, como `/api/courses`, `/api/auth` y `/api/reports`, fueron retiradas y responden con `404`.
+
+## Funcionalidades y reglas de negocio
+
+- Los administradores gestionan docentes, roles y configuración; los docentes operan las materias que tienen asignadas.
+- El acceso a estudiantes, asistencia y reportes se valida contra la materia y el usuario autenticado.
+- Se controlan cruces de horario al matricular estudiantes en materias.
+- La asistencia puede generar alertas por ausencia en WhatsApp y alertas tempranas de riesgo de pérdida por correo.
+- Los reportes semanales se envían a docentes y al destinatario administrativo configurado.
+- Las notificaciones registran su estado para evitar envíos duplicados y facilitar la auditoría.
+- Los correos de acceso de usuarios deben terminar en `@correo.uts.edu.co` o `@uts.edu.co`.
+- El correo principal de un estudiante, cuando se informa, debe usar uno de esos dos dominios. `correo2` es opcional y puede usar cualquier dominio, siempre que tenga formato de correo válido.
+- La validación de correo se ejecuta en el backend; las restricciones visuales del frontend solo ofrecen feedback anticipado.
 
 ## Requisitos
 
@@ -105,6 +127,73 @@ npm run dev
 
 El frontend queda disponible en `http://localhost:3000` y el backend en `http://localhost:4000` por defecto.
 
+## Integraciones de notificaciones
+
+El backend integra los servicios mediante HTTP y solo necesita sus credenciales cuando se desea activar cada canal. No se deben guardar claves reales en el repositorio.
+
+### Correo electrónico con Brevo
+
+`backend/src/lib/servicioCorreo.js` usa `POST https://api.brevo.com/v3/smtp/email` y autentica con el encabezado `api-key`. Se utiliza para:
+
+- Correo de bienvenida con credenciales temporales al crear un usuario.
+- Código de segundo factor.
+- Alertas tempranas de posible pérdida.
+- Notificaciones semanales de inasistencia y reportes administrativos.
+
+Variables requeridas:
+
+```env
+BREVO_API_KEY=...
+BREVO_SENDER_EMAIL=correo-remitente@dominio-verificado.com
+BREVO_SENDER_NAME="Sistema de Asistencia"
+WEEKLY_REPORT_RECIPIENT_EMAIL=destinatario@dominio.com
+WEEKLY_REPORT_RECIPIENT_NAME="Administrador de Asistencia"
+```
+
+El remitente debe estar validado en Brevo. Si Brevo no está configurado, las operaciones que dependan de un envío pueden fallar o devolver una advertencia según el flujo; los errores quedan registrados en los logs y en los registros de notificación cuando corresponde.
+
+### WhatsApp con Evolution API
+
+`backend/src/lib/servicioWhatsapp.js` envía mensajes de texto a `POST /message/sendText/{instance}` y transmite la clave mediante el encabezado `apikey`. La aplicación normaliza números colombianos, reintenta errores de red y estados `408` o `5xx`, y registra los resultados.
+
+Variables requeridas:
+
+```env
+EVOLUTION_API_URL=http://localhost:5000
+EVOLUTION_API_KEY=...
+EVOLUTION_INSTANCE=nombre_instancia
+WHATSAPP_SEND_DELAY_MS=10000
+WHATSAPP_RETRY_ATTEMPTS=3
+WHATSAPP_RETRY_DELAY_MS=5000
+```
+
+El retraso entre mensajes evita ráfagas de envío. El valor `10000` equivale a 10 segundos y no representa una cuota del proveedor.
+
+### Cuotas y tokens de los planes gratuitos
+
+Las claves `BREVO_API_KEY` y `EVOLUTION_API_KEY` son credenciales de autenticación. No son tokens de consumo como los de un modelo de inteligencia artificial y no se descuenta un token por cada mensaje. La siguiente tabla describe la situación de esta versión, con referencia al 22 de septiembre de 2026; las condiciones comerciales pueden cambiar.
+
+| Servicio | Credencial | Límite gratuito aplicable | Consideración para este proyecto |
+| --- | --- | --- | --- |
+| Brevo | `BREVO_API_KEY` | 300 correos por día en el plan Free | La cuota cuenta correos enviados por la cuenta, incluidos transaccionales. No son 300 tokens. El límite diario, la validación del remitente y las políticas antispam dependen de Brevo. |
+| Evolution API autoalojada | `EVOLUTION_API_KEY` | Sin bolsa de tokens ni cuota de mensajes propia del software | En `docker-compose.yml` se ejecuta la imagen localmente. El límite real depende de la infraestructura, la conexión de WhatsApp y las políticas o límites de WhatsApp. |
+| Evolution API con WhatsApp Cloud API | `EVOLUTION_API_KEY` más credenciales de Meta | No aplica una cuota gratuita universal de Evolution API | Meta puede cobrar o limitar mensajes según su producto, país, plantilla, categoría y cuenta. Deben consultarse las condiciones de Meta. |
+
+Para Evolution API autoalojada, el máximo teórico impuesto por el retraso configurado sería de aproximadamente 360 mensajes por hora o 8.640 por 24 horas si solo se considera `WHATSAPP_SEND_DELAY_MS=10000`; no es una garantía de entrega ni un límite seguro de WhatsApp. La implementación actual usa Baileys mediante la instancia conectada y debe operar respetando las políticas de WhatsApp.
+
+Fuentes de referencia: [precios de Brevo](https://www.brevo.com/pricing/), [correo transaccional de Brevo](https://www.brevo.com/es/products/transactional-email/) y [repositorio oficial de Evolution API](https://github.com/evolution-foundation/evolution-api). Revisar estas fuentes antes de una entrega comercial o de producción.
+
+## Automatización de notificaciones
+
+Los cron se ejecutan únicamente cuando `EJECUTAR_CRON=true`, y debe existir una sola instancia con esta opción activa para evitar duplicados:
+
+| Proceso | Programación | Zona horaria |
+| --- | --- | --- |
+| Notificación semanal a estudiantes con inasistencias | Domingo a las 09:00 | `America/Bogota` |
+| Reportes a docentes y administrador | Lunes a las 06:00 | `America/Bogota` |
+
+También existe un endpoint administrativo para ejecutar manualmente el proceso semanal: `POST /api/notificaciones/enviar-semanal`. Requiere autenticación y rol `ADMIN`.
+
 ## Entrega con Docker Compose
 
 La entrega puede ejecutarse sin la instalación de Node.js en el equipo del docente. Requiere Docker Desktop activo.
@@ -170,8 +259,10 @@ En esta modalidad no se ejecuta `prisma db push` ni `docker compose down -v`: Su
 Las pruebas unitarias emplean el ejecutor nativo de Node.js y no requieren una base de datos.
 
 ```bash
-node --test backend/tests/*.test.js
+node --test backend/tests
 ```
+
+Las pruebas cubren política de contraseñas, horarios, limitación de solicitudes, riesgo de asistencia, WhatsApp, fechas y dominios de correo institucional.
 
 GitHub Actions ejecuta estas pruebas y compila frontend y backend en cada `push` o `pull request` hacia `main`. La definición se encuentra en `.github/workflows/main.yml`.
 

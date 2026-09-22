@@ -7,6 +7,7 @@ import crypto from 'crypto'
 import { obtenerUsuarioDePeticion } from '@/lib/autenticacion'
 import { obtenerErrorContrasena } from '@/lib/politicaContrasena'
 import { enviarCorreo, construirCorreoBienvenidaHTML } from '@/lib/servicioCorreo'
+import { esCorreoInstitucional, normalizarCorreo, MENSAJE_CORREO_INSTITUCIONAL } from '@/lib/correoInstitucional'
 
 const FORCE_CHANGE_PREFIX = 'FORCE_CHANGE_PASSWORD:'
 
@@ -46,10 +47,15 @@ export async function POST(request) {
             return Response.json({ error: 'No autorizado' }, { status: 403 })
         }
 
-        const { documento, name, email, password, role } = await request.json()
+        const { documento, name, email: emailRecibido, password, role } = await request.json()
+        const email = normalizarCorreo(emailRecibido)
 
         if (!documento || !name || !email) {
             return Response.json({ error: 'Documento, nombre y email son requeridos' }, { status: 400 })
+        }
+
+        if (!esCorreoInstitucional(email)) {
+            return Response.json({ error: MENSAJE_CORREO_INSTITUCIONAL }, { status: 400 })
         }
 
         if (!/^\d{6,10}$/.test(String(documento))) {

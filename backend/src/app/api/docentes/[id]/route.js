@@ -5,6 +5,7 @@ import prisma from '@/lib/prisma'
 import { obtenerUsuarioDePeticion } from '@/lib/autenticacion'
 import bcrypt from 'bcryptjs'
 import { obtenerErrorContrasena } from '@/lib/politicaContrasena'
+import { esCorreoInstitucional, normalizarCorreo, MENSAJE_CORREO_INSTITUCIONAL } from '@/lib/correoInstitucional'
 
 export async function PUT(request, { params }) {
     try {
@@ -14,7 +15,12 @@ export async function PUT(request, { params }) {
         }
 
         const { id } = params
-        const { name, email, role, password } = await request.json()
+        const { name, email: emailRecibido, role, password } = await request.json()
+        const email = normalizarCorreo(emailRecibido)
+
+        if (emailRecibido && !esCorreoInstitucional(email)) {
+            return Response.json({ error: MENSAJE_CORREO_INSTITUCIONAL }, { status: 400 })
+        }
 
         if (email) {
             const existente = await prisma.docente.findFirst({

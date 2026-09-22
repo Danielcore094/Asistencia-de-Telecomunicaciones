@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { obtenerUsuarioDePeticion, verificarAccesoCurso } from '@/lib/autenticacion'
+import { esCorreoInstitucional, normalizarCorreo, MENSAJE_CORREO_INSTITUCIONAL } from '@/lib/correoInstitucional'
 
 function limpiarTexto(valor) {
     if (valor === null || valor === undefined) return null
@@ -118,6 +119,12 @@ export async function POST(request) {
             for (const e of cuerpo) {
                 if (!limpiarTexto(e.name) || !limpiarTexto(e.documento)) continue;
 
+                const email = normalizarCorreo(e.email)
+                const correo2 = normalizarCorreo(e.correo2)
+                if (email && !esCorreoInstitucional(email)) {
+                    return Response.json({ error: MENSAJE_CORREO_INSTITUCIONAL }, { status: 400 })
+                }
+
                 const docLimpio = limpiarTexto(e.documento);
                 
                 const estudianteExistente = await prisma.estudiante.findUnique({
@@ -141,14 +148,16 @@ export async function POST(request) {
                     where: { documento: docLimpio },
                     update: {
                         name: limpiarTexto(e.name),
-                        email: limpiarTexto(e.email),
+                        email,
+                        correo2,
                         whatsapp: limpiarTexto(e.whatsapp),
                         matriculas: { create: { curso: { connect: { id: curso.id } } } }
                     },
                     create: {
                         documento: docLimpio,
                         name: limpiarTexto(e.name),
-                        email: limpiarTexto(e.email),
+                        email,
+                        correo2,
                         whatsapp: limpiarTexto(e.whatsapp),
                         franja: franjaEstudiante,
                         programa: limpiarTexto(e.programa)?.toUpperCase() || null,
@@ -160,16 +169,21 @@ export async function POST(request) {
             return Response.json({ count }, { status: 201 })
         }
 
-        const { documento, name, email, whatsapp, franja, programa, masivo } = cuerpo
+        const { documento, name, email, correo2, whatsapp, franja, programa, masivo } = cuerpo
         const documentoLimpio = limpiarTexto(documento)
         const nombreLimpio = limpiarTexto(name)
         const franjaLimpia = limpiarTexto(franja)
+        const emailLimpio = normalizarCorreo(email)
+        const correo2Limpio = normalizarCorreo(correo2)
         
         if (!documentoLimpio) {
             return Response.json({ error: 'El documento es requerido' }, { status: 400 })
         }
         if (!nombreLimpio) {
             return Response.json({ error: 'El nombre es requerido' }, { status: 400 })
+        }
+        if (emailLimpio && !esCorreoInstitucional(emailLimpio)) {
+            return Response.json({ error: MENSAJE_CORREO_INSTITUCIONAL }, { status: 400 })
         }
 
         const estudianteExistente = await prisma.estudiante.findUnique({
@@ -194,14 +208,16 @@ export async function POST(request) {
             where: { documento: documentoLimpio },
             update: {
                 name: nombreLimpio,
-                email: limpiarTexto(email),
+                email: emailLimpio,
+                correo2: correo2Limpio,
                 whatsapp: limpiarTexto(whatsapp),
                 matriculas: { create: { curso: { connect: { id: idCurso } } } }
             },
             create: {
                 documento: documentoLimpio,
                 name: nombreLimpio,
-                email: limpiarTexto(email),
+                email: emailLimpio,
+                correo2: correo2Limpio,
                 whatsapp: limpiarTexto(whatsapp),
                 franja: franjaLimpia,
                 programa: limpiarTexto(programa)?.toUpperCase() || null,

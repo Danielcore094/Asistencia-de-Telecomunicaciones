@@ -67,7 +67,7 @@ function ModalEdicion({ estudiante, onGuardar, onCancelar, guardando }) {
                         </div>
                         <div>
                             <label className="mb-1 block text-sm font-medium text-texto-secundario">Correo</label>
-                            <input type="email" className="campo w-full" value={form.email} onChange={set('email')} placeholder="correo@ejemplo.com" />
+                            <input type="email" className="campo w-full" value={form.email} onChange={set('email')} placeholder="correo@uts.edu.co" pattern="^[^\s@]+@(correo\.uts\.edu\.co|uts\.edu\.co)$" title="Usa un correo @correo.uts.edu.co o @uts.edu.co" />
                         </div>
                         <div>
                             <label className="mb-1 block text-sm font-medium text-texto-secundario">Correo 2</label>
@@ -861,7 +861,9 @@ export default function Estudiantes() {
                                 <input
                                     type="email"
                                     required
-                                    placeholder="correo@ejemplo.com"
+                                    placeholder="correo@uts.edu.co"
+                                    pattern="^[^\s@]+@(correo\.uts\.edu\.co|uts\.edu\.co)$"
+                                    title="Usa un correo @correo.uts.edu.co o @uts.edu.co"
                                     className="campo w-full"
                                     value={formularioEstudiante.email}
                                     onChange={(e) => setFormularioEstudiante({ ...formularioEstudiante, email: e.target.value })}

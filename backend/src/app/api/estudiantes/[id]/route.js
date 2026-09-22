@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { obtenerUsuarioDePeticion } from '@/lib/autenticacion'
+import { esCorreoInstitucional, normalizarCorreo, MENSAJE_CORREO_INSTITUCIONAL } from '@/lib/correoInstitucional'
 
 export async function PUT(request, { params }) {
     try {
@@ -16,10 +17,16 @@ export async function PUT(request, { params }) {
             return Response.json({ error: 'El nombre es requerido' }, { status: 400 })
         }
 
+        const emailLimpio = normalizarCorreo(email)
+        const correo2Limpio = normalizarCorreo(correo2)
+        if ((emailLimpio && !esCorreoInstitucional(emailLimpio)) || (correo2Limpio && !esCorreoInstitucional(correo2Limpio))) {
+            return Response.json({ error: MENSAJE_CORREO_INSTITUCIONAL }, { status: 400 })
+        }
+
         const datosActualizacion = {
             name:      name.trim(),
-            email:     email     ? email.trim()     : null,
-            correo2:   correo2   ? correo2.trim()   : null,
+            email:     emailLimpio,
+            correo2:   correo2Limpio,
             whatsapp:  whatsapp  ? whatsapp.trim()  : null,
             telefono2: telefono2 ? telefono2.trim() : null,
         }
