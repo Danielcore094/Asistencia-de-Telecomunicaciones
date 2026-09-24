@@ -525,7 +525,7 @@ export default function Configuracion() {
                                     type="button"
                                     disabled={cargandoWa}
                                     onClick={cargarHistorialWhatsApp}
-                                    className="boton-secundario inline-flex items-center gap-2 shrink-0"
+                                    className="boton-secundario ml-auto inline-flex items-center gap-2 shrink-0"
                                     aria-label="Ver historial WhatsApp"
                                 >
                                     {cargandoWa
