@@ -118,7 +118,11 @@ export const obtenerReportesSemanal = (parametros = {}) =>
 export const obtenerDocentes = () =>
     clienteApi.get('/docentes').then(respuesta => respuesta.data.filter(docente => {
         const rol = String(docente.role).toUpperCase();
-        return rol === 'TEACHER' || rol === 'DOCENTE';
+        return docente.esDocente === true
+            || rol === 'TEACHER'
+            || rol === 'DOCENTE'
+            || rol === 'ADMIN_TEACHER'
+            || rol === 'ADMIN_DOCENTE';
     }));
 
 export const obtenerAsistenciaHoyPorCurso = (docenteId) =>
