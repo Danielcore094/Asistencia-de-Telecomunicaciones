@@ -113,6 +113,21 @@ export default function FiltrosGlobales({
 
     const [docentes, setDocentes] = useState([]);
 
+    const docentesDisponibles = useMemo(
+        () => docentes.filter((docente) => {
+            const tienePerfilDocente = docente.role === 'TEACHER' || docente.role === 'DOCENTE' || docente.role === 'ADMIN_TEACHER';
+            const esUsuarioActual = docente.id === usuario?.id;
+            return tienePerfilDocente && !esUsuarioActual;
+        }),
+        [docentes, usuario?.id]
+    );
+
+    useEffect(() => {
+        if (docenteSeleccionado && !docentesDisponibles.some((docente) => docente.id === docenteSeleccionado)) {
+            setDocenteSeleccionado(null);
+        }
+    }, [docenteSeleccionado, docentesDisponibles, setDocenteSeleccionado]);
+
     useEffect(() => {
         if (isAdmin) {
             obtenerDocentes().then(lista => {
@@ -289,7 +304,7 @@ export default function FiltrosGlobales({
                     }}
                 >
                     <option value="">{textoDocenteSinSeleccion}</option>
-                    {docentes.map((d) => (
+                    {docentesDisponibles.map((d) => (
                         <option key={d.id} value={d.id}>
                             {d.name}
                         </option>
