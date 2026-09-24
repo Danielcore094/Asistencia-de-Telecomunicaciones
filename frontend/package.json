@@ -10,6 +10,7 @@
         "lint": "eslint --ext .js,.jsx src --fix"
     },
     "dependencies": {
+        "@vercel/speed-insights": "^2.0.0",
         "axios": "^1.19.0",
         "date-fns": "^3.3.1",
         "lucide-react": "^0.344.0",
