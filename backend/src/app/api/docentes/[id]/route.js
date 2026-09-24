@@ -18,6 +18,10 @@ export async function PUT(request, { params }) {
         const { name, email: emailRecibido, role, password } = await request.json()
         const email = normalizarCorreo(emailRecibido)
 
+        if (role !== undefined && !['ADMIN', 'TEACHER'].includes(role)) {
+            return Response.json({ error: 'El rol debe ser ADMIN o TEACHER' }, { status: 400 })
+        }
+
         if (emailRecibido && !esCorreoInstitucional(email)) {
             return Response.json({ error: MENSAJE_CORREO_INSTITUCIONAL }, { status: 400 })
         }
@@ -37,7 +41,21 @@ export async function PUT(request, { params }) {
         const data = {}
         if (name) data.name = name
         if (email) data.email = email
-        if (role) data.role = role
+        if (role) {
+            const usuarioObjetivo = await prisma.docente.findUnique({ where: { id }, select: { role: true } })
+            if (!usuarioObjetivo) {
+                return Response.json({ error: 'Usuario no encontrado' }, { status: 404 })
+            }
+
+            if (usuarioObjetivo.role === 'ADMIN' && role !== 'ADMIN') {
+                const cantidadAdministradores = await prisma.docente.count({ where: { role: 'ADMIN' } })
+                if (cantidadAdministradores <= 1) {
+                    return Response.json({ error: 'Debe existir al menos un administrador' }, { status: 400 })
+                }
+            }
+
+            data.role = role
+        }
         if (password) {
             const errorContrasena = obtenerErrorContrasena(password)
             if (errorContrasena) {

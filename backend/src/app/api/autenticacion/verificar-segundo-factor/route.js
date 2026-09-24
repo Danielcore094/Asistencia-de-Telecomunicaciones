@@ -31,6 +31,9 @@ export async function POST(request) {
         if (datosDesafio.purpose !== 'SECOND_FACTOR' || !datosDesafio.id) {
             return Response.json({ error: 'Desafío de autenticación inválido' }, { status: 401 });
         }
+        if (!['ADMIN', 'TEACHER'].includes(datosDesafio.requestedRole)) {
+            return Response.json({ error: 'Desafío de autenticación inválido' }, { status: 401 });
+        }
 
         const ip = obtenerIpCliente(request);
         const puedeIntentar = await consumirCupo(`segundo-factor:ip:${ip}:${datosDesafio.id}`);
@@ -65,6 +68,9 @@ export async function POST(request) {
 
         const docente = await prisma.docente.findUnique({ where: { id: datosDesafio.id } });
         if (!docente) return Response.json({ error: 'Usuario no encontrado' }, { status: 404 });
+        if (docente.role !== datosDesafio.requestedRole) {
+            return Response.json({ error: 'El rol de la cuenta cambió. Inicia sesión nuevamente.' }, { status: 403 });
+        }
 
         const token = jwt.sign(
             { id: docente.id, email: docente.email, name: docente.name, role: docente.role },

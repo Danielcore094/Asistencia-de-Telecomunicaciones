@@ -39,9 +39,14 @@ export async function POST(request) {
         const email = typeof cuerpo.email === 'string' ? cuerpo.email.trim().toLowerCase() : ''
         const password = typeof cuerpo.password === 'string' ? cuerpo.password : ''
         const captchaToken = typeof cuerpo.captchaToken === 'string' ? cuerpo.captchaToken : ''
+        const requestedRole = typeof cuerpo.requestedRole === 'string' ? cuerpo.requestedRole : 'TEACHER'
 
         if (!email || !password || email.length > 254 || password.length > 128) {
             return Response.json({ error: 'Email y contraseña son requeridos' }, { status: 400 })
+        }
+
+        if (!['ADMIN', 'TEACHER'].includes(requestedRole)) {
+            return Response.json({ error: 'Tipo de ingreso inválido' }, { status: 400 })
         }
 
         if (!SECRETO) {
@@ -80,6 +85,10 @@ export async function POST(request) {
             return Response.json({ error: 'Credenciales incorrectas' }, { status: 401 })
         }
 
+        if (docente.role !== requestedRole) {
+            return Response.json({ error: `Esta cuenta no puede ingresar como ${requestedRole === 'ADMIN' ? 'administrador' : 'docente'}` }, { status: 403 })
+        }
+
         await Promise.all([limpiarIntentos(claveIp), limpiarIntentos(claveCuenta)])
 
         const codigo = String(randomInt(100000, 1000000))
@@ -109,7 +118,7 @@ export async function POST(request) {
         }
 
         const desafio = jwt.sign(
-            { id: docente.id, email: docente.email, purpose: 'SECOND_FACTOR' },
+            { id: docente.id, email: docente.email, requestedRole, purpose: 'SECOND_FACTOR' },
             SECRETO,
             { expiresIn: '10m' }
         )

@@ -9,6 +9,7 @@ import CaptchaTurnstile from '../components/CaptchaTurnstile';
 export default function InicioSesion() {
     const [correo, setCorreo] = useState('');
     const [contrasena, setContrasena] = useState('');
+    const [rolIngreso, setRolIngreso] = useState('TEACHER');
     const [error, setError] = useState('');
     const [mostrarOlvido, setMostrarOlvido] = useState(false);
     const [cargando, setCargando] = useState(false);
@@ -59,6 +60,7 @@ export default function InicioSesion() {
                 email: correo,
                 password: contrasena,
                 captchaToken: tokenCaptcha,
+                    requestedRole: rolIngreso,
             });
 
             if (res.data.requiereSegundoFactor && res.data.desafio) {
@@ -164,6 +166,40 @@ export default function InicioSesion() {
                                 </div>
                             )}
                         </div></>}
+
+                        {!desafioSegundoFactor && (
+                            <fieldset>
+                                <legend className="mb-2 block text-sm font-semibold text-texto-secundario">Ingresar como</legend>
+                                <div className="grid grid-cols-2 gap-3">
+                                    {[
+                                        { value: 'TEACHER', label: 'Docente', description: 'Mis materias y asistencia' },
+                                        { value: 'ADMIN', label: 'Administrador', description: 'Gestión completa del sistema' },
+                                    ].map((opcion) => (
+                                        <label
+                                            key={opcion.value}
+                                            className="flex cursor-pointer items-start gap-2 rounded-xl border p-3 transition-colors"
+                                            style={{
+                                                borderColor: rolIngreso === opcion.value ? 'var(--color-primary)' : 'var(--color-border)',
+                                                background: rolIngreso === opcion.value ? 'var(--color-primary-light)' : 'transparent',
+                                            }}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="rolIngreso"
+                                                value={opcion.value}
+                                                checked={rolIngreso === opcion.value}
+                                                onChange={(e) => setRolIngreso(e.target.value)}
+                                                className="mt-0.5 h-4 w-4 accent-[var(--color-primary)]"
+                                            />
+                                            <span>
+                                                <span className="block text-sm font-semibold text-texto">{opcion.label}</span>
+                                                <span className="block text-xs text-texto-secundario">{opcion.description}</span>
+                                            </span>
+                                        </label>
+                                    ))}
+                                </div>
+                            </fieldset>
+                        )}
 
                         {desafioSegundoFactor && (
                             <div>

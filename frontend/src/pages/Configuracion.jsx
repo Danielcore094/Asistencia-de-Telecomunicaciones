@@ -729,15 +729,33 @@ export default function Configuracion() {
                                     <div className="flex flex-col justify-end gap-4">
                                         {!modoCambioContrasena && (
                                             <div>
-                                                <label className="mb-1 block text-sm font-medium text-texto-secundario">Rol del Sistema</label>
-                                                <select
-                                                    className="campo w-full"
-                                                    value={formulario.role}
-                                                    onChange={(e) => setFormulario({ ...formulario, role: e.target.value })}
-                                                >
-                                                    <option value="TEACHER">Docente</option>
-                                                    <option value="ADMIN">Administrador</option>
-                                                </select>
+                                                <p className="mb-2 block text-sm font-medium text-texto-secundario">Permisos del usuario</p>
+                                                <div className="space-y-2 rounded-md border p-3" style={{ borderColor: 'var(--color-border)' }}>
+                                                    <label className="flex cursor-pointer items-start gap-3 text-sm">
+                                                        <input
+                                                            type="checkbox"
+                                                            className="mt-0.5 h-4 w-4 accent-[var(--color-primary)]"
+                                                            checked={formulario.role === 'TEACHER'}
+                                                            onChange={() => setFormulario({ ...formulario, role: 'TEACHER' })}
+                                                        />
+                                                        <span>
+                                                            <span className="block font-medium text-texto">Solo docente</span>
+                                                            <span className="block text-xs text-texto-secundario">Puede gestionar sus materias y asistencia.</span>
+                                                        </span>
+                                                    </label>
+                                                    <label className="flex cursor-pointer items-start gap-3 text-sm">
+                                                        <input
+                                                            type="checkbox"
+                                                            className="mt-0.5 h-4 w-4 accent-[var(--color-primary)]"
+                                                            checked={formulario.role === 'ADMIN'}
+                                                            onChange={() => setFormulario({ ...formulario, role: 'ADMIN' })}
+                                                        />
+                                                        <span>
+                                                            <span className="block font-medium text-texto">Docente y administrador</span>
+                                                            <span className="block text-xs text-texto-secundario">Además, puede administrar usuarios y configuración.</span>
+                                                        </span>
+                                                    </label>
+                                                </div>
                                             </div>
                                         )}
                                         <button
