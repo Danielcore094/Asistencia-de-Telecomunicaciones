@@ -30,10 +30,21 @@ export async function GET(request) {
 
         const profesores = await prisma.docente.findMany({
             where: whereClause,
-            select: { id: true, name: true, email: true, createdAt: true, role: true },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                createdAt: true,
+                role: true,
+                _count: { select: { courses: true } },
+            },
             orderBy: { createdAt: 'asc' }
         })
-        return Response.json(profesores)
+        return Response.json(profesores.map(({ _count, ...profesor }) => ({
+            ...profesor,
+            esDocente: ['TEACHER', 'DOCENTE', 'ADMIN_TEACHER', 'ADMIN_DOCENTE'].includes(profesor.role)
+                || _count.courses > 0,
+        })))
     } catch (error) {
         console.error(error)
         return Response.json({ error: 'Error al obtener profesores' }, { status: 500 })

@@ -115,7 +115,8 @@ export default function FiltrosGlobales({
 
     const docentesDisponibles = useMemo(
         () => docentes.filter((docente) => {
-            const tienePerfilDocente = docente.role === 'TEACHER' || docente.role === 'DOCENTE' || docente.role === 'ADMIN_TEACHER';
+            const tienePerfilDocente = docente.esDocente === true
+                || ['TEACHER', 'DOCENTE', 'ADMIN_TEACHER', 'ADMIN_DOCENTE'].includes(docente.role);
             const esUsuarioActual = docente.id === usuario?.id;
             return tienePerfilDocente && !esUsuarioActual;
         }),
