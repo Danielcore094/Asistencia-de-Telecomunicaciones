@@ -781,10 +781,21 @@ export default function Reportes() {
                     </p>
                 </article>
                 <article className="tarjeta">
-                    <p className="text-sm text-texto-secundario">Fallas actuales (no justificadas)</p>
+                    <p className="text-sm text-texto-secundario">Total de inasistencias no justificadas</p>
                     <p className="mt-2 font-mono text-2xl" style={{ color: 'var(--color-absent)' }}>
                         {totalFallasActuales.toLocaleString('es-CO')}
                     </p>
+                    <p className="mt-1 text-xs text-texto-secundario">
+                        Sumadas entre todos los estudiantes del reporte
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => setVistaActiva('tabla')}
+                        className="mt-3 inline-flex items-center text-xs font-semibold transition-colors"
+                        style={{ color: 'var(--color-primary)' }}
+                    >
+                        Ver quién tiene fallas <span aria-hidden="true" className="ml-1">→</span>
+                    </button>
                 </article>
             </section>
 
