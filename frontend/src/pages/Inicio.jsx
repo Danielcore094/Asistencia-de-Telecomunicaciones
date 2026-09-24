@@ -285,15 +285,6 @@ export default function Inicio() {
         [ausentesHoy, porcentajeHoy, totalEstudiantes, huboClaseHoy, cursoSeleccionado],
     );
 
-    if (cargando) {
-        return <p className="text-sm text-texto-secundario">Cargando...</p>;
-    }
-
-    if (errorCarga) {
-        return <p className="text-sm font-medium text-ausente">Error al cargar los datos</p>;
-    }
-
-
     return (
         <section className="space-y-6">
             <div className="tarjeta flex flex-wrap items-center gap-4">
@@ -321,11 +312,19 @@ export default function Inicio() {
                 </div>
             </header>
 
-            {isAdmin && !docenteSeleccionado ? (
+            {cargando ? (
+                <section className="tarjeta">
+                    <p className="text-sm text-texto-secundario">Cargando información del docente...</p>
+                </section>
+            ) : errorCarga ? (
+                <section className="tarjeta">
+                    <p className="text-sm font-medium text-ausente">Error al cargar los datos</p>
+                </section>
+            ) : isAdmin && !docenteSeleccionado ? (
                 <section className="tarjeta">
                     <p className="text-sm text-texto-secundario">Selecciona un docente para cargar el panel principal.</p>
                 </section>
-            ) : isAdmin && !cursoSeleccionado && !docenteSeleccionado ? (
+            ) : isAdmin && docenteSeleccionado && !cursoSeleccionado ? (
                 <>
                     <section className="tarjeta">
                         <p className="text-sm text-texto-secundario">Selecciona una materia para cargar el panel principal.</p>
