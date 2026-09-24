@@ -45,10 +45,10 @@ const alternarRol = (rolActual, rol) => {
 };
 
 const etiquetaRol = (rol) => ({
-    ADMIN: 'Solo administrador',
-    TEACHER: 'Solo docente',
-    DOCENTE: 'Solo docente',
-    ADMIN_TEACHER: 'Docente y administrador',
+    ADMIN: 'Administrador',
+    TEACHER: 'Docente',
+    DOCENTE: 'Docente',
+    ADMIN_TEACHER: 'Docente/Administrador',
 }[rol] || rol);
 
 export default function Configuracion() {
