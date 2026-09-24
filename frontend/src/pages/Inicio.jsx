@@ -105,10 +105,10 @@ export default function Inicio() {
                     setAlertasRiesgo([]);
                     setAsistenciaTodas([]);
                     setProximasClases([]);
-                } else if (!cursoSeleccionado && isAdmin && !docenteSeleccionado) {
+                } else if (!cursoSeleccionado && isAdmin) {
                     try {
-                        const datosHoy = await obtenerAsistenciaHoyPorCurso();
-                        const asistencia = Array.isArray(datosHoy) ? datosHoy : [];
+                        const datosHoy = await obtenerAsistenciaHoyPorCurso(docenteSeleccionado);
+                        const asistencia = Array.isArray(datosHoy?.cursos) ? datosHoy.cursos : [];
                         setAsistenciaTodas(asistencia);
 
                         const totalRecords = asistencia.reduce((sum, curso) => sum + (curso.total || 0), 0);
@@ -312,7 +312,7 @@ export default function Inicio() {
                             {!docenteSeleccionado && isAdmin
                                 ? 'Selecciona un docente para consultar su información.'
                                 : !cursoSeleccionado && isAdmin
-                                ? 'Selecciona una materia para consultar su información.'
+                                ? 'Resumen del docente seleccionado.'
                                 : !cursoSeleccionado
                                 ? 'Selecciona una materia para consultar su información.'
                                 : 'Resumen diario del curso seleccionado.'}
@@ -325,7 +325,7 @@ export default function Inicio() {
                 <section className="tarjeta">
                     <p className="text-sm text-texto-secundario">Selecciona un docente para cargar el panel principal.</p>
                 </section>
-            ) : isAdmin && !cursoSeleccionado ? (
+            ) : isAdmin && !cursoSeleccionado && !docenteSeleccionado ? (
                 <>
                     <section className="tarjeta">
                         <p className="text-sm text-texto-secundario">Selecciona una materia para cargar el panel principal.</p>
