@@ -108,7 +108,7 @@ export default function Inicio() {
                 } else if (!cursoSeleccionado && isAdmin) {
                     try {
                         const datosHoy = await obtenerAsistenciaHoyPorCurso(docenteSeleccionado);
-                        const asistencia = Array.isArray(datosHoy?.cursos) ? datosHoy.cursos : [];
+                        const asistencia = Array.isArray(datosHoy) ? datosHoy : [];
                         setAsistenciaTodas(asistencia);
 
                         const totalRecords = asistencia.reduce((sum, curso) => sum + (curso.total || 0), 0);
