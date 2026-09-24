@@ -317,7 +317,7 @@ export default function Configuracion() {
 
                 <section className="tarjeta">
                     <div className="flex items-start justify-between gap-4 flex-wrap">
-                        <div>
+                        <div className="min-w-0 flex-1">
                             <h3 className="text-lg font-medium flex items-center gap-2">
                                 <Mail size={20} className="text-primario" aria-label="Notificaciones por correo" />
                                 Notificaciones de Inasistencia
@@ -521,18 +521,20 @@ export default function Configuracion() {
                                         Total enviados: <strong>{estadoWhatsApp.resumen.enviados}</strong>
                                     </span>
                                 )}
-                                <button
-                                    type="button"
-                                    disabled={cargandoWa}
-                                    onClick={cargarHistorialWhatsApp}
-                                    className="boton-secundario ml-auto inline-flex items-center gap-2 shrink-0"
-                                    aria-label="Ver historial WhatsApp"
-                                >
-                                    {cargandoWa
-                                        ? <><Loader2 size={16} className="animate-spin" aria-label="Cargando" /> Cargando...</>
-                                        : <><Smartphone size={16} aria-label="Ver historial" /> Ver historial</>}
-                                </button>
                             </div>
+                        </div>
+                        <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2">
+                            <button
+                                type="button"
+                                disabled={cargandoWa}
+                                onClick={cargarHistorialWhatsApp}
+                                className="boton-secundario inline-flex items-center gap-2 shrink-0"
+                                aria-label="Ver historial WhatsApp"
+                            >
+                                {cargandoWa
+                                    ? <><Loader2 size={16} className="animate-spin" aria-label="Cargando" /> Cargando...</>
+                                    : <><Smartphone size={16} aria-label="Ver historial" /> Ver historial</>}
+                            </button>
                         </div>
                     </div>
                 </section>
