@@ -509,9 +509,7 @@ export default function Configuracion() {
                                 Notificaciones por WhatsApp
                             </h3>
                             <p className="mt-1 text-sm text-texto-secundario">
-                                Cada vez que un docente guarda asistencia con estudiantes ausentes, el sistema
                                 Cada vez que un docente guarda asistencia con estudiantes ausentes, el sistema envía automáticamente un mensaje de WhatsApp. El envío es inmediato y no requiere acción manual.
-                                El envío es inmediato y no requiere acción manual.
                             </p>
                             <div className="mt-3 flex flex-wrap items-center gap-4 text-xs">
                                 <span className="notificacion-estado">
