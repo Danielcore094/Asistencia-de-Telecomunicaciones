@@ -89,8 +89,12 @@ async function enviarReportesDocentes(resultados) {
 }
 
 async function enviarReporteGeneralSemanal(resultados) {
-    const destinatario = process.env.WEEKLY_REPORT_RECIPIENT_EMAIL;
-    if (!destinatario) {
+    const destinatariosConfigurados = String(process.env.WEEKLY_REPORT_RECIPIENT_EMAIL || '')
+        .split(/[;,]/)
+        .map((correo) => correo.trim())
+        .filter(Boolean);
+
+    if (destinatariosConfigurados.length === 0) {
         resultados.skipped++;
         resultados.details.push({
             tipo: 'REPORTE_GENERAL_SEMANAL',
@@ -99,6 +103,32 @@ async function enviarReporteGeneralSemanal(resultados) {
         });
         return;
     }
+
+    const docentesAdministrativos = await prisma.docente.findMany({
+        where: {
+            email: { in: destinatariosConfigurados },
+            role: { in: ['ADMIN_TEACHER', 'ADMIN_DOCENTE'] },
+        },
+        select: { email: true },
+    });
+    const correosDocentesAdministrativos = new Set(
+        docentesAdministrativos.map(({ email }) => email.toLowerCase())
+    );
+    const destinatarios = destinatariosConfigurados.filter(
+        (correo) => !correosDocentesAdministrativos.has(correo.toLowerCase())
+    );
+
+    if (destinatarios.length === 0) {
+        resultados.skipped++;
+        resultados.details.push({
+            tipo: 'REPORTE_GENERAL_SEMANAL',
+            status: 'SKIPPED',
+            reason: 'No hay destinatarios administrativos válidos configurados',
+        });
+        return;
+    }
+
+    const destinatario = destinatarios.join(',');
 
     let reporte;
     let resumenSemestral;

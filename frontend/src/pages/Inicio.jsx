@@ -65,7 +65,11 @@ export default function Inicio() {
             weekday: 'long',
         }).format(new Date()).toLowerCase();
 
-        return cursos.flatMap((curso) => {
+        const cursosDelDocente = isAdmin && docenteSeleccionado
+            ? cursos.filter((curso) => String(curso.teacherId) === String(docenteSeleccionado))
+            : cursos;
+
+        return cursosDelDocente.flatMap((curso) => {
             const clases = [];
             const franjas = [
                 { dia: curso.dia, horaInicio: curso.horaInicio, horaFin: curso.horaFin },
@@ -87,7 +91,7 @@ export default function Inicio() {
 
             return clases;
         }).sort((a, b) => String(a.horaInicio || '').localeCompare(String(b.horaInicio || '')));
-    }, [cursos]);
+    }, [cursos, docenteSeleccionado, isAdmin]);
 
     useEffect(() => {
         const cargarPanel = async () => {
