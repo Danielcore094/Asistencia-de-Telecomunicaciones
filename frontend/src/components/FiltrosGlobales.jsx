@@ -117,10 +117,11 @@ export default function FiltrosGlobales({
         () => docentes.filter((docente) => {
             const tienePerfilDocente = docente.esDocente === true
                 || ['TEACHER', 'DOCENTE', 'ADMIN_TEACHER', 'ADMIN_DOCENTE'].includes(docente.role);
+            const tieneMateriasAsignadas = cursos.some((curso) => curso.teacherId === docente.id);
             const esUsuarioActual = docente.id === usuario?.id;
-            return tienePerfilDocente && !esUsuarioActual;
+            return (tienePerfilDocente || tieneMateriasAsignadas) && !esUsuarioActual;
         }),
-        [docentes, usuario?.id]
+        [docentes, cursos, usuario?.id]
     );
 
     useEffect(() => {
