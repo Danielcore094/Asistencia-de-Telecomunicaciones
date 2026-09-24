@@ -63,7 +63,7 @@ export const ProveedorCurso = ({ children }) => {
                 setCursoSeleccionado(cursoGuardado);
                 setGrupoSeleccionado(cursoGuardado.groupCode || cursoGuardado.grupo || null);
                 setCodigoSeleccionado(cursoGuardado.code || cursoGuardado.codigo || null);
-            } else if (datosOrdenados.length > 0 && usuario?.role !== 'ADMIN') {
+            } else if (datosOrdenados.length > 0 && (usuario?.role !== 'ADMIN' || docenteSeleccionado)) {
                 const primero = datosOrdenados[0];
                 setCursoSeleccionado(primero);
                 setGrupoSeleccionado(primero.groupCode || primero.grupo || null);

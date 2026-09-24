@@ -105,7 +105,7 @@ export default function Inicio() {
                     setAlertasRiesgo([]);
                     setAsistenciaTodas([]);
                     setProximasClases([]);
-                } else if (!cursoSeleccionado && isAdmin) {
+                } else if (!cursoSeleccionado && isAdmin && !docenteSeleccionado) {
                     try {
                         const datosHoy = await obtenerAsistenciaHoyPorCurso();
                         const asistencia = Array.isArray(datosHoy) ? datosHoy : [];
