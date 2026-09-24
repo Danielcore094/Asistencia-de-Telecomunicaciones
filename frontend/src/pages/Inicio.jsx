@@ -327,10 +327,6 @@ export default function Inicio() {
             ) : isAdmin && docenteSeleccionado && !cursoSeleccionado ? (
                 <>
                     <section className="tarjeta">
-                        <p className="text-sm text-texto-secundario">Selecciona una materia para cargar el panel principal.</p>
-                    </section>
-
-                    <section className="tarjeta">
                         <h3 className="mb-4 text-lg font-medium">Clases de hoy</h3>
                         {clasesDelDia.length === 0 ? (
                             <p className="text-sm text-texto-secundario">El docente no tiene clases programadas para hoy.</p>

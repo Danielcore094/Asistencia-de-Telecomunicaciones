@@ -56,6 +56,14 @@ export const ProveedorCurso = ({ children }) => {
                 return;
             }
 
+            if (usuario?.role === 'ADMIN' && docenteSeleccionado) {
+                setCursoSeleccionado(null);
+                setGrupoSeleccionado(null);
+                setCodigoSeleccionado(null);
+                localStorage.removeItem('selectedCourseId');
+                return;
+            }
+
             const idCursoGuardado = localStorage.getItem('selectedCourseId');
             const cursoGuardado = datosOrdenados.find((curso) => curso.id === idCursoGuardado);
 
