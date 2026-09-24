@@ -68,7 +68,8 @@ export async function POST(request) {
 
         const docente = await prisma.docente.findUnique({ where: { id: datosDesafio.id } });
         if (!docente) return Response.json({ error: 'Usuario no encontrado' }, { status: 404 });
-        if (docente.role !== datosDesafio.requestedRole) {
+        const puedeIngresarConRol = docente.role === 'ADMIN_TEACHER' || docente.role === datosDesafio.requestedRole;
+        if (!puedeIngresarConRol) {
             return Response.json({ error: 'El rol de la cuenta cambió. Inicia sesión nuevamente.' }, { status: 403 });
         }
 
@@ -87,7 +88,7 @@ export async function POST(request) {
 
         return Response.json({
             token,
-            teacher: { id: docente.id, email: docente.email, name: docente.name, role: docente.role },
+            teacher: { id: docente.id, email: docente.email, name: docente.name, role: datosDesafio.requestedRole, accountRole: docente.role },
             forcePasswordChange: typeof docente.resetToken === 'string' && docente.resetToken.startsWith('FORCE_CHANGE_PASSWORD:'),
             forcePasswordChangeToken: typeof docente.resetToken === 'string' && docente.resetToken.startsWith('FORCE_CHANGE_PASSWORD:') ? docente.resetToken : null,
         });

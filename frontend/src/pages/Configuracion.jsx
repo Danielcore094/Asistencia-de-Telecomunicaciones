@@ -33,6 +33,24 @@ const generarContrasenaInicial = () => {
     return `Uts${digitos}!`;
 };
 
+const alternarRol = (rolActual, rol) => {
+    const tieneDocente = rolActual === 'TEACHER' || rolActual === 'ADMIN_TEACHER';
+    const tieneAdmin = rolActual === 'ADMIN' || rolActual === 'ADMIN_TEACHER';
+    const nuevoTieneDocente = rol === 'TEACHER' ? !tieneDocente : tieneDocente;
+    const nuevoTieneAdmin = rol === 'ADMIN' ? !tieneAdmin : tieneAdmin;
+
+    if (!nuevoTieneDocente && !nuevoTieneAdmin) return rolActual;
+    if (nuevoTieneDocente && nuevoTieneAdmin) return 'ADMIN_TEACHER';
+    return nuevoTieneAdmin ? 'ADMIN' : 'TEACHER';
+};
+
+const etiquetaRol = (rol) => ({
+    ADMIN: 'Solo administrador',
+    TEACHER: 'Solo docente',
+    DOCENTE: 'Solo docente',
+    ADMIN_TEACHER: 'Docente y administrador',
+}[rol] || rol);
+
 export default function Configuracion() {
     const { usuario } = useAutenticacion();
     const [docentes, setDocentes] = useState([]);
@@ -172,7 +190,7 @@ export default function Configuracion() {
             name: docente.name,
             email: docente.email,
             password: '',
-            role: docente.role === 'DOCENTE' || docente.role === 'TEACHER' ? 'TEACHER' : docente.role
+            role: docente.role === 'DOCENTE' ? 'TEACHER' : docente.role
         });
         setModoCambioContrasena(false);
         setModalFormularioVisible(true);
@@ -185,7 +203,7 @@ export default function Configuracion() {
             name: docente.name,
             email: docente.email,
             password: '',
-            role: docente.role === 'DOCENTE' || docente.role === 'TEACHER' ? 'TEACHER' : docente.role
+            role: docente.role === 'DOCENTE' ? 'TEACHER' : docente.role
         });
         setModoCambioContrasena(true);
         setModalFormularioVisible(true);
@@ -563,8 +581,8 @@ export default function Configuracion() {
                                             <td className="px-4 py-3 font-medium text-texto">{docente.name}</td>
                                             <td className="px-4 py-3 text-texto-secundario text-sm">{docente.email}</td>
                                             <td className="px-4 py-3">
-                                                <span className={docente.role === 'ADMIN' ? 'badge-admin' : 'badge-docente'}>
-                                                    {docente.role === 'ADMIN' ? 'Administrador' : docente.role === 'DOCENTE' || docente.role === 'TEACHER' ? 'Docente' : docente.role}
+                                                <span className={docente.role === 'ADMIN' || docente.role === 'ADMIN_TEACHER' ? 'badge-admin' : 'badge-docente'}>
+                                                    {etiquetaRol(docente.role)}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-3 text-center">
@@ -735,11 +753,11 @@ export default function Configuracion() {
                                                         <input
                                                             type="checkbox"
                                                             className="mt-0.5 h-4 w-4 accent-[var(--color-primary)]"
-                                                            checked={formulario.role === 'TEACHER'}
-                                                            onChange={() => setFormulario({ ...formulario, role: 'TEACHER' })}
+                                                            checked={formulario.role === 'TEACHER' || formulario.role === 'ADMIN_TEACHER'}
+                                                            onChange={() => setFormulario({ ...formulario, role: alternarRol(formulario.role, 'TEACHER') })}
                                                         />
                                                         <span>
-                                                            <span className="block font-medium text-texto">Solo docente</span>
+                                                            <span className="block font-medium text-texto">Docente</span>
                                                             <span className="block text-xs text-texto-secundario">Puede gestionar sus materias y asistencia.</span>
                                                         </span>
                                                     </label>
@@ -747,12 +765,12 @@ export default function Configuracion() {
                                                         <input
                                                             type="checkbox"
                                                             className="mt-0.5 h-4 w-4 accent-[var(--color-primary)]"
-                                                            checked={formulario.role === 'ADMIN'}
-                                                            onChange={() => setFormulario({ ...formulario, role: 'ADMIN' })}
+                                                            checked={formulario.role === 'ADMIN' || formulario.role === 'ADMIN_TEACHER'}
+                                                            onChange={() => setFormulario({ ...formulario, role: alternarRol(formulario.role, 'ADMIN') })}
                                                         />
                                                         <span>
-                                                            <span className="block font-medium text-texto">Docente y administrador</span>
-                                                            <span className="block text-xs text-texto-secundario">Además, puede administrar usuarios y configuración.</span>
+                                                            <span className="block font-medium text-texto">Administrador</span>
+                                                            <span className="block text-xs text-texto-secundario">Puede administrar usuarios y configuración.</span>
                                                         </span>
                                                     </label>
                                                 </div>

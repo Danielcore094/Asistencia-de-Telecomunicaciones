@@ -85,7 +85,8 @@ export async function POST(request) {
             return Response.json({ error: 'Credenciales incorrectas' }, { status: 401 })
         }
 
-        if (docente.role !== requestedRole) {
+        const puedeIngresarConRol = docente.role === 'ADMIN_TEACHER' || docente.role === requestedRole
+        if (!puedeIngresarConRol) {
             return Response.json({ error: `Esta cuenta no puede ingresar como ${requestedRole === 'ADMIN' ? 'administrador' : 'docente'}` }, { status: 403 })
         }
 
@@ -128,7 +129,7 @@ export async function POST(request) {
         return Response.json({ 
             requiereSegundoFactor: true,
             desafio,
-            teacher: { id: docente.id, email: docente.email, name: docente.name, role: docente.role },
+            teacher: { id: docente.id, email: docente.email, name: docente.name, role: requestedRole, accountRole: docente.role },
             forcePasswordChange,
             forcePasswordChangeToken: forcePasswordChange ? docente.resetToken : null,
         })

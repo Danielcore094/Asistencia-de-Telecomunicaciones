@@ -81,7 +81,7 @@ export async function POST(request) {
             return Response.json({ error: 'Ya existe un profesor con ese email' }, { status: 409 })
         }
 
-        const rolFinal = role === 'ADMIN' ? 'ADMIN' : 'TEACHER'
+        const rolFinal = ['ADMIN', 'TEACHER', 'ADMIN_TEACHER'].includes(role) ? role : 'TEACHER'
         const hashContrasena = await bcrypt.hash(passwordFinal, 10)
 
         const loginUrl = process.env.FRONTEND_URL || 'http://localhost:3000'

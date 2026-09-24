@@ -18,8 +18,8 @@ export async function PUT(request, { params }) {
         const { name, email: emailRecibido, role, password } = await request.json()
         const email = normalizarCorreo(emailRecibido)
 
-        if (role !== undefined && !['ADMIN', 'TEACHER'].includes(role)) {
-            return Response.json({ error: 'El rol debe ser ADMIN o TEACHER' }, { status: 400 })
+        if (role !== undefined && !['ADMIN', 'TEACHER', 'ADMIN_TEACHER'].includes(role)) {
+            return Response.json({ error: 'El rol debe ser ADMIN, TEACHER o ADMIN_TEACHER' }, { status: 400 })
         }
 
         if (emailRecibido && !esCorreoInstitucional(email)) {
@@ -47,8 +47,10 @@ export async function PUT(request, { params }) {
                 return Response.json({ error: 'Usuario no encontrado' }, { status: 404 })
             }
 
-            if (usuarioObjetivo.role === 'ADMIN' && role !== 'ADMIN') {
-                const cantidadAdministradores = await prisma.docente.count({ where: { role: 'ADMIN' } })
+            const tienePrivilegiosAdmin = usuarioObjetivo.role === 'ADMIN' || usuarioObjetivo.role === 'ADMIN_TEACHER'
+            const pierdePrivilegiosAdmin = role === 'TEACHER'
+            if (tienePrivilegiosAdmin && pierdePrivilegiosAdmin) {
+                const cantidadAdministradores = await prisma.docente.count({ where: { role: { in: ['ADMIN', 'ADMIN_TEACHER'] } } })
                 if (cantidadAdministradores <= 1) {
                     return Response.json({ error: 'Debe existir al menos un administrador' }, { status: 400 })
                 }
@@ -87,6 +89,19 @@ export async function DELETE(request, { params }) {
         const { id } = params
         if (id === usuario.id) {
             return Response.json({ error: 'No puedes eliminar tu propia cuenta' }, { status: 400 })
+        }
+
+        const usuarioObjetivo = await prisma.docente.findUnique({ where: { id }, select: { role: true } })
+        if (!usuarioObjetivo) {
+            return Response.json({ error: 'Usuario no encontrado' }, { status: 404 })
+        }
+
+        const tienePrivilegiosAdmin = usuarioObjetivo.role === 'ADMIN' || usuarioObjetivo.role === 'ADMIN_TEACHER'
+        if (tienePrivilegiosAdmin) {
+            const cantidadAdministradores = await prisma.docente.count({ where: { role: { in: ['ADMIN', 'ADMIN_TEACHER'] } } })
+            if (cantidadAdministradores <= 1) {
+                return Response.json({ error: 'Debe existir al menos un administrador' }, { status: 400 })
+            }
         }
 
         await prisma.docente.delete({ where: { id } })
