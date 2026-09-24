@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
 import api from '../services/api';
+import { useAutenticacion } from '../context/ContextoAutenticacion';
 import { 
     ShieldCheck, 
     User, 
@@ -31,6 +33,7 @@ const obtenerEtiquetaEntidad = (entidad) => etiquetasEntidad[entidad]
     || entidad.replace(/_/g, ' ').toLowerCase().replace(/^\w/, (letra) => letra.toUpperCase());
 
 const Auditoria = () => {
+    const { usuario } = useAutenticacion();
     const [registros, setRegistros] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [total, setTotal] = useState(0);
@@ -61,8 +64,13 @@ const Auditoria = () => {
     };
 
     useEffect(() => {
+        if (usuario?.role !== 'ADMIN') return;
         obtenerLogs();
-    }, [pagina, terminoBusqueda]);
+    }, [pagina, terminoBusqueda, usuario?.role]);
+
+    if (usuario?.role !== 'ADMIN') {
+        return <Navigate to="/" replace />;
+    }
 
     const getActionIcon = (action) => {
         if (action.includes('LOGIN')) return <Key className="text-purple-500" size={18} />;
