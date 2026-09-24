@@ -521,20 +521,18 @@ export default function Configuracion() {
                                         Total enviados: <strong>{estadoWhatsApp.resumen.enviados}</strong>
                                     </span>
                                 )}
+                                <button
+                                    type="button"
+                                    disabled={cargandoWa}
+                                    onClick={cargarHistorialWhatsApp}
+                                    className="boton-secundario inline-flex items-center gap-2 shrink-0"
+                                    aria-label="Ver historial WhatsApp"
+                                >
+                                    {cargandoWa
+                                        ? <><Loader2 size={16} className="animate-spin" aria-label="Cargando" /> Cargando...</>
+                                        : <><Smartphone size={16} aria-label="Ver historial" /> Ver historial</>}
+                                </button>
                             </div>
-                        </div>
-                        <div className="ml-auto flex shrink-0 items-center justify-end">
-                            <button
-                                type="button"
-                                disabled={cargandoWa}
-                                onClick={cargarHistorialWhatsApp}
-                                className="boton-secundario inline-flex items-center gap-2 shrink-0"
-                                aria-label="Ver historial WhatsApp"
-                            >
-                                {cargandoWa
-                                    ? <><Loader2 size={16} className="animate-spin" aria-label="Cargando" /> Cargando...</>
-                                    : <><Smartphone size={16} aria-label="Ver historial" /> Ver historial</>}
-                            </button>
                         </div>
                     </div>
                 </section>
