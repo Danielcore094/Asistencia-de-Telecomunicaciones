@@ -5,7 +5,24 @@ import {
     obtenerRangoSemanaActual,
     obtenerLunesSemana,
     obtenerRangoSemanaAnterior,
+    obtenerPeriodoAcademicoActual,
+    obtenerSemanaAcademica,
 } from '../src/lib/utilidadesFechas.js';
+
+test('obtenerPeriodoAcademicoActual separa el año y los dos periodos semestrales', () => {
+    assert.deepEqual(obtenerPeriodoAcademicoActual(new Date('2026-01-01T05:00:00.000Z')), { anio: '2026', periodo: '1' });
+    assert.deepEqual(obtenerPeriodoAcademicoActual(new Date('2026-06-30T15:00:00.000Z')), { anio: '2026', periodo: '1' });
+    assert.deepEqual(obtenerPeriodoAcademicoActual(new Date('2026-07-01T05:00:00.000Z')), { anio: '2026', periodo: '2' });
+    assert.deepEqual(obtenerPeriodoAcademicoActual(new Date('2026-12-31T15:00:00.000Z')), { anio: '2026', periodo: '2' });
+    assert.deepEqual(obtenerPeriodoAcademicoActual(new Date('2027-01-01T05:00:00.000Z')), { anio: '2027', periodo: '1' });
+});
+
+test('obtenerSemanaAcademica cuenta desde la semana que contiene el inicio del periodo', () => {
+    const referenceDate = new Date('2026-11-02T12:00:00.000Z');
+
+    assert.equal(obtenerSemanaAcademica({ referenceDate, weekStart: '2026-10-19' }), 17);
+    assert.equal(obtenerSemanaAcademica({ referenceDate, weekStart: '2026-10-26' }), 18);
+});
 
 test('formatearFechaBogota usa la fecha correspondiente a America/Bogota', () => {
     assert.equal(formatearFechaBogota(new Date('2026-08-03T02:00:00.000Z')), '2026-08-02');

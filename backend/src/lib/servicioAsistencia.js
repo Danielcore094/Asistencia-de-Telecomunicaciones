@@ -1,5 +1,5 @@
 import prisma from './prisma.js';
-import { formatearFechaBogota, obtenerRangoSemanaActual, obtenerRangoSemanaAnterior, obtenerLunesSemana, parseFechaUtc } from './utilidadesFechas.js';
+import { formatearFechaBogota, obtenerPeriodoAcademicoActual, obtenerRangoSemanaActual, obtenerRangoSemanaAnterior, obtenerSemanaAcademica, obtenerLunesSemana, parseFechaUtc } from './utilidadesFechas.js';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const XLSX = require('xlsx-js-style');
@@ -112,23 +112,29 @@ function crearEstilos() {
     };
 }
 
-async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
+async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates, filtroAcademico }) {
     const fechasCab = dates.map(formatearFechaCabecera);
     const estilos   = crearEstilos();
 
     const courses = await prisma.curso.findMany({
-        where: teacherId ? { teacherId } : {},
+        where: {
+            ...filtroAcademico,
+            ...(teacherId ? { teacherId } : {}),
+        },
         orderBy: [{ teacher: { name: 'asc' } }, { name: 'asc' }, { groupCode: 'asc' }],
         include: { teacher: { select: { name: true, email: true } } },
     });
-
-    if (courses.length === 0) return null;
 
     const wb = XLSX.utils.book_new();
     const nombresUsados = new Set();
     let hojasScritas = 0;
 
     for (const curso of courses) {
+        const asistencias = await prisma.asistencia.findMany({
+            where: { courseId: curso.id, date: { in: dates } },
+            select: { studentId: true, date: true, present: true, status: true },
+        });
+
         const estudiantesRaw = await prisma.estudiante.findMany({
             where: { attendances: { some: { courseId: curso.id } } },
             select: {
@@ -146,11 +152,6 @@ async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
         const estudiantes = [...estudiantesRaw].sort((a, b) =>
             compararPorApellido(a.name, b.name)
         );
-
-        const asistencias = await prisma.asistencia.findMany({
-            where: { courseId: curso.id, date: { in: dates } },
-            select: { studentId: true, date: true, present: true, status: true },
-        });
 
         const mapa = {};
         for (const reg of asistencias) {
@@ -299,9 +300,12 @@ async function generarExcelDocente({ teacherId, weekStart, weekEnd, dates }) {
     return Buffer.from(XLSX.write(wb, { type: 'array', bookType: 'xlsx' }));
 }
 
-async function obtenerResumenAsistenciaSemanal({ teacherId, dates }) {
+async function obtenerResumenAsistenciaSemanal({ teacherId, dates, filtroAcademico }) {
     const where = { date: { in: dates } };
-    if (teacherId) where.course = { teacherId };
+    where.course = {
+        ...filtroAcademico,
+        ...(teacherId ? { teacherId } : {}),
+    };
 
     const registros = await prisma.asistencia.findMany({
         where,
@@ -326,9 +330,11 @@ async function obtenerResumenAsistenciaSemanal({ teacherId, dates }) {
 }
 
 export async function crearReporteExcelSemanalGeneral({ referenceDate, semanaActual = false } = {}) {
+    const filtroAcademico = obtenerPeriodoAcademicoActual(referenceDate);
     const { weekStart, weekEnd } = semanaActual
         ? obtenerRangoSemanaActual(referenceDate)
         : obtenerRangoSemanaAnterior(referenceDate);
+    if (obtenerSemanaAcademica({ referenceDate, weekStart }) > 17) return null;
     const dates = [];
     const start = parseFechaUtc(weekStart);
     const end = parseFechaUtc(weekEnd);
@@ -339,23 +345,27 @@ export async function crearReporteExcelSemanalGeneral({ referenceDate, semanaAct
         dates.push(`${y}-${m}-${day}`);
     }
 
-    const buffer = await generarExcelDocente({ weekStart, weekEnd, dates });
+    const buffer = await generarExcelDocente({ weekStart, weekEnd, dates, filtroAcademico });
     if (!buffer) return null;
 
-    const courseCount = await prisma.curso.count({ where: { attendances: { some: {} } } });
+    const courseCount = await prisma.curso.count({
+        where: { ...filtroAcademico, attendances: { some: {} } },
+    });
     return {
         buffer,
         weekStart,
         weekEnd,
         courseCount,
-        ...(await obtenerResumenAsistenciaSemanal({ dates })),
+        ...(await obtenerResumenAsistenciaSemanal({ dates, filtroAcademico })),
     };
 }
 
 export async function crearReportesSemanalesPorDocente({ referenceDate, semanaActual = false } = {}) {
+    const filtroAcademico = obtenerPeriodoAcademicoActual(referenceDate);
     const { weekStart, weekEnd } = semanaActual
         ? obtenerRangoSemanaActual(referenceDate)
         : obtenerRangoSemanaAnterior(referenceDate);
+    if (obtenerSemanaAcademica({ referenceDate, weekStart }) > 17) return [];
 
     console.log(`[servicioAsistencia] Generando reportes por docente: ${weekStart} → ${weekEnd}`);
 
@@ -370,7 +380,13 @@ export async function crearReportesSemanalesPorDocente({ referenceDate, semanaAc
     }
 
     const teachers = await prisma.docente.findMany({
-        where: { courses: { some: {} } },
+        where: {
+            courses: {
+                some: {
+                    ...filtroAcademico,
+                },
+            },
+        },
         select: { id: true, name: true, email: true },
         orderBy: { name: 'asc' },
     });
@@ -383,6 +399,7 @@ export async function crearReportesSemanalesPorDocente({ referenceDate, semanaAc
             weekStart,
             weekEnd,
             dates,
+            filtroAcademico,
         });
 
         if (!buffer) {
@@ -390,8 +407,13 @@ export async function crearReportesSemanalesPorDocente({ referenceDate, semanaAc
             continue;
         }
 
-        const courseCount = await prisma.curso.count({ where: { teacherId: teacher.id } });
-        const resumen = await obtenerResumenAsistenciaSemanal({ teacherId: teacher.id, dates });
+        const courseCount = await prisma.curso.count({
+            where: {
+                ...filtroAcademico,
+                teacherId: teacher.id,
+            },
+        });
+        const resumen = await obtenerResumenAsistenciaSemanal({ teacherId: teacher.id, dates, filtroAcademico });
 
         reportes.push({
             teacherName: teacher.name,
@@ -411,7 +433,9 @@ export async function crearReportesSemanalesPorDocente({ referenceDate, semanaAc
 
 export async function crearReporteSemanalPorDocente({ teacherId, referenceDate } = {}) {
     if (!teacherId) return null;
+    const filtroAcademico = obtenerPeriodoAcademicoActual(referenceDate);
     const { weekStart, weekEnd } = obtenerRangoSemanaAnterior(referenceDate);
+    if (obtenerSemanaAcademica({ referenceDate, weekStart }) > 17) return null;
 
     const teacher = await prisma.docente.findUnique({
         where: { id: teacherId },
@@ -433,11 +457,17 @@ export async function crearReporteSemanalPorDocente({ teacherId, referenceDate }
         weekStart,
         weekEnd,
         dates,
+        filtroAcademico,
     });
     if (!buffer) return null;
 
-    const courseCount = await prisma.curso.count({ where: { teacherId } });
-    const resumen = await obtenerResumenAsistenciaSemanal({ teacherId, dates });
+    const courseCount = await prisma.curso.count({
+        where: {
+            ...filtroAcademico,
+            teacherId,
+        },
+    });
+    const resumen = await obtenerResumenAsistenciaSemanal({ teacherId, dates, filtroAcademico });
     return {
         teacherName: teacher.name,
         teacherEmail: teacher.email,
