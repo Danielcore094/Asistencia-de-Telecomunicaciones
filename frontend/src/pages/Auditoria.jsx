@@ -374,7 +374,7 @@ const Auditoria = () => {
                     </div>
                 )}
 
-                <div className="overflow-x-auto">
+                <div className="hidden overflow-x-auto md:block">
                     <table className="w-full text-left">
                         <thead>
                             <tr className="text-xs font-semibold text-gray-400 uppercase tracking-wider bg-gray-50">
@@ -446,6 +446,61 @@ const Auditoria = () => {
                             ))}
                         </tbody>
                     </table>
+                </div>
+
+                <div className="divide-y divide-gray-100 md:hidden">
+                    {cargando && registros.length === 0 ? (
+                        Array(5).fill(0).map((_, indice) => (
+                            <div key={indice} className="animate-pulse space-y-3 p-4">
+                                <div className="h-4 w-2/3 rounded bg-gray-100" />
+                                <div className="h-3 w-1/2 rounded bg-gray-100" />
+                                <div className="h-8 w-full rounded bg-gray-100" />
+                            </div>
+                        ))
+                    ) : registros.length === 0 ? (
+                        <div className="px-4 py-12 text-center text-gray-400">
+                            No se encontraron registros.
+                        </div>
+                    ) : registros.map((log) => (
+                        <article key={log.id} className="space-y-3 p-4">
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                    <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                                        {getActionIcon(log.action)}
+                                        <span className="break-words">{log.action.replace(/_/g, ' ')}</span>
+                                    </div>
+                                    <p className="mt-1 flex items-center gap-1 text-xs text-gray-500">
+                                        <Calendar size={13} />
+                                        {formatDate(log.createdAt)}
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => setModalLog(log)}
+                                    className="shrink-0 rounded-md px-2 py-1 text-sm font-medium text-purple-600 hover:bg-purple-50"
+                                >
+                                    Ver más
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3 rounded-lg bg-gray-50 p-3 text-xs">
+                                <div className="min-w-0">
+                                    <p className="uppercase tracking-wide text-gray-400">Usuario</p>
+                                    <p className="mt-1 truncate font-medium text-gray-700">{log.userName}</p>
+                                    <p className="mt-0.5 text-[10px] font-bold uppercase text-gray-400">{log.userRole}</p>
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="uppercase tracking-wide text-gray-400">Entidad</p>
+                                    <span className="mt-1 inline-flex max-w-full items-center rounded-full bg-white px-2 py-0.5 font-medium text-gray-800">
+                                        <span className="truncate">{obtenerEtiquetaEntidad(log.target)}</span>
+                                    </span>
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="uppercase tracking-wide text-gray-400">IP</p>
+                                    <p className="mt-1 truncate font-mono text-gray-500">{log.ip || '—'}</p>
+                                </div>
+                            </div>
+                        </article>
+                    ))}
                 </div>
             </div>
         </div>

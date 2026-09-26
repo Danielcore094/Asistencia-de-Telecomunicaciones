@@ -25,7 +25,8 @@ const estiloSelectLocal = {
     background: 'var(--color-surface)',
     cursor: 'pointer',
     outline: 'none',
-    minWidth: '140px',
+    minWidth: 0,
+    width: '100%',
 };
 
 export default function Historial() {
@@ -117,8 +118,8 @@ export default function Historial() {
 
     return (
         <section className="space-y-6">
-            <div className="tarjeta flex flex-wrap items-center gap-4">
-                <FiltrosGlobales />
+            <div className="tarjeta flex flex-col items-stretch gap-3">
+                <FiltrosGlobales className="w-full" />
             </div>
 
             <header className="tarjeta flex flex-col gap-4">
@@ -133,15 +134,14 @@ export default function Historial() {
             </header>
 
 
-            <div
-                className="tarjeta flex flex-wrap items-end gap-4"
-            >
+            <div className="tarjeta flex flex-col items-stretch gap-3">
                 <div className="flex items-center gap-2" style={{ color: 'var(--color-text-secondary)', fontSize: '0.8125rem', fontWeight: 500 }}>
                     <Filter size={15} />
                     Filtros adicionales:
                 </div>
 
-                <div className="flex flex-col gap-1">
+                <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="flex min-w-0 flex-col gap-1">
                     <label
                         htmlFor="hist-anio"
                         style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--color-text-secondary)' }}
@@ -163,7 +163,7 @@ export default function Historial() {
                     </select>
                 </div>
 
-                <div className="flex flex-col gap-1">
+                <div className="flex min-w-0 flex-col gap-1">
                     <label
                         htmlFor="hist-periodo"
                         style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--color-text-secondary)' }}
@@ -184,7 +184,7 @@ export default function Historial() {
                     </select>
                 </div>
 
-                <div className="flex flex-col gap-1">
+                <div className="flex min-w-0 flex-col gap-1">
                     <label
                         htmlFor="hist-modalidad"
                         style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--color-text-secondary)' }}
@@ -204,8 +204,7 @@ export default function Historial() {
                         <option value="Ingenieria">Ingeniería</option>
                     </select>
                 </div>
-
-
+                </div>
             </div>
 
 

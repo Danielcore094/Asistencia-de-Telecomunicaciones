@@ -343,7 +343,7 @@ export default function Configuracion() {
                                 )}
                             </div>
                         </div>
-                        <div className="ml-auto flex shrink-0 flex-wrap items-center justify-end gap-2">
+                        <div className="ml-auto flex w-full min-w-0 flex-wrap items-center justify-end gap-2 lg:w-auto lg:shrink-0">
                             <button
                                 type="button"
                                 disabled={enviandoNotificaciones}
@@ -363,7 +363,7 @@ export default function Configuracion() {
                                         setEnviandoNotificaciones(false);
                                     }
                                 }}
-                                className="boton-primario inline-flex items-center gap-2 shrink-0 disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="boton-primario inline-flex w-full items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed sm:w-auto"
                                 aria-label="Enviar notificaciones semanales"
                             >
                                 {enviandoNotificaciones
@@ -373,7 +373,7 @@ export default function Configuracion() {
                             <button
                                 type="button"
                                 onClick={cargarHistorialCorreo}
-                                className="boton-secundario inline-flex items-center gap-2 shrink-0"
+                                className="boton-secundario inline-flex w-full items-center justify-center gap-2 sm:w-auto"
                                 aria-label="Ver historial de correos"
                             >
                                 <Mail size={16} aria-label="Ver historial de correos" /> Ver historial
@@ -447,15 +447,16 @@ export default function Configuracion() {
                             className="modal-panel w-full flex flex-col"
                             style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--card-radius)', width: 'calc(100vw - 24px)', maxWidth: '1400px', maxHeight: '88vh' }}
                         >
-                            <div className="flex items-center justify-between px-6 py-4 border-b shrink-0" style={{ borderColor: 'var(--color-border)' }}>
-                                <h3 className="text-lg font-semibold flex items-center gap-2">
-                                    <Mail size={20} className="text-primario" /> Historial de correos de inasistencia
+                            <div className="flex items-center justify-between gap-3 px-4 py-3 sm:px-6 sm:py-4 border-b shrink-0" style={{ borderColor: 'var(--color-border)' }}>
+                                <h3 className="min-w-0 text-base sm:text-lg font-semibold flex items-center gap-2">
+                                    <Mail size={20} className="shrink-0 text-primario" />
+                                    <span className="truncate">Historial de correos de inasistencia</span>
                                 </h3>
                                 <button type="button" onClick={() => setModalCorreoVisible(false)} className="p-1.5 rounded-md" style={{ color: 'var(--color-muted)' }} aria-label="Cerrar historial de correos">
                                     <X size={20} aria-label="Cerrar" />
                                 </button>
                             </div>
-                            <div className="overflow-y-auto flex-1 overflow-x-auto">
+                            <div className="overflow-y-auto flex-1">
                                 {cargandoCorreo ? (
                                     <p className="py-12 text-center text-texto-secundario text-sm">Cargando historial...</p>
                                 ) : errorCorreo ? (
@@ -463,6 +464,8 @@ export default function Configuracion() {
                                 ) : !estadoCron?.historial?.length ? (
                                     <p className="py-12 text-center text-texto-secundario text-sm">No hay notificaciones de correo registradas aún.</p>
                                 ) : (
+                                    <>
+                                    <div className="hidden overflow-x-auto md:block">
                                     <table className="min-w-[1100px] w-full table-auto whitespace-nowrap text-sm">
                                         <thead className="sticky top-0" style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', zIndex: 1 }}>
                                             <tr className="text-left text-texto-secundario">
@@ -491,6 +494,39 @@ export default function Configuracion() {
                                             ))}
                                         </tbody>
                                     </table>
+                                    </div>
+                                    <div className="divide-y md:hidden" style={{ borderColor: 'var(--color-border)' }}>
+                                        {estadoCron.historial.map((registro) => (
+                                            <article key={registro.id} className="space-y-3 p-4">
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <div className="min-w-0">
+                                                        <p className="break-words font-medium text-texto">{registro.estudiante}</p>
+                                                        <p className="mt-1 break-all text-xs text-texto-secundario">{registro.correo || 'No registrado'}</p>
+                                                    </div>
+                                                    <div className="shrink-0">
+                                                        {registro.estado === 'SUCCESS' && <span className="badge-docente">Enviado</span>}
+                                                        {registro.estado === 'SKIPPED' && <span className="text-xs text-texto-secundario">Omitido</span>}
+                                                        {registro.estado === 'ERROR' && <span className="badge-admin" title={registro.error || 'Error de envío'}>Error</span>}
+                                                    </div>
+                                                </div>
+                                                <dl className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-lg bg-fondo p-3 text-xs">
+                                                    <div className="min-w-0">
+                                                        <dt className="text-texto-secundario">Documento</dt>
+                                                        <dd className="mt-0.5 break-all font-mono text-texto">{registro.documento}</dd>
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <dt className="text-texto-secundario">Semana</dt>
+                                                        <dd className="mt-0.5 break-words text-texto">{registro.semana}</dd>
+                                                    </div>
+                                                    <div className="col-span-2 min-w-0">
+                                                        <dt className="text-texto-secundario">Fecha de envío</dt>
+                                                        <dd className="mt-0.5 break-words text-texto">{new Date(registro.fecha).toLocaleString('es-CO')}</dd>
+                                                    </div>
+                                                </dl>
+                                            </article>
+                                        ))}
+                                    </div>
+                                    </>
                                 )}
                             </div>
                             <div className="px-6 py-3 border-t shrink-0 flex items-center justify-between" style={{ borderColor: 'var(--color-border)' }}>

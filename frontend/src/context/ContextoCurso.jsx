@@ -4,6 +4,18 @@ import { useAutenticacion } from './ContextoAutenticacion';
 import toast from 'react-hot-toast';
 
 const ContextoCurso = createContext(null);
+const modoPrevisualizacion = import.meta.env.DEV && import.meta.env.VITE_PREVIEW_MODE === 'true';
+const cursosPrevisualizacion = [
+    {
+        id: 'preview-curso',
+        name: 'Redes de Telecomunicaciones',
+        code: 'TEL-401',
+        groupCode: 'A',
+        teacherId: 'preview-admin',
+        academicPeriod: '2',
+        academicYear: '2026',
+    },
+];
 
 export const ProveedorCurso = ({ children }) => {
     const { usuario } = useAutenticacion();
@@ -39,6 +51,17 @@ export const ProveedorCurso = ({ children }) => {
     const cargarCursos = useCallback(async () => {
         if (!usuario) return;
         setCargandoCursos(true);
+
+        if (modoPrevisualizacion) {
+            const curso = cursosPrevisualizacion[0];
+            setCursos(cursosPrevisualizacion);
+            setCursoSeleccionado(curso);
+            setGrupoSeleccionado(curso.groupCode);
+            setCodigoSeleccionado(curso.code);
+            setCargandoCursos(false);
+            return;
+        }
+
         try {
             const idDocente = usuario?.role === 'ADMIN' ? docenteSeleccionado : null;
             const datos = await obtenerCursos(idDocente);

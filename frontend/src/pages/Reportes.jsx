@@ -811,7 +811,7 @@ export default function Reportes() {
                                 key={id}
                                 type="button"
                                 onClick={() => setVistaActiva(id)}
-                                className="relative inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-4 py-2.5 text-sm font-medium transition-colors"
+                                className="relative inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-3 py-2.5 text-xs font-medium transition-colors sm:px-4 sm:text-sm"
                                 style={{
                                     color: activo ? 'var(--color-primary)' : 'var(--color-text-secondary)',
                                     borderBottom: activo ? '2px solid var(--color-primary)' : '2px solid transparent',
@@ -868,7 +868,7 @@ export default function Reportes() {
                                         className="rounded-xl border p-4"
                                         style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)' }}
                                     >
-                                        <div className="h-[340px] w-full">
+                                        <div className="h-[280px] w-full sm:h-[340px]">
                                             <ResponsiveContainer width="100%" height="100%">
                                                 <PieChart>
                                                     <Pie
@@ -985,7 +985,7 @@ export default function Reportes() {
                                                 borderRadius: 'var(--input-radius)', padding: '0 12px',
                                                 fontSize: '0.8125rem', fontWeight: 600,
                                                 color: 'var(--color-text-primary)', background: 'var(--color-surface)',
-                                                cursor: 'pointer', outline: 'none', minWidth: 220,
+                                                cursor: 'pointer', outline: 'none', minWidth: 0, width: '100%', maxWidth: 320,
                                             }}
                                         >
                                             {MODOS_GRUPO.map((m) => (
@@ -1051,11 +1051,11 @@ export default function Reportes() {
                                             La serie de asistencia en el tiempo separa las ausencias justificadas y no justificadas: las justificadas no implican pérdida de materia.
                                         </p>
                                         <div
-                                            className="rounded-xl border p-3"
+                                            className="h-[280px] rounded-xl border p-3 sm:h-[340px]"
                                             style={{ borderColor: 'var(--color-border)', background: 'var(--color-bg)' }}
                                         >
-                                            <ResponsiveContainer width="100%" height={340}>
-                                                <AreaChart data={datosLineChart} margin={{ top: 18, right: 24, left: -10, bottom: 4 }}>
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                <AreaChart data={datosLineChart} margin={{ top: 18, right: 12, left: -10, bottom: 4 }}>
                                                     <defs>
                                                         {seriesNombres.map((nombre, i) => {
                                                             const color = getColoresLineas()[i % 6];
@@ -1103,7 +1103,8 @@ export default function Reportes() {
                         )}
 
                         {vistaActiva === 'tabla' && (
-                            <div className="overflow-x-auto">
+                            <>
+                            <div className="hidden overflow-x-auto md:block">
                                 <table className="w-full min-w-[720px] text-sm">
                                     <thead style={{ background: 'color-mix(in srgb, var(--color-border) 50%, transparent)' }}>
                                         <tr className="text-left text-texto-secundario">
@@ -1175,6 +1176,58 @@ export default function Reportes() {
                                     </tbody>
                                 </table>
                             </div>
+                            <div className="divide-y md:hidden" style={{ borderColor: 'var(--color-border)' }}>
+                                {datos.map((item, idx) => (
+                                    <article key={item.id} className="space-y-3 p-4">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <p className="text-xs text-texto-secundario">#{idx + 1}</p>
+                                                <p className="break-words font-semibold text-texto">{formatearNombre(item.name)}</p>
+                                            </div>
+                                            <span
+                                                className="shrink-0 rounded-[var(--badge-radius)] px-2 py-1 font-mono text-sm font-semibold"
+                                                style={{
+                                                    background: item.percentage >= 90 ? 'var(--color-present-bg)' : item.percentage >= 80 ? 'var(--color-accent-light)' : item.percentage >= 70 ? 'var(--color-late-bg)' : 'var(--color-absent-bg)',
+                                                    color: item.percentage >= 90 ? 'var(--color-present)' : item.percentage >= 80 ? 'var(--color-accent-dark)' : item.percentage >= 70 ? 'var(--color-late)' : 'var(--color-absent)',
+                                                }}
+                                            >
+                                                {Number(item.percentage).toLocaleString('es-CO')}%
+                                            </span>
+                                        </div>
+                                        <dl className="grid grid-cols-2 gap-2 rounded-lg bg-fondo p-3 text-xs">
+                                            <div>
+                                                <dt className="text-texto-secundario">Clases</dt>
+                                                <dd className="mt-0.5 font-medium text-texto">{Number(item.total).toLocaleString('es-CO')}</dd>
+                                            </div>
+                                            <div>
+                                                <dt className="text-texto-secundario">Presentes</dt>
+                                                <dd className="mt-0.5 font-medium" style={{ color: 'var(--color-present)' }}>{Number(item.present).toLocaleString('es-CO')}</dd>
+                                            </div>
+                                            <div>
+                                                <dt className="text-texto-secundario">Fallas actuales</dt>
+                                                <dd className="mt-0.5 font-medium" style={{ color: item.absent > 0 ? 'var(--color-absent)' : 'var(--color-text-primary)' }}>{Number(item.absent ?? 0).toLocaleString('es-CO')}</dd>
+                                            </div>
+                                            <div>
+                                                <dt className="text-texto-secundario">Justificados</dt>
+                                                <dd className="mt-0.5 font-medium" style={{ color: item.justified > 0 ? 'var(--color-excused)' : 'var(--color-text-primary)' }}>{Number(item.justified ?? 0).toLocaleString('es-CO')}</dd>
+                                            </div>
+                                            {tieneUmbralFaltas && (
+                                                <div>
+                                                    <dt className="text-texto-secundario">Límite faltas</dt>
+                                                    <dd className="mt-0.5 font-medium text-texto">{item.absencesAllowed ?? '-'}</dd>
+                                                </div>
+                                            )}
+                                            {tieneUmbralFaltas && (
+                                                <div>
+                                                    <dt className="text-texto-secundario">Pérdida</dt>
+                                                    <dd className="mt-0.5 font-medium" style={{ color: item.failedByAbsence ? 'var(--color-absent)' : 'var(--color-text-secondary)' }}>{item.failedByAbsence ? 'Sí' : 'No'}</dd>
+                                                </div>
+                                            )}
+                                        </dl>
+                                    </article>
+                                ))}
+                            </div>
+                            </>
                         )}
                     </>
                 )}

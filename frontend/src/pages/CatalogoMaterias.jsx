@@ -239,7 +239,8 @@ export default function CatalogoMaterias() {
                                 {busquedaDiferida ? 'No se encontraron materias con esa búsqueda.' : 'No hay materias registradas en el catálogo.'}
                             </div>
                         ) : (
-                            <div className="overflow-x-auto">
+                            <>
+                            <div className="hidden overflow-x-auto md:block">
                                 <table className="w-full min-w-[680px] text-sm">
                                     <thead style={{ background: 'var(--color-bg)' }}>
                                         <tr className="text-left text-texto-secundario">
@@ -287,6 +288,52 @@ export default function CatalogoMaterias() {
                                     </tbody>
                                 </table>
                             </div>
+                            <div className="divide-y md:hidden" style={{ borderColor: 'var(--color-border)' }}>
+                                {materiasFiltradas.map((materia) => (
+                                    <article key={materia.id} className="space-y-3 p-4">
+                                        <div className="flex items-start justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <p className="break-words font-semibold text-texto">{materia.nombre}</p>
+                                                <p className="mt-1 font-mono text-xs text-texto-secundario">{materia.codigo}</p>
+                                            </div>
+                                            <div className="flex shrink-0 gap-1">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => iniciarEdicion(materia)}
+                                                    className="rounded-md p-2 focus-visible:outline-none focus-visible:ring-2"
+                                                    style={{ color: 'var(--color-primary)' }}
+                                                    aria-label={`Editar ${materia.nombre}`}
+                                                    title="Editar materia"
+                                                >
+                                                    <Pencil size={17} />
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => manejarEliminacion(materia)}
+                                                    disabled={eliminandoId === materia.id}
+                                                    className="rounded-md p-2 focus-visible:outline-none focus-visible:ring-2 disabled:opacity-50"
+                                                    style={{ color: 'var(--color-primary-dark)' }}
+                                                    aria-label={`Eliminar ${materia.nombre}`}
+                                                    title="Eliminar materia"
+                                                >
+                                                    {eliminandoId === materia.id ? <Loader2 size={17} className="animate-spin" /> : <Trash2 size={17} />}
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <dl className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-lg bg-fondo p-3 text-xs">
+                                            <div className="col-span-2 min-w-0">
+                                                <dt className="text-texto-secundario">Programa</dt>
+                                                <dd className="mt-0.5 break-words font-medium text-texto">{String(materia.programa || '').toUpperCase()}</dd>
+                                            </div>
+                                            <div>
+                                                <dt className="text-texto-secundario">Semestre</dt>
+                                                <dd className="mt-0.5 font-mono text-texto">{materia.semestre ?? '—'}</dd>
+                                            </div>
+                                        </dl>
+                                    </article>
+                                ))}
+                            </div>
+                            </>
                         )}
                     </div>
                 </div>
