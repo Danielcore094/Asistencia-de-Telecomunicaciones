@@ -488,9 +488,9 @@ const Auditoria = () => {
                                     <p className="mt-1 truncate font-medium text-gray-700">{log.userName}</p>
                                     <p className="mt-0.5 text-[10px] font-bold uppercase text-gray-400">{log.userRole}</p>
                                 </div>
-                                <div className="min-w-0">
+                                <div className="min-w-0 text-right">
                                     <p className="uppercase tracking-wide text-gray-400">Entidad</p>
-                                    <span className="mt-1 inline-flex max-w-full items-center rounded-full bg-white px-2 py-0.5 font-medium text-gray-800">
+                                    <span className="mt-1 inline-flex max-w-full items-center justify-end rounded-full bg-white px-2 py-0.5 font-medium text-gray-800">
                                         <span className="truncate">{obtenerEtiquetaEntidad(log.target)}</span>
                                     </span>
                                 </div>
