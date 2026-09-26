@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { Fragment, useEffect, useState, useMemo } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAutenticacion } from '../context/ContextoAutenticacion';
 import api from '../services/api';
@@ -75,6 +75,16 @@ const agruparPorFecha = (registros, obtenerFecha) => {
     return Array.from(grupos, ([fecha, elementos]) => ({ fecha, elementos }));
 };
 
+const agruparPorValor = (registros, obtenerValor) => {
+    const grupos = new Map();
+    registros.forEach((registro) => {
+        const valor = obtenerValor(registro) || 'Sin materia';
+        if (!grupos.has(valor)) grupos.set(valor, []);
+        grupos.get(valor).push(registro);
+    });
+    return Array.from(grupos, ([valor, elementos]) => ({ valor, elementos }));
+};
+
 export default function Configuracion() {
     const { usuario } = useAutenticacion();
     const [docentes, setDocentes] = useState([]);
@@ -103,6 +113,7 @@ export default function Configuracion() {
     const [errorWa, setErrorWa] = useState(false);
     const [fechasCorreoExpandidas, setFechasCorreoExpandidas] = useState(new Set());
     const [fechasWaExpandidas, setFechasWaExpandidas] = useState(new Set());
+    const [materiasWaExpandidas, setMateriasWaExpandidas] = useState(new Set());
 
     const historialCorreoPorFecha = useMemo(() => agruparPorFecha(
         estadoCron?.historial || [],
@@ -989,7 +1000,21 @@ export default function Configuracion() {
                                                         <span>{formatearFechaAgrupada(grupo.fecha)}</span>
                                                         <ChevronDown size={17} className={`shrink-0 transition-transform ${expandido ? 'rotate-180' : ''}`} />
                                                     </button>
-                                                    {expandido && grupo.elementos.map((log) => (
+                                                    {expandido && agruparPorValor(grupo.elementos, (log) => log.materia).map((materiaGrupo) => {
+                                                        const materiaClave = `${grupo.fecha}-${materiaGrupo.valor}`;
+                                                        const materiaExpandida = materiasWaExpandidas.has(materiaClave);
+                                                        return (
+                                                            <div key={materiaClave} className="border-t" style={{ borderColor: 'var(--color-border)' }}>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => alternarFecha(materiaClave, setMateriasWaExpandidas)}
+                                                                    className="flex w-full items-center justify-between gap-3 px-6 py-2 text-left text-sm font-medium text-texto"
+                                                                    aria-expanded={materiaExpandida}
+                                                                >
+                                                                    <span className="min-w-0 truncate">{materiaGrupo.valor} <span className="font-normal text-texto-secundario">({materiaGrupo.elementos.length})</span></span>
+                                                                    <ChevronDown size={16} className={`shrink-0 transition-transform ${materiaExpandida ? 'rotate-180' : ''}`} />
+                                                                </button>
+                                                                {materiaExpandida && materiaGrupo.elementos.map((log) => (
                                             <article key={log.id} className="space-y-2 border-t px-4 py-3" style={{ borderColor: 'var(--color-border)' }}>
                                                 <div className="flex items-start justify-between gap-3">
                                                     <p className="font-medium break-words min-w-0">{log.estudiante}</p>
@@ -1016,7 +1041,10 @@ export default function Configuracion() {
                                                     </div>
                                                 </dl>
                                             </article>
-                                                    ))}
+                                                                ))}
+                                                            </div>
+                                                        );
+                                                    })}
                                                 </div>
                                             );
                                         })}
@@ -1049,7 +1077,25 @@ export default function Configuracion() {
                                                             </button>
                                                         </td>
                                                     </tr>
-                                                    {expandido && grupo.elementos.map((log) => (
+                                                    {expandido && agruparPorValor(grupo.elementos, (log) => log.materia).map((materiaGrupo) => {
+                                                        const materiaClave = `${grupo.fecha}-${materiaGrupo.valor}`;
+                                                        const materiaExpandida = materiasWaExpandidas.has(materiaClave);
+                                                        return (
+                                                            <Fragment key={materiaClave}>
+                                                                <tr style={{ background: 'color-mix(in srgb, var(--color-border) 18%, transparent)' }}>
+                                                                    <td colSpan="6" className="px-3 py-1.5">
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => alternarFecha(materiaClave, setMateriasWaExpandidas)}
+                                                                            className="flex w-full items-center justify-between gap-3 text-left text-sm font-medium text-texto"
+                                                                            aria-expanded={materiaExpandida}
+                                                                        >
+                                                                            <span>{materiaGrupo.valor} <span className="font-normal text-texto-secundario">({materiaGrupo.elementos.length})</span></span>
+                                                                            <ChevronDown size={16} className={`shrink-0 transition-transform ${materiaExpandida ? 'rotate-180' : ''}`} />
+                                                                        </button>
+                                                                    </td>
+                                                                </tr>
+                                                                {materiaExpandida && materiaGrupo.elementos.map((log) => (
                                                         <tr key={log.id} className="tabla-fila">
                                                             <td className="px-3 py-2.5 font-medium break-words">{log.estudiante}</td>
                                                             <td className="pl-6 pr-3 py-2.5 font-mono text-xs text-texto-secundario break-words">{log.whatsapp}</td>
@@ -1062,7 +1108,10 @@ export default function Configuracion() {
                                                                 {log.status === 'ERROR' && <span className="badge-admin" title={log.error}>Error</span>}
                                                             </td>
                                                         </tr>
-                                                    ))}
+                                                                ))}
+                                                            </Fragment>
+                                                        );
+                                                    })}
                                                 </tbody>
                                             );
                                         })}
