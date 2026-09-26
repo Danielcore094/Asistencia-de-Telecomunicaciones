@@ -4,7 +4,7 @@ import { useAutenticacion } from '../context/ContextoAutenticacion';
 import api from '../services/api';
 import { enviarNotificacionesSemanal, obtenerEstadoNotificaciones, obtenerEstadoWhatsApp, obtenerCursos } from '../services/api';
 import toast from 'react-hot-toast';
-import { UserPlus, Eye, EyeOff, Trash2, Loader2, X, Mail, Send, CheckCircle2, AlertCircle, Clock, MessageSquare, Smartphone, Pencil, Key } from 'lucide-react';
+import { UserPlus, Eye, EyeOff, Trash2, Loader2, X, Mail, Send, CheckCircle2, AlertCircle, Clock, MessageSquare, Smartphone, Pencil, Key, ChevronDown } from 'lucide-react';
 
 const renderizarHorario = (horario) => {
     if (!horario) return 'No registrado';
@@ -51,6 +51,30 @@ const etiquetaRol = (rol) => ({
     ADMIN_TEACHER: 'Docente/Administrador',
 }[rol] || rol);
 
+const obtenerClaveFecha = (valor) => new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Bogota',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+}).format(new Date(valor));
+
+const formatearFechaAgrupada = (clave) => new Date(`${clave}T12:00:00`).toLocaleDateString('es-CO', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+});
+
+const agruparPorFecha = (registros, obtenerFecha) => {
+    const grupos = new Map();
+    registros.forEach((registro) => {
+        const clave = obtenerClaveFecha(obtenerFecha(registro));
+        if (!grupos.has(clave)) grupos.set(clave, []);
+        grupos.get(clave).push(registro);
+    });
+    return Array.from(grupos, ([fecha, elementos]) => ({ fecha, elementos }));
+};
+
 export default function Configuracion() {
     const { usuario } = useAutenticacion();
     const [docentes, setDocentes] = useState([]);
@@ -77,6 +101,27 @@ export default function Configuracion() {
     const [cargandoWa, setCargandoWa] = useState(false);
     const [modalWaVisible, setModalWaVisible] = useState(false);
     const [errorWa, setErrorWa] = useState(false);
+    const [fechasCorreoExpandidas, setFechasCorreoExpandidas] = useState(new Set());
+    const [fechasWaExpandidas, setFechasWaExpandidas] = useState(new Set());
+
+    const historialCorreoPorFecha = useMemo(() => agruparPorFecha(
+        estadoCron?.historial || [],
+        (registro) => registro.fecha,
+    ), [estadoCron?.historial]);
+
+    const historialWaPorFecha = useMemo(() => agruparPorFecha(
+        estadoWhatsApp?.logs || [],
+        (log) => log.enviadoEl,
+    ), [estadoWhatsApp?.logs]);
+
+    const alternarFecha = (fecha, setFechasExpandidas) => {
+        setFechasExpandidas((actuales) => {
+            const siguientes = new Set(actuales);
+            if (siguientes.has(fecha)) siguientes.delete(fecha);
+            else siguientes.add(fecha);
+            return siguientes;
+        });
+    };
 
     const cargarHistorialCorreo = async () => {
         setModalCorreoVisible(true);
@@ -477,27 +522,58 @@ export default function Configuracion() {
                                                 <th className="px-5 py-3 font-medium text-center">Estado</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                            {estadoCron.historial.map((registro) => (
-                                                <tr key={registro.id} className="tabla-fila">
-                                                    <td className="px-5 py-2.5 font-medium">{registro.estudiante}</td>
-                                                    <td className="px-5 py-2.5 font-mono text-xs text-texto-secundario">{registro.documento}</td>
-                                                    <td className="px-3 py-2.5 text-texto-secundario">{registro.correo || 'No registrado'}</td>
-                                                    <td className="px-5 py-2.5 text-texto-secundario">{registro.semana}</td>
-                                                    <td className="px-5 py-2.5 text-xs text-texto-secundario">{new Date(registro.fecha).toLocaleString('es-CO')}</td>
-                                                    <td className="px-5 py-2.5 text-center">
-                                                        {registro.estado === 'SUCCESS' && <span className="badge-docente">Enviado</span>}
-                                                        {registro.estado === 'SKIPPED' && <span className="text-xs text-texto-secundario">Omitido</span>}
-                                                        {registro.estado === 'ERROR' && <span className="badge-admin" title={registro.error || 'Error de envío'}>Error</span>}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
+                                        {historialCorreoPorFecha.map((grupo) => {
+                                            const expandido = fechasCorreoExpandidas.has(grupo.fecha);
+                                            return (
+                                                <tbody key={grupo.fecha}>
+                                                    <tr style={{ background: 'color-mix(in srgb, var(--color-border) 35%, transparent)' }}>
+                                                        <td colSpan="6" className="px-5 py-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => alternarFecha(grupo.fecha, setFechasCorreoExpandidas)}
+                                                                className="flex w-full items-center justify-between gap-3 text-left font-medium capitalize text-texto"
+                                                                aria-expanded={expandido}
+                                                            >
+                                                                <span>{formatearFechaAgrupada(grupo.fecha)}</span>
+                                                                <ChevronDown size={17} className={`shrink-0 transition-transform ${expandido ? 'rotate-180' : ''}`} />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    {expandido && grupo.elementos.map((registro) => (
+                                                        <tr key={registro.id} className="tabla-fila">
+                                                            <td className="px-5 py-2.5 font-medium">{registro.estudiante}</td>
+                                                            <td className="px-5 py-2.5 font-mono text-xs text-texto-secundario">{registro.documento}</td>
+                                                            <td className="px-3 py-2.5 text-texto-secundario">{registro.correo || 'No registrado'}</td>
+                                                            <td className="px-5 py-2.5 text-texto-secundario">{registro.semana}</td>
+                                                            <td className="px-5 py-2.5 text-xs text-texto-secundario">{new Date(registro.fecha).toLocaleString('es-CO')}</td>
+                                                            <td className="px-5 py-2.5 text-center">
+                                                                {registro.estado === 'SUCCESS' && <span className="badge-docente">Enviado</span>}
+                                                                {registro.estado === 'SKIPPED' && <span className="text-xs text-texto-secundario">Omitido</span>}
+                                                                {registro.estado === 'ERROR' && <span className="badge-admin" title={registro.error || 'Error de envío'}>Error</span>}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            );
+                                        })}
                                     </table>
                                     </div>
                                     <div className="divide-y md:hidden" style={{ borderColor: 'var(--color-border)' }}>
-                                        {estadoCron.historial.map((registro) => (
-                                            <article key={registro.id} className="space-y-3 p-4">
+                                        {historialCorreoPorFecha.map((grupo) => {
+                                            const expandido = fechasCorreoExpandidas.has(grupo.fecha);
+                                            return (
+                                                <div key={grupo.fecha}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => alternarFecha(grupo.fecha, setFechasCorreoExpandidas)}
+                                                        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left font-medium capitalize text-texto"
+                                                        aria-expanded={expandido}
+                                                    >
+                                                        <span>{formatearFechaAgrupada(grupo.fecha)}</span>
+                                                        <ChevronDown size={17} className={`shrink-0 transition-transform ${expandido ? 'rotate-180' : ''}`} />
+                                                    </button>
+                                                    {expandido && grupo.elementos.map((registro) => (
+                                            <article key={registro.id} className="space-y-3 border-t p-4" style={{ borderColor: 'var(--color-border)' }}>
                                                 <div className="flex items-start justify-between gap-3">
                                                     <div className="min-w-0">
                                                         <p className="break-words font-medium text-texto">{registro.estudiante}</p>
@@ -524,7 +600,10 @@ export default function Configuracion() {
                                                     </div>
                                                 </dl>
                                             </article>
-                                        ))}
+                                                    ))}
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                     </>
                                 )}
@@ -897,8 +976,21 @@ export default function Configuracion() {
                                 ) : (
                                     <>
                                         <div className="sm:hidden divide-y" style={{ borderColor: 'var(--color-border)' }}>
-                                        {estadoWhatsApp.logs.map((log) => (
-                                            <article key={log.id} className="px-4 py-3 space-y-2">
+                                        {historialWaPorFecha.map((grupo) => {
+                                            const expandido = fechasWaExpandidas.has(grupo.fecha);
+                                            return (
+                                                <div key={grupo.fecha}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => alternarFecha(grupo.fecha, setFechasWaExpandidas)}
+                                                        className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left font-medium capitalize text-texto"
+                                                        aria-expanded={expandido}
+                                                    >
+                                                        <span>{formatearFechaAgrupada(grupo.fecha)}</span>
+                                                        <ChevronDown size={17} className={`shrink-0 transition-transform ${expandido ? 'rotate-180' : ''}`} />
+                                                    </button>
+                                                    {expandido && grupo.elementos.map((log) => (
+                                            <article key={log.id} className="space-y-2 border-t px-4 py-3" style={{ borderColor: 'var(--color-border)' }}>
                                                 <div className="flex items-start justify-between gap-3">
                                                     <p className="font-medium break-words min-w-0">{log.estudiante}</p>
                                                     {log.status === 'SUCCESS' && <span className="badge-docente shrink-0">Enviado</span>}
@@ -924,7 +1016,10 @@ export default function Configuracion() {
                                                     </div>
                                                 </dl>
                                             </article>
-                                        ))}
+                                                    ))}
+                                                </div>
+                                            );
+                                        })}
                                         </div>
                                         <table className="hidden sm:table w-full table-fixed text-sm">
                                         <thead className="sticky top-0" style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)', zIndex: 1 }}>
@@ -937,22 +1032,40 @@ export default function Configuracion() {
                                                 <th className="w-[7%] px-3 py-3 font-medium text-center relative -left-6">Estado</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
-                                            {estadoWhatsApp.logs.map((log) => (
-                                                <tr key={log.id} className="tabla-fila">
-                                                    <td className="px-3 py-2.5 font-medium break-words">{log.estudiante}</td>
-                                                    <td className="pl-6 pr-3 py-2.5 font-mono text-xs text-texto-secundario break-words">{log.whatsapp}</td>
-                                                    <td className="px-3 py-2.5 text-texto-secundario break-words">{log.materia}</td>
-                                                    <td className="px-3 py-2.5 text-texto-secundario text-xs leading-5">{renderizarHorario(log.horario)}</td>
-                                                    <td className="px-3 py-2.5 text-texto-secundario text-xs break-words relative -left-6">{log.fecha}</td>
-                                                    <td className="px-3 py-2.5 text-center relative -left-6">
-                                                        {log.status === 'SUCCESS' && <span className="badge-docente">Enviado</span>}
-                                                        {log.status === 'SKIPPED' && <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 'var(--badge-radius)', fontSize: '0.75rem', fontWeight: 600, background: 'color-mix(in srgb, var(--color-muted) 15%, transparent)', color: 'var(--color-muted)' }}>Omitido</span>}
-                                                        {log.status === 'ERROR' && <span className="badge-admin" title={log.error}>Error</span>}
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
+                                        {historialWaPorFecha.map((grupo) => {
+                                            const expandido = fechasWaExpandidas.has(grupo.fecha);
+                                            return (
+                                                <tbody key={grupo.fecha}>
+                                                    <tr style={{ background: 'color-mix(in srgb, var(--color-border) 35%, transparent)' }}>
+                                                        <td colSpan="6" className="px-3 py-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => alternarFecha(grupo.fecha, setFechasWaExpandidas)}
+                                                                className="flex w-full items-center justify-between gap-3 text-left font-medium capitalize text-texto"
+                                                                aria-expanded={expandido}
+                                                            >
+                                                                <span>{formatearFechaAgrupada(grupo.fecha)}</span>
+                                                                <ChevronDown size={17} className={`shrink-0 transition-transform ${expandido ? 'rotate-180' : ''}`} />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    {expandido && grupo.elementos.map((log) => (
+                                                        <tr key={log.id} className="tabla-fila">
+                                                            <td className="px-3 py-2.5 font-medium break-words">{log.estudiante}</td>
+                                                            <td className="pl-6 pr-3 py-2.5 font-mono text-xs text-texto-secundario break-words">{log.whatsapp}</td>
+                                                            <td className="px-3 py-2.5 text-texto-secundario break-words">{log.materia}</td>
+                                                            <td className="px-3 py-2.5 text-texto-secundario text-xs leading-5">{renderizarHorario(log.horario)}</td>
+                                                            <td className="px-3 py-2.5 text-texto-secundario text-xs break-words relative -left-6">{log.fecha}</td>
+                                                            <td className="px-3 py-2.5 text-center relative -left-6">
+                                                                {log.status === 'SUCCESS' && <span className="badge-docente">Enviado</span>}
+                                                                {log.status === 'SKIPPED' && <span style={{ display: 'inline-flex', alignItems: 'center', padding: '2px 8px', borderRadius: 'var(--badge-radius)', fontSize: '0.75rem', fontWeight: 600, background: 'color-mix(in srgb, var(--color-muted) 15%, transparent)', color: 'var(--color-muted)' }}>Omitido</span>}
+                                                                {log.status === 'ERROR' && <span className="badge-admin" title={log.error}>Error</span>}
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            );
+                                        })}
                                         </table>
                                     </>
                                 )}
