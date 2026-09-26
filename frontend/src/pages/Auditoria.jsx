@@ -485,7 +485,7 @@ const Auditoria = () => {
                             <div className="grid grid-cols-2 gap-2 rounded-lg bg-gray-50 p-2 text-xs">
                                 <div className="min-w-0">
                                     <p className="uppercase tracking-wide text-gray-400">Usuario</p>
-                                    <p className="mt-1 break-words font-medium text-gray-700">{log.userName}</p>
+                                    <p className="mt-1 whitespace-nowrap text-[11px] font-medium text-gray-700">{log.userName}</p>
                                     <p className="mt-0.5 text-[10px] font-bold uppercase text-gray-400">{log.userRole}</p>
                                 </div>
                                 <div className="min-w-0 text-right">
