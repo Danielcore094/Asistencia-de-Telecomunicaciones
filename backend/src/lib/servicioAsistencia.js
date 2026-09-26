@@ -615,7 +615,8 @@ export async function crearExcelResumenSemestral({ anio, periodo, docenteId } = 
     });
 
     addC(r, 0, 'TOTALES', sTotal);
-    for (let c = 1; c <= 4; c++) addC(r, c, '', sTotal);
+    for (let c = 1; c <= 3; c++) addC(r, c, '', sTotal);
+    addC(r, 4, totalesMatri.total, sTotal);
     semanas.forEach((_, i) => addC(r, 5 + i, totalesSemana[i], sTotal));
     addC(r, lastCol, totalesAprobaron.total, sTotal);
     rowsMeta.push({ hpt: 22 }); r++;
