@@ -551,7 +551,7 @@ export default function Configuracion() {
                                                         </td>
                                                     </tr>
                                                     {expandido && grupo.elementos.map((registro) => (
-                                                        <tr key={registro.id} className="tabla-fila">
+                                                        <tr key={registro.id} className="tabla-fila historial-fila">
                                                             <td className="px-5 py-2.5 font-medium">{registro.estudiante}</td>
                                                             <td className="px-5 py-2.5 font-mono text-xs text-texto-secundario">{registro.documento}</td>
                                                             <td className="px-3 py-2.5 text-texto-secundario">{registro.correo || 'No registrado'}</td>
@@ -584,7 +584,7 @@ export default function Configuracion() {
                                                         <ChevronDown size={17} className={`shrink-0 transition-transform ${expandido ? 'rotate-180' : ''}`} />
                                                     </button>
                                                     {expandido && grupo.elementos.map((registro) => (
-                                            <article key={registro.id} className="space-y-3 border-t p-4" style={{ borderColor: 'var(--color-border)' }}>
+                                            <article key={registro.id} className="historial-fila space-y-3 border-t p-4" style={{ borderColor: 'var(--color-border)' }}>
                                                 <div className="flex items-start justify-between gap-3">
                                                     <div className="min-w-0">
                                                         <p className="break-words font-medium text-texto">{registro.estudiante}</p>
@@ -686,7 +686,8 @@ export default function Configuracion() {
                     {cargando ? (
                         <p className="p-6 text-sm text-texto-secundario">Cargando...</p>
                     ) : (
-                        <div className="overflow-x-auto">
+                        <>
+                        <div className="hidden overflow-x-auto md:block">
                             <table className="w-full min-w-[700px] text-sm">
                                 <thead style={{ background: 'color-mix(in srgb, var(--color-border) 50%, transparent)' }}>
                                     <tr className="text-left text-texto-secundario">
@@ -755,6 +756,63 @@ export default function Configuracion() {
                                 </tbody>
                             </table>
                         </div>
+                        <div className="divide-y md:hidden" style={{ borderColor: 'var(--color-border)' }}>
+                            {docentes.length === 0 ? (
+                                <p className="px-4 py-8 text-center text-sm text-texto-secundario">No hay docentes disponibles para esta cuenta.</p>
+                            ) : docentes.map((docente) => (
+                                <article key={docente.id} className="space-y-3 p-3">
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div className="min-w-0">
+                                            <p className="break-words font-medium text-texto">{docente.name}</p>
+                                            <p className="mt-0.5 break-all text-xs text-texto-secundario">{docente.email}</p>
+                                        </div>
+                                        <span className={docente.role === 'ADMIN' || docente.role === 'ADMIN_TEACHER' ? 'badge-admin shrink-0' : 'badge-docente shrink-0'}>
+                                            {etiquetaRol(docente.role)}
+                                        </span>
+                                    </div>
+                                    <dl className="grid grid-cols-2 gap-2 rounded-lg bg-fondo p-2 text-xs">
+                                        <div className="min-w-0">
+                                            <dt className="text-texto-secundario">Documento</dt>
+                                            <dd className="mt-0.5 break-all font-mono text-texto">{docente.id}</dd>
+                                        </div>
+                                        <div className="min-w-0">
+                                            <dt className="text-texto-secundario">Registro</dt>
+                                            <dd className="mt-0.5 text-texto">{new Date(docente.createdAt).toLocaleDateString('es-CO')}</dd>
+                                        </div>
+                                    </dl>
+                                    <div className="flex justify-end gap-1">
+                                        <button
+                                            onClick={() => iniciarEdicion(docente)}
+                                            className="rounded-md p-1.5 text-texto-secundario transition-colors hover:bg-primario-light hover:text-primario"
+                                            title="Editar usuario"
+                                            aria-label={`Editar usuario ${docente.name}`}
+                                        >
+                                            <Pencil size={16} aria-label="Editar usuario" />
+                                        </button>
+                                        <button
+                                            onClick={() => iniciarCambioContrasena(docente)}
+                                            className="rounded-md p-1.5 text-texto-secundario transition-colors hover:bg-primario-light hover:text-primario"
+                                            title="Cambiar contraseña"
+                                            aria-label={`Cambiar contraseña de ${docente.name}`}
+                                        >
+                                            <Key size={16} aria-label="Cambiar contraseña" />
+                                        </button>
+                                        {docente.id !== usuario?.id && (
+                                            <button
+                                                onClick={() => manejarEliminacion(docente.id, docente.name)}
+                                                disabled={eliminandoId === docente.id}
+                                                className="rounded-md p-1.5 text-texto-secundario transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
+                                                title="Eliminar usuario"
+                                                aria-label={`Eliminar usuario ${docente.name}`}
+                                            >
+                                                {eliminandoId === docente.id ? <Loader2 size={16} className="animate-spin" aria-label="Eliminando" /> : <Trash2 size={16} aria-label="Eliminar usuario" />}
+                                            </button>
+                                        )}
+                                    </div>
+                                </article>
+                            ))}
+                        </div>
+                        </>
                     )}
                 </section>
 
@@ -1015,7 +1073,7 @@ export default function Configuracion() {
                                                                     <ChevronDown size={16} className={`shrink-0 transition-transform ${materiaExpandida ? 'rotate-180' : ''}`} />
                                                                 </button>
                                                                 {materiaExpandida && materiaGrupo.elementos.map((log) => (
-                                            <article key={log.id} className="space-y-2 border-t px-4 py-3" style={{ borderColor: 'var(--color-border)' }}>
+                                            <article key={log.id} className="historial-fila space-y-2 border-t px-4 py-3" style={{ borderColor: 'var(--color-border)' }}>
                                                 <div className="flex items-start justify-between gap-3">
                                                     <p className="font-medium break-words min-w-0">{log.estudiante}</p>
                                                     {log.status === 'SUCCESS' && <span className="badge-docente shrink-0">Enviado</span>}
@@ -1096,7 +1154,7 @@ export default function Configuracion() {
                                                                     </td>
                                                                 </tr>
                                                                 {materiaExpandida && materiaGrupo.elementos.map((log) => (
-                                                        <tr key={log.id} className="tabla-fila">
+                                                        <tr key={log.id} className="tabla-fila historial-fila">
                                                             <td className="px-3 py-2.5 font-medium break-words">{log.estudiante}</td>
                                                             <td className="pl-6 pr-3 py-2.5 font-mono text-xs text-texto-secundario break-words">{log.whatsapp}</td>
                                                             <td className="px-3 py-2.5 text-texto-secundario break-words">{log.materia}</td>

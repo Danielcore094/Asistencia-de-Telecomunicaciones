@@ -252,6 +252,20 @@
         background: var(--color-bg);
     }
 
+    .historial-fila {
+        border-bottom: 1px solid color-mix(in srgb, var(--color-border) 85%, var(--color-text-secondary));
+        background: color-mix(in srgb, var(--color-bg) 28%, var(--color-surface));
+        transition: background-color 0.1s ease;
+    }
+
+    .historial-fila:nth-child(even) {
+        background: var(--color-surface);
+    }
+
+    .historial-fila:hover {
+        background: var(--color-primary-light);
+    }
+
     .nav-item {
         display: flex;
         align-items: center;
