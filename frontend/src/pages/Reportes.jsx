@@ -1220,7 +1220,7 @@ export default function Reportes() {
                                             )}
                                             {tieneUmbralFaltas && (
                                                 <div>
-                                                    <dt className="text-texto-secundario">Pérdida</dt>
+                                                    <dt className="text-texto-secundario">Perdida</dt>
                                                     <dd className="mt-0.5 font-medium" style={{ color: item.failedByAbsence ? 'var(--color-absent)' : 'var(--color-text-secondary)' }}>{item.failedByAbsence ? 'Sí' : 'No'}</dd>
                                                 </div>
                                             )}
