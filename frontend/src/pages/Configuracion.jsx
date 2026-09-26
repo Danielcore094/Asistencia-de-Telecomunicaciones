@@ -537,7 +537,7 @@ export default function Configuracion() {
                                             const expandido = fechasCorreoExpandidas.has(grupo.fecha);
                                             return (
                                                 <tbody key={grupo.fecha}>
-                                                    <tr style={{ background: 'color-mix(in srgb, var(--color-border) 35%, transparent)' }}>
+                                                    <tr className="historial-grupo" style={{ background: 'color-mix(in srgb, var(--color-border) 35%, transparent)' }}>
                                                         <td colSpan="6" className="px-5 py-2">
                                                             <button
                                                                 type="button"
@@ -573,7 +573,7 @@ export default function Configuracion() {
                                         {historialCorreoPorFecha.map((grupo) => {
                                             const expandido = fechasCorreoExpandidas.has(grupo.fecha);
                                             return (
-                                                <div key={grupo.fecha}>
+                                                <div key={grupo.fecha} className="historial-grupo">
                                                     <button
                                                         type="button"
                                                         onClick={() => alternarFecha(grupo.fecha, setFechasCorreoExpandidas)}
@@ -1048,7 +1048,7 @@ export default function Configuracion() {
                                         {historialWaPorFecha.map((grupo) => {
                                             const expandido = fechasWaExpandidas.has(grupo.fecha);
                                             return (
-                                                <div key={grupo.fecha}>
+                                                <div key={grupo.fecha} className="historial-grupo">
                                                     <button
                                                         type="button"
                                                         onClick={() => alternarFecha(grupo.fecha, setFechasWaExpandidas)}
@@ -1122,7 +1122,7 @@ export default function Configuracion() {
                                             const expandido = fechasWaExpandidas.has(grupo.fecha);
                                             return (
                                                 <tbody key={grupo.fecha}>
-                                                    <tr style={{ background: 'color-mix(in srgb, var(--color-border) 35%, transparent)' }}>
+                                                    <tr className="historial-grupo" style={{ background: 'color-mix(in srgb, var(--color-border) 35%, transparent)' }}>
                                                         <td colSpan="6" className="px-3 py-2">
                                                             <button
                                                                 type="button"

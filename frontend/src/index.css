@@ -266,6 +266,11 @@
         background: var(--color-primary-light);
     }
 
+    .historial-grupo {
+        border-top: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-border);
+    }
+
     .nav-item {
         display: flex;
         align-items: center;

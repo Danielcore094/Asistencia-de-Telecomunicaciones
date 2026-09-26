@@ -191,9 +191,9 @@ function TooltipTorta({ active, payload }) {
 }
 
 const VISTAS = [
-    { id: 'distribucion', label: 'Distribuci\u00f3n', Icono: PieIcon },
-    { id: 'tiempo', label: 'Asistencia en el tiempo', Icono: TrendingUp },
-    { id: 'tabla', label: 'Detalle por Estudiante', Icono: Users },
+    { id: 'distribucion', label: 'Distribuci\u00f3n', etiquetaMovil: 'Distribuci\u00f3n', Icono: PieIcon },
+    { id: 'tiempo', label: 'Asistencia en el tiempo', etiquetaMovil: 'En el tiempo', Icono: TrendingUp },
+    { id: 'tabla', label: 'Detalle por Estudiante', etiquetaMovil: 'Estudiantes', Icono: Users },
 ];
 
 
@@ -801,17 +801,17 @@ export default function Reportes() {
 
             <section className="tarjeta p-0">
                 <div
-                    className="flex max-w-full items-center gap-1 overflow-x-auto border-b px-4 pt-4 pb-0"
+                    className="flex max-w-full items-center gap-1 border-b px-2 pt-4 pb-0 sm:px-4"
                     style={{ borderColor: 'var(--color-border)' }}
                 >
-                    {VISTAS.map(({ id, label, Icono }) => {
+                    {VISTAS.map(({ id, label, etiquetaMovil, Icono }) => {
                         const activo = vistaActiva === id;
                         return (
                             <button
                                 key={id}
                                 type="button"
                                 onClick={() => setVistaActiva(id)}
-                                className="relative inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap px-3 py-2.5 text-xs font-medium transition-colors sm:px-4 sm:text-sm"
+                                className="relative inline-flex min-w-0 flex-1 items-center justify-center gap-1 whitespace-nowrap px-1.5 py-2.5 text-[11px] font-medium transition-colors sm:flex-none sm:gap-1.5 sm:px-4 sm:text-sm"
                                 style={{
                                     color: activo ? 'var(--color-primary)' : 'var(--color-text-secondary)',
                                     borderBottom: activo ? '2px solid var(--color-primary)' : '2px solid transparent',
@@ -821,7 +821,8 @@ export default function Reportes() {
                                 }}
                             >
                                 <Icono size={15} aria-label={label} />
-                                {label}
+                                <span className="sm:hidden">{etiquetaMovil}</span>
+                                <span className="hidden sm:inline">{label}</span>
                             </button>
                         );
                     })}
@@ -1194,7 +1195,7 @@ export default function Reportes() {
                                                 {Number(item.percentage).toLocaleString('es-CO')}%
                                             </span>
                                         </div>
-                                        <dl className="grid grid-cols-2 gap-2 rounded-lg bg-fondo p-3 text-xs">
+                                        <dl className="grid grid-cols-3 gap-2 rounded-lg bg-fondo p-2 text-xs">
                                             <div>
                                                 <dt className="text-texto-secundario">Clases</dt>
                                                 <dd className="mt-0.5 font-medium text-texto">{Number(item.total).toLocaleString('es-CO')}</dd>
