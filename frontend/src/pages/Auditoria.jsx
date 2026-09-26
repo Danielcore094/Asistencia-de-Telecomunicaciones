@@ -462,7 +462,7 @@ const Auditoria = () => {
                             No se encontraron registros.
                         </div>
                     ) : registros.map((log) => (
-                        <article key={log.id} className="space-y-3 p-4">
+                            <article key={log.id} className="space-y-2 p-3">
                             <div className="flex items-start justify-between gap-3">
                                 <div className="min-w-0">
                                     <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
@@ -482,10 +482,10 @@ const Auditoria = () => {
                                 </button>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-3 rounded-lg bg-gray-50 p-3 text-xs">
+                            <div className="grid grid-cols-2 gap-2 rounded-lg bg-gray-50 p-2 text-xs">
                                 <div className="min-w-0">
                                     <p className="uppercase tracking-wide text-gray-400">Usuario</p>
-                                    <p className="mt-1 truncate font-medium text-gray-700">{log.userName}</p>
+                                    <p className="mt-1 break-words font-medium text-gray-700">{log.userName}</p>
                                     <p className="mt-0.5 text-[10px] font-bold uppercase text-gray-400">{log.userRole}</p>
                                 </div>
                                 <div className="min-w-0 text-right">
