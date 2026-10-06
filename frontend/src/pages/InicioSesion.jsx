@@ -79,7 +79,12 @@ export default function InicioSesion() {
             iniciarSesion(res.data.token, res.data.teacher);
             navegar('/');
         } catch (err) {
-            const mensajeError = err.response?.data?.error || 'Error de conexión. Intenta de nuevo.';
+            const mensajeError = err.response?.data?.error
+                || (err.code === 'ERR_API_CONFIG'
+                    ? 'El sitio no está configurado para conectarse con el backend. Contacta al administrador.'
+                    : err.code === 'ERR_NETWORK'
+                    ? 'No se pudo conectar con el servidor. Verifica la red, CORS y la URL de la API.'
+                    : 'Error de conexión. Intenta de nuevo.');
             setError(mensajeError);
             if (mensajeError === 'Credenciales incorrectas') {
                 setMostrarOlvido(true);

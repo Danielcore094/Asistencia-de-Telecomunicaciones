@@ -364,6 +364,8 @@ FRONTEND_URL=https://asistencia.institucion.edu.co
 EJECUTAR_CRON=false
 ```
 
+Cuando el frontend y el backend están alojados en servicios cloud distintos, configura en el proveedor del frontend la variable de compilación `VITE_API_URL` con la URL pública del backend y el prefijo `/api`, por ejemplo `https://mi-api.up.railway.app/api`. En el backend, configura `CORS_ALLOWED_ORIGINS` y `FRONTEND_URL` con el origen público exacto del frontend, por ejemplo `https://asistencia.vercel.app` (sin ruta final). Después de cambiar `VITE_API_URL`, vuelve a desplegar el frontend para que la nueva variable quede incluida en la compilación. No uses `localhost` ni `/api` como URL del frontend cuando los servicios están separados.
+
 En desarrollo, si no se define `CORS_ALLOWED_ORIGINS`, se autoriza únicamente `http://localhost:3000`. El secreto JWT temporal de desarrollo solo evita bloquear el entorno local; configura siempre `JWT_SECRET` antes de desplegar.
 
 El límite de intentos de inicio de sesión usa memoria solo durante el desarrollo local. En producción son obligatorias `UPSTASH_REDIS_REST_URL` y `UPSTASH_REDIS_REST_TOKEN`, para que el límite sea compartido entre todas las réplicas del backend.

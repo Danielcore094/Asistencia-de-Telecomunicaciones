@@ -1,12 +1,18 @@
 import { NextResponse } from 'next/server'
 
-const origenesLocalesDesarrollo = ['http://localhost:3000']
+const origenesLocalesDesarrollo = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+]
 
 const obtenerOrigenesPermitidos = () => {
     const origenesConfigurados = (process.env.CORS_ALLOWED_ORIGINS || '')
         .split(',')
         .map((origen) => origen.trim())
         .filter(Boolean)
+
+    const frontendUrl = String(process.env.FRONTEND_URL || '').trim()
+    if (frontendUrl) origenesConfigurados.push(frontendUrl)
 
     if (origenesConfigurados.length > 0) return new Set(origenesConfigurados)
     return process.env.NODE_ENV === 'production' ? new Set() : new Set(origenesLocalesDesarrollo)

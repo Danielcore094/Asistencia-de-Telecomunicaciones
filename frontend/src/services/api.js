@@ -1,10 +1,25 @@
 import axios from 'axios';
 
+const resolverBaseApi = () => {
+    const urlConfigurada = String(import.meta.env.VITE_API_URL || '').trim();
+    if (urlConfigurada) return urlConfigurada;
+
+    return import.meta.env.PROD ? '' : 'http://localhost:4000/api';
+};
+
+const baseApi = resolverBaseApi();
+
 const clienteApi = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:4000/api',
+    baseURL: baseApi || undefined,
 });
 
 clienteApi.interceptors.request.use(configuracion => {
+    if (import.meta.env.PROD && !baseApi) {
+        const error = new Error('VITE_API_URL no está configurada para el backend de producción.');
+        error.code = 'ERR_API_CONFIG';
+        return Promise.reject(error);
+    }
+
     const token = sessionStorage.getItem('token');
     if (token) {
         configuracion.headers.Authorization = `Bearer ${token}`;
