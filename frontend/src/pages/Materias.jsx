@@ -417,13 +417,13 @@ export default function Materias() {
             <input ref={inputArchivoCursoRef} type="file" accept=".xlsx,.xls" className="hidden" onChange={manejarArchivoImportCurso} />
 
             <header className="tarjeta flex flex-col gap-4">
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
                         <h2 className="text-2xl font-semibold">Materias</h2>
                         <p className="mt-1 text-sm text-texto-secundario">Resumen de materias asignadas y su asistencia promedio.</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-4 shrink-0">
-                        {isAdmin && <FiltrosGlobales mostrarTodas={false} soloDocente={true} />}
+                        {isAdmin && <FiltrosGlobales className="filtro-global--inline-mobile" mostrarTodas={false} soloDocente={true} />}
                         
                         {!isAdmin && (
                             <div className="flex items-center gap-2">

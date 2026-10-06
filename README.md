@@ -44,11 +44,32 @@ Las rutas en inglés anteriores, como `/api/courses`, `/api/auth` y `/api/report
 - El acceso a estudiantes, asistencia y reportes se valida contra la materia y el usuario autenticado.
 - Se controlan cruces de horario al matricular estudiantes en materias.
 - La asistencia puede generar alertas por ausencia en WhatsApp y alertas tempranas de riesgo de pérdida por correo.
-- Los reportes semanales se envían a docentes y al destinatario administrativo configurado.
+- Los reportes semanales se envían a docentes y al destinatario administrativo configurado, usando únicamente cursos del año y periodo académico vigentes.
 - Las notificaciones registran su estado para evitar envíos duplicados y facilitar la auditoría.
 - Los correos de acceso de usuarios deben terminar en `@correo.uts.edu.co` o `@uts.edu.co`.
 - El correo principal de un estudiante, cuando se informa, debe usar uno de esos dos dominios. `correo2` es opcional y puede usar cualquier dominio, siempre que tenga formato de correo válido.
 - La validación de correo se ejecuta en el backend; las restricciones visuales del frontend solo ofrecen feedback anticipado.
+
+### Periodos académicos y visibilidad de cursos
+
+El periodo académico se determina automáticamente con la fecha actual en la zona horaria `America/Bogota`:
+
+| Periodo | Fechas | Ejemplo para 2026 |
+| --- | --- | --- |
+| 1 | Del 1 de enero al 30 de junio | `2026-01-01` a `2026-06-30` |
+| 2 | Del 1 de julio al 31 de diciembre | `2026-07-01` a `2026-12-31` |
+
+La aplicación muestra únicamente cursos cuyo `academicYear` y `academicPeriod` coinciden con el año y periodo vigentes. Por ejemplo, durante el periodo 2 de 2026 no se muestran cursos del periodo 1 de 2026 ni cursos de 2025. Los cursos no se eliminan: permanecen almacenados para conservar sus estudiantes, asistencias, historial y reportes.
+
+El filtro se aplica en el listado general de materias y en la asistencia del día. La regla se centraliza en `backend/src/lib/utilidadesFechas.js` mediante `obtenerPeriodoAcademicoActual()`.
+
+### Criterio de los reportes semanales
+
+Los reportes semanales automáticos se generan los lunes y consultan la semana anterior completa, de lunes a sábado. Por ejemplo, un envío realizado el lunes 21 de septiembre de 2026 incluye asistencias del 14 al 19 de septiembre de 2026; el domingo no forma parte del rango.
+
+Además del rango de fechas, el informe filtra cursos, docentes, hojas de cálculo, conteos y resúmenes por el año y periodo académico vigentes en la fecha de generación. De esta forma, un informe no mezcla cursos de años anteriores ni del otro periodo del mismo año.
+
+La semana académica se cuenta desde la semana que contiene el inicio del periodo y se reinicia al comenzar el siguiente periodo. La semana 17 es la última semana válida para reportes; desde la semana 18 no se generan ni envían reportes hasta que comience el próximo periodo. El envío se decide por el número de semana académica, no por la cantidad de registros de un curso en esa semana.
 
 ## Requisitos
 

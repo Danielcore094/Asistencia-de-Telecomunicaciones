@@ -4,6 +4,7 @@ import { NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
 import { obtenerUsuarioDePeticion } from '@/lib/autenticacion'
 import { encontrarConflictoHorario } from '@/lib/horarioCurso'
+import { obtenerPeriodoAcademicoActual } from '@/lib/utilidadesFechas'
 
 export async function GET(request) {
     try {
@@ -25,6 +26,13 @@ export async function GET(request) {
             }
         } else {
             whereClause = { teacherId: usuario.id }
+        }
+
+        const { anio, periodo } = obtenerPeriodoAcademicoActual()
+        whereClause = {
+            ...whereClause,
+            academicYear: anio,
+            academicPeriod: periodo,
         }
 
         const cursos = await prisma.curso.findMany({

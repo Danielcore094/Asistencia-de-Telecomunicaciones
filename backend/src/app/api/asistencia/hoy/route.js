@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 
 import prisma from '@/lib/prisma';
 import { obtenerUsuarioDePeticion } from '@/lib/autenticacion';
-import { formatearFechaBogota } from '@/lib/utilidadesFechas';
+import { formatearFechaBogota, obtenerPeriodoAcademicoActual } from '@/lib/utilidadesFechas';
 import { headers } from 'next/headers';
 
 export async function GET(request) {
@@ -19,7 +19,12 @@ export async function GET(request) {
 
         const hoy = formatearFechaBogota(new Date());
 
-        const cursosWhere = docenteId ? { teacherId: docenteId } : {};
+        const { anio, periodo } = obtenerPeriodoAcademicoActual();
+        const cursosWhere = {
+            ...(docenteId ? { teacherId: docenteId } : {}),
+            academicYear: anio,
+            academicPeriod: periodo,
+        };
         const cursos = await prisma.curso.findMany({
             where: cursosWhere,
             select: {

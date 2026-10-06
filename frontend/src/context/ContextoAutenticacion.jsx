@@ -2,13 +2,22 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
 
 const ContextoAutenticacion = createContext(null);
+const modoPrevisualizacion = import.meta.env.DEV && import.meta.env.VITE_PREVIEW_MODE === 'true';
+const usuarioPrevisualizacion = {
+    id: 'preview-admin',
+    name: 'Administrador de previsualización',
+    email: 'preview@local.test',
+    role: 'ADMIN',
+};
 
 export function ProveedorAutenticacion({ children }) {
-    const [usuario, setUsuario] = useState(null);
-    const [cargando, setCargando] = useState(true);
+    const [usuario, setUsuario] = useState(modoPrevisualizacion ? usuarioPrevisualizacion : null);
+    const [cargando, setCargando] = useState(!modoPrevisualizacion);
     const tiempoInactividad = Math.max(1, Number(import.meta.env.VITE_TIEMPO_INACTIVIDAD_MINUTOS) || 30) * 60 * 1000;
 
     useEffect(() => {
+        if (modoPrevisualizacion) return undefined;
+
         const token = sessionStorage.getItem('token');
         localStorage.removeItem('token');
         if (token) {

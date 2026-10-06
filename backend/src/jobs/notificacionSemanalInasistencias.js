@@ -12,17 +12,7 @@ import {
     obtenerInasistenciasSemanales,
 } from '../lib/servicioAsistencia.js';
 import { registrarAccion } from '../lib/servicioAuditoria.js';
-
-function obtenerPeriodoAcademicoActual() {
-    const partes = new Intl.DateTimeFormat('en-CA', {
-        timeZone: 'America/Bogota',
-        year: 'numeric',
-        month: '2-digit',
-    }).formatToParts(new Date());
-    const anio = partes.find(({ type }) => type === 'year')?.value;
-    const mes = Number(partes.find(({ type }) => type === 'month')?.value);
-    return { anio, periodo: mes <= 6 ? '1' : '2' };
-}
+import { obtenerPeriodoAcademicoActual } from '../lib/utilidadesFechas.js';
 
 async function enviarReportesDocentes(resultados) {
     let reportes;

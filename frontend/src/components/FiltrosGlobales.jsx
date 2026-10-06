@@ -95,6 +95,7 @@ export default function FiltrosGlobales({
     soloDocente = false,
     textoDocenteSinSeleccion = 'Todos los docentes',
     textoMateriaSinSeleccion = 'Seleccione una materia',
+    className = '',
 }) {
     const { usuario } = useAutenticacion();
     const isAdmin = usuario?.role === 'ADMIN';
@@ -285,6 +286,7 @@ export default function FiltrosGlobales({
 
     return (
         <div
+            className={className}
             style={{
                 display: 'flex',
                 alignItems: 'center',

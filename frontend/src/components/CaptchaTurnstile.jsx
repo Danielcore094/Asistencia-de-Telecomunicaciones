@@ -15,7 +15,6 @@ export default function CaptchaTurnstile({ alVerificar, alExpirar, alError }) {
     useEffect(() => {
         if (!clavePublica) {
             setCargando(false);
-            referenciasCallbacks.current.alError('El CAPTCHA no está configurado');
             return undefined;
         }
 
