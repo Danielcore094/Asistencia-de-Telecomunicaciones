@@ -4,6 +4,11 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const XLSX = require('xlsx-js-style');
 
+const obtenerFiltroAcademico = (referenceDate) => {
+    const { anio, periodo } = obtenerPeriodoAcademicoActual(referenceDate);
+    return { academicYear: anio, academicPeriod: periodo };
+};
+
 export async function obtenerInasistenciasSemanales({ referenceDate } = {}) {
     const { weekStart, weekEnd } = obtenerRangoSemanaActual(referenceDate);
 
@@ -330,7 +335,7 @@ async function obtenerResumenAsistenciaSemanal({ teacherId, dates, filtroAcademi
 }
 
 export async function crearReporteExcelSemanalGeneral({ referenceDate, semanaActual = false } = {}) {
-    const filtroAcademico = obtenerPeriodoAcademicoActual(referenceDate);
+    const filtroAcademico = obtenerFiltroAcademico(referenceDate);
     const { weekStart, weekEnd } = semanaActual
         ? obtenerRangoSemanaActual(referenceDate)
         : obtenerRangoSemanaAnterior(referenceDate);
@@ -361,7 +366,7 @@ export async function crearReporteExcelSemanalGeneral({ referenceDate, semanaAct
 }
 
 export async function crearReportesSemanalesPorDocente({ referenceDate, semanaActual = false } = {}) {
-    const filtroAcademico = obtenerPeriodoAcademicoActual(referenceDate);
+    const filtroAcademico = obtenerFiltroAcademico(referenceDate);
     const { weekStart, weekEnd } = semanaActual
         ? obtenerRangoSemanaActual(referenceDate)
         : obtenerRangoSemanaAnterior(referenceDate);
@@ -433,7 +438,7 @@ export async function crearReportesSemanalesPorDocente({ referenceDate, semanaAc
 
 export async function crearReporteSemanalPorDocente({ teacherId, referenceDate } = {}) {
     if (!teacherId) return null;
-    const filtroAcademico = obtenerPeriodoAcademicoActual(referenceDate);
+    const filtroAcademico = obtenerFiltroAcademico(referenceDate);
     const { weekStart, weekEnd } = obtenerRangoSemanaAnterior(referenceDate);
     if (obtenerSemanaAcademica({ referenceDate, weekStart }) > 17) return null;
 
